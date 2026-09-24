@@ -1,0 +1,164 @@
+# 待裁决口径与校勘记录
+
+> 本文件记录**已知冲突**与**未裁决事项**。写解析器、生成器、IDE 之前先看这里；
+> 每条给出证据位置、影响面与可选方案，但**不代替决策**。
+
+---
+
+## 一、五处口径冲突（2026-09-24 实测）
+
+前置事实：文档有两批来源——**早期文档**（2026-06-16~18，即本目录根文档的前身）与**实际语料**（2026-06-27~29 用 `tools/reverse_mmda_project.py` 从 `mmda_metadata` 库反向生成的 `E:\Dev\mmda-architect\examples\mmda-mes`，381 个文件）。两者已经分叉。
+
+### 冲突 1：字段关系/约束的语法两套
+
+| 形态 | 早期文档 | 实际语料 |
+| --- | --- | --- |
+| 引用 | `ref Partner as customer`（`doc/readme.md:64`）、`indexed`、`unique`、`computed` | `@Ref Country(countryCode,fullName)`（`examples/mmda-mes/data/models/base/Address.mm`）、`@One`、`@Many`、`@Computed`、`@Index`、`@Id` |
+| 计数（381 文件） | — | `@Ref` 90、`@Many` 48、`@Computed` 28、`@State` 41、`@Index` 117、`@Id` 82；而 `ref ` **0**、`computed` **0**、`@Action` **0**、`#ge(` **0** |
+
+**影响面**：解析器输入、IDE 补全、AI 提示词、381 文件能否当回归集。
+**可选方案**：(a) 以语料形态为基线，早期文档标注历史；(b) 以早期文档为基线，重跑反向导出；(c) 两套都支持并定弃用时间表（成本最高，最不推荐）。
+
+### 冲突 2：`.ma` 的正文形态
+
+- 文档：`doc/project.md`（原 `architect/project-format.md:125`）称「所有 `.ma`–`.mi` 文件正文为 M 语言方言」，`:201` 给出 `subsystem mes in Erp { module M.03 … }` 示例。
+- 实际：`examples/mmda-mes/biz/mes.ma` 是 **JSON**（`{"name":"Mes","$schema":"https://mmda.dev/schemas/ma-module/v1",…}`）。
+
+**影响面**：解析器分派、编辑器语言模式、`biz/` 的编辑体验。
+**可选方案**：(a) `.ma` 保持 JSON（结构化、好程序化修改，但架构师手写体验差）；(b) 改为 M 语言 DSL（与文档一致，但要迁移现有文件）。
+
+### 冲突 3：`.mmda` 后缀的两种含义
+
+- 现状：`.mmda` = **项目清单 JSON**（根目录唯一 `{projectCode}.mmda`），语言分片是 `.mm / .me / .ms / .mr / .mc / .mf / .mi`。
+- 决策台账 B8：语言文件后缀 **`*.mmda`**。
+
+**影响面**：文件关联、图标、LSP 语言 id、归档包（`.mmdax`）命名、IDE 项目识别。
+**可选方案**：(a) 统一 `.mmda`，清单改名（如 `project.json`）；(b) 保持扩展名族，`.mmda` 只做清单；(c) `.mmda` 用于语言文件、`.mmdaproj` 用于清单。
+
+> **已裁决（2026-09-24）：选 (b)**，并补一条与扩展名无关的前置规则——你在 2026-09-24 明确同意「保族 + 解析器按内容首关键字判 partType」。详细清单见 [`contracts-inventory.md`](contracts-inventory.md) §8。
+>
+> 1. **保持扩展名族**：`.mmda` 继续只表示项目清单。
+> 2. **解析器按内容首关键字判定 partType**（`record` / `enum` / `stm` / `ui` / `view`），扩展名仅作约定、图标与文件关联提示。→ 将来真要统一扩展名，解析器一行都不用改，把不可逆决定变成可逆的。
+>
+> 理由：扩展名之争其实是**文件粒度**之争的影子。你要求「细粒度版本控制 + git/svn 集成」→ 需要**一对象一文件** → 扩展名族正好表达类型（`Order.mm`、`OrderStatus.me`、`BomApproval.ms`）；只有改成「一功能一文件」（record + STM + UI + 枚举装一个文件，像 `.csproj`/`.resx`）时，统一 `.mmda` 才划算。而你的产品是「图形为主、脚本为辅」，粒度应保持对象级。迁移成本对比：保族 = 0（381 文件语料、`crates/mmda-core/src/lang.rs` 的分派、`package.rs` 的 pack/unpack 全不动）；统一 = 380 个文件重命名 + Rust 分派 + VS Code 关联 + 图标 + CI + 文档 + 归档内路径。
+
+### 冲突 4：动作与状态转移的形态
+
+| 形态 | 早期文档 | 实际语料 |
+| --- | --- | --- |
+| 行为 | `@Action 付款:给新订单付款` + `pay(NEW->PAYED)` 写在 record 内 | `data/stms/mes/BomApproval.ms`：`stm BomApproval on Bom.status { action approve { transition CERTIFIED->APPROVED, } }` |
+
+**影响面**：STM 与 Record 的耦合方式、`data/stms/*.ms` 是否保留、IDE 状态图编辑。
+**可选方案**：(a) 保留 `.ms` 独立文件（行为与结构解耦，便于图形编辑）；(b) 行为内联进 record（一处看全，但大表会很长）。
+
+### 冲突 5：字符串长度与可空的位置
+
+| 写法 | 出处 |
+| --- | --- |
+| `varchar?[30]`、`char[11]` | `doc/readme.md:39`、`:41` |
+| `varchar(15)`、`nvarchar(255)` | `doc/readme.md:61`、`:27` |
+| `varchar?(30)` | `archive/2026-06/language/records.md:19` |
+| `varchar(80)`（语料实际） | `examples/mmda-mes/data/models/base/Address.mm` |
+
+**影响面**：词法/语法层最底层的选择，影响所有字段。
+**建议**：长度一律 `type(size)`，可空一律尾部 `?`（`varchar(80)?`）——与语料现状最接近，改动最小。**仍需你确认**。
+
+---
+
+## 二、语法专题待裁决清单（另开专题讨论）
+
+早期文档形态内部还有这些不一致，逐个专题时要一并裁掉：
+
+| # | 冲突 | 位置 |
+| --- | --- | --- |
+| 1 | 命名约束 `indexed/unique/positive/future/cancellable` 未定义时静默通过（灰区） | `doc/readme.md:41`、`:76`、`:115`、`:84` |
+| 2 | `@Computed` 的位置与载荷不一致（注解自带公式 vs 行尾注释 vs constraint） | `doc/readme.md:75`、`:124` |
+| 3 | `[+]` / `[*]` 集合基数与 `type[]` 数组语法会撞 | `doc/readme.md:72`、`:186` |
+| 4 | 文档标签写进语法：`@Action 付款:给新订单付款`；建议一律走 `///` 文档注释 | `doc/readme.md:84` |
+| 5 | `b0000` 位字面量与 BitSet 宽度：定宽？加成员是否变更存储宽度？ | `doc/readme.md:158` |
+| 6 | 大小写敏感面：`BIGID`（错字还是别名？）vs 「数据类型大小写不敏感」；标识符敏感与否未写 | `doc/readme.md:106` vs `doc/datatypes.md:31` |
+| 7 | `as` 三种词义：字段别名 / join 别名 / 类型转换 | `doc/readme.md:64`、`:137` vs `:270`、`:273` |
+| 8 | 无符号两套写法：`decimal(19,4) unsigned` vs `uint64` | `doc/readme.md:76` vs `doc/datatypes.md:18` |
+| 9 | 约束表达式 `#ge(0)` / `#(d{11})` 与命名约束 `positive` / `future` 是两套机制还是同义？语料里 `#ge(` 零命中 | `archive/2026-06/language/expressions.md:71` 与 `doc/readme.md:115` |
+| 10 | 自然语言式聚合 `sum(amount of each items)` 的文法边界（`of`/`each` 无词法标记） | `doc/readme.md:75` |
+| 11 | **重计算/算法节点如何声明为 native**：`algorithm` 契约、在行为里怎么引用（`@Action dispatch : X` / `@Native(...)` / `.ms` 内），以及 `protection` / `license` 声明是否进语言 | 草案见 [`protection.md`](protection.md) §5 |
+| 12 | **`.mt` 用例语法形态**：`given/when/expect` 是否够、是否复用 M语言 表达式语法、`covers`/`source`/`reviewedBy`/`baseline` 的写法 | 已裁进语言族（§五-6）；草案见 [`testing.md`](testing.md) §9 |
+
+---
+
+## 三、工程与架构待裁决
+
+- 见 [`..\PLAN.md`](..\PLAN.md) §6.2（仓库关系、`.ma` 形态、留档处置、svn 集成、旧库连接、`generated/` 与 KEEP 区边界、MCP 面、C# 仓的 SVN+嵌套 git）。
+- 逐行对照清单：[`contracts-inventory.md`](contracts-inventory.md)（P0.5 交付物，60+ 概念带 `file:line`）。
+- **2026-09-24 随想录带来的范围问题**（逐条给出处，建议见各自落点）：
+
+| # | 待裁 | 出处 |
+| --- | --- | --- |
+| 9 | ~~**设计器宿主形态**：独立桌面壳（Tauri + Vue，现规格）vs VS Code / IDEA 插件（随想录要的）vs 混合~~ → **✔ 已裁（2026-09-24）独立壳优先**，插件列为后续可选宿主 | [`ide/specification.md`](ide/specification.md) §4.9 |
+| 10 | ~~**组织架构 / 岗位 / 职员清单**：是**数据**还是**元数据**？~~ → **✔ 已裁（2026-09-24）是「数据」**；**同轮补裁：Role（关键用户）是语言元素、与 Module 同级 → 见 §五-12**（余：岗位 → Role 的映射规则待裁） | 同上 §4.8 域 2、[`meta-model.md`](meta-model.md) §8.1 |
+| 11 | **层级菜单**：是**声明**（进模型）还是**投影**（由模块树/权限生成） | 同上 §4.8 域 1 |
+| 12 | **首页过滤器与展现器**（Index / Report / Dashboard / CRUD）与现有**五视图**是不是同一件事，谁是主人 | 同上 §4.8 域 5 |
+| 13 | **局部（模块级）ER 与全局 ER** 的合并规则（随想录要求"针对模块小范围定义局部数据模型"） | 同上 §4.8 域 3 |
+| 14 | ~~**报表与 BI 的归属**：语言核心 / IDE 工具面 / 底座能力？~~ → **✔ 方向已裁（2026-09-24）：BI 要有元数据、架构设计师要能建模**（属元模型）；**`MetaBiCube` 不成熟 → 具体形态与是否移植容后再议**。余：**ClickHouse** 是否默认分析存储、枚举→维度与固定维度模型的生成规则 | 同上 §4.8 域 8；[`contracts-inventory.md`](contracts-inventory.md) §5 报表行 |
+| 15 | **UI 配色与 ColorRole** 是否进元数据（设计器级主题 vs 模型级声明） | 同上 §4.8 域 7 |
+| 16 | **BPMN XML 互转**（与外部 BPMN 工具集成） | 同上 §4.8 域 6；[`design-notes.md`](design-notes.md) 流程架构一节 |
+| 17 | **发布链路**：生成 → 编译 → 打包 → 部署与 CI/DevOps 对接的形态（目前只有 `mmda pack` 与生成器） | 同上 §4.8 域 9 |
+| 18 | **需求条目与用例的语法形态**：`REQ-x` 进语言还是 IDE 侧清单；`UseCase` 是否上图形；**SRS 导出形态与基线冻结**；需求覆盖门禁是否分层次 | [`requirements.md`](requirements.md) §6 / §7 |
+| 19 | **绘图工具的缺口**：表单设计器、BI 看图器、脚本编辑器 | [`ide/specification.md`](ide/specification.md) §4.8 域 11 |
+| 20 | **拦截点的语言声明形态**：挂在 Action / 视图上还是独立 `hooks` 段；生命周期点是否**封闭枚举**（不许自定义名）；`save` 是否合并 insert/update；存储级钩子是否对设计师开放 | [`runtime.md`](runtime.md) §8-1…4 |
+| 21 | **事务传播规则**：跨模块调用时事务怎么传（同模块同事务、跨模块新事务？）；与事件补偿的配合 | [`runtime.md`](runtime.md) §8-7 |
+| 22 | **`EntityFactory` 与 `Repository` 的关系**：新 Java 代码引入 `EntityFactory`（`mmda-core-entities` + `mmda-base-repository/BaseEntityFactory`），与 core 的 `Repository` 并存——是替换还是分层？三端契约盘点需重算这一行 | [`runtime.md`](runtime.md) §7 / §8-6、[`contracts-inventory.md`](contracts-inventory.md) 持久化行 |
+| 23 | **API 契约的落法**（**语言层面怎么定义 API + 对接 YApi/Apifox/Swagger**）：① 暴露边界默认值；② 路径推导规则（`/模块路径/资源`？）与命名规范；③ 稳定度标记语法与 `since`/`sunset`；④ OpenAPI 版本与扩展字段白名单；⑤ 命令面（`mmda api export/diff/check`）；⑥ Mock 归属；⑦ 网关与 Controller 的认证分工；⑧ 逆向导入的产出形态 | [`api.md`](api.md) **§8.2（12 条待裁）**——原 16 条中 ⑩ 存量路径兼容、⑪ `decimal`/`int64`/`Timestamp` 序列化、⑮ 官方 Schema 校验进门禁、⑯ AI 造数固化 **已于 2026-09-24 裁掉**（见本文件 §五-16）；余⑨ 基础模块固定名与 `sops` → OpenAPI 权限映射（作者"还没想清楚"）、⑫ `operationId` 命名、⑬ scope 命名与粒度、⑭ `webhooks` 首版范围 |
+
+---
+
+## 四、校勘记录
+
+| 日期 | 动作 |
+| --- | --- |
+| 2026-06 | `E:\Dev\mmda-architect` 一轮：Rust 内核 1699 行、35 篇文档、381 文件语料、1196 行 Python 反向工具 |
+| 2026-09-24（一轮） | 以 `D:\2026\c\doc` 为根合并：语言类文档并入根文档（`readme/datatypes/records/statements/events/presentation`）；工具与 IDE 类文档原样迁入 `doc/ide/`；AI、legacy、guide、templates 原样迁入；被合并原文留档 `doc/archive/2026-06/`（13 篇）；新增本文件与 `doc/index.md`、`doc/meta-model.md`、`doc/project.md`、`doc/glossary.md`；修复迁入文档 39 处失效内链 |
+| 2026-09-24（二轮） | 勘察 C# 后端 `D:\2026\cs\MMDA`（762 `.cs` / 70,831 行、模块与同名 `Meta*` 类、有 `IEventBus`、`Mmda.Core/` 嵌套 git）；新增 [`targets.md`](targets.md)（三端契约矩阵 + 能力分档 + 一致性测试口径）；`PLAN.md` 升 v0.4（新增 §2.5、§3.10、P0.5，纠正 §3.4「三语言对等底座」为 2 后端 + 1 前端）；冲突 3 补入建议方案 |
+| 2026-09-24（三轮） | 三条裁决落地（见 §五）：`PLAN.md` 升 v0.5（新增 §6.3 与 P9，§2.4 改为五处冲突 + 状态列）；新增 [`contracts-inventory.md`](contracts-inventory.md)（60+ 概念逐行 `file:line`，含 `同/≈/✗/独` 统计）；同步 `project.md` 抬头、`presentation.md` §5.1（渲染契约）、`targets.md` §3/§8、`index.md` |
+| 2026-09-24（四轮） | 新增 [`protection.md`](protection.md)（算法与知识产权保护）、[`workflows.md`](workflows.md)（五类职责 / 三种工作模式 / 变更分级 L0–L3 / AI Agent 三道闸 / 业务人员路径）、[`testing.md`](testing.md)（用例从声明生成、AI 生成人审、三层验收物、覆盖率与变异）；`PLAN.md` 升 v0.6→v0.9（新增 §3.1 算法宿主、§3.11 测试与验收、P9 扩为「一致性套件与验收」+「测试前置」）；[`ai/tools.md`](ai/tools.md) 补 §2.5 测试与验收工具面与 Agent 工作流；`targets.md` 增「算法 / 重计算载体」行；`errata.md` 语法待裁新增第 11 项 |
+| 2026-09-24（五轮） | 裁决落地：**`.mt` 进语言族** + 验收口径 6 条（`testing.md` §11 转「已裁」记录）；`testing.md` 新增 §4.1 **AI 增强能力总表**（10 项）、§4.2 六条护栏、§6.1 三个新覆盖维度（变更覆盖 / 缺陷回溯覆盖 / 分支覆盖）、§6.2 **用例质量评估**（7 维）与三层分层（黄金 / 普通 / 草稿）；`workflows.md` §12 第 7 条转已裁；`PLAN.md` 升 v1.0（§3.11 补 AI 增强、§6.2 第 16 条转已裁）；本文件语法待裁新增第 12 项（`.mt` 语法形态） |
+| 2026-09-24（六轮） | 新增 [`quality.md`](quality.md)（**ISO/IEC 25010:2023 九特性** → MMDA 可自动信号、A/B/C/D 可判定性分级、质量报告与门禁、**AI 时代 review 分层**与三种高价值用法、**IDE 全生命周期八阶段**）；`testing.md` 验收物增补「质量报告」；`workflows.md` §8 补 review 分层；`PLAN.md` 升 v1.1（新增 §3.12，§3.9 补全生命周期，§6.2 第 17 条） |
+| 2026-09-24（七轮） | 新增 [`architecture-review.md`](architecture-review.md)（**ISO/IEC/IEEE 42010:2022** 关注点/视角映射、**ARCH-101…503 规则集**、Martin 度量 `I`/`A`/`D`、**SOLID 操作化**、打分模型与建议模板、评审仪式与首版门禁）；`quality.md` 增「结构合规」行；`testing.md` 验收物 ④ 含架构评估；`workflows.md` 架构师第 7 步门禁；`ai/tools.md` 增 §2.6 质量与架构评估工具面；`PLAN.md` 升 v1.2（新增 §3.13，§6.2 第 18 条） |
+| 2026-09-24（八轮） | 架构评估口径裁决落地（见 §五-7）：`architecture-review.md` §5 首版硬门禁转「已裁」、§2.2 抽象度 `A` 定义标已裁、§8 拆成「裁决记录 + 待裁（余 3 项按建议值先行）」；`quality.md` §7-6、`workflows.md` §12-9 同步；`PLAN.md` 升 v1.3（§3.13 门禁句转已裁、§6.2 第 18 条转已裁） |
+| 2026-09-24（九轮） | UI 契约收紧（见 §五-8）：`presentation.md` §5.1 重写为「唯一 UI 通道 = mmda-vue；后端只出 `MetaUi`」（含 Java `MetaUi.java:21` 族 / C# `MetaUi.cs:12` 族 / 前端 `packages/core/src/metaui/*` 8 文件 2,626 行的实测证据）；`targets.md` §1/§4（新增「MetaUi 元数据（UI 契约本体）」行）/§6/§8-4；`contracts-inventory.md` §6 抬头与再裁说明；`workflows.md` §1.3/§4-6；`quality.md` 交互能力行；`architecture-review.md` ARCH-103；`PLAN.md` 升 v1.4（§3.4 收紧段、§6.2 第 19 条） |
+| 2026-09-24（十轮） | **质量文档吸收内部资料与量化方法**（用户提供 `D:\项目\2026 mmda\软件质量.pptx` 与同目录《基于量化指标分析的软件质量度量方法》，后者为 2007 年《北京化工大学学报》扫描件，经 PDF 逐页渲染 + 视觉核读）：`quality.md` 新增 **§1.0 标准谱系**（9126:1991 → 25010:2011 → 25010:2023 命名对照）、**§2.1 三层度量模型与加权聚合**（特征根法 AHP 权重、算例 `V_c2 = 0.648`、三条收窄）、**§2.2 默认质量目标基线**（可用性 ≥ 99.9% / MTTF ≥ 10 天 / MTTR ≤ 30 分钟 / MTBF ≥ 10 天/次 / 响应 ≤ 5 s / 并发 ≥ 500·800 / TPS ≥ 80）、**§2.3 运行期 14 项指标**与三个采集面；§1.2/§1.5 补交叉引用、§7 新增 2 条待裁（加权口径、阈值基线下发）、§8 补三条来源；`testing.md` §11-6 性能用例阈值指向 `quality.md` §2.2；`PLAN.md` 升 v1.5（§3.12 补定量层与阈值基线、§5 目录、§6.2 第 17/20 条） |
+| 2026-09-24（十一轮） | **rui/vui 补裁**（见 §五-8 补注）：前端 kit **`vui`（Vue）与 `rui`（React）都可选、随技术人员喜好**——自定义前端 UI 插件时按熟悉度挑；属同一前端项目内部自由，**不构成两套 UI 契约**（契约边界只到 `MetaUi`）。落点：`presentation.md` §5.1 界限 ②、`workflows.md` §1.3、`PLAN.md` §6.2 第 19 条补裁 |
+
+| 2026-09-24（十二轮） | **随想录归档并落成两篇规范**（用户提供《MMDA 随想录》，原文留档 `doc/archive/2026-09/随想录.md`）：新增 [`requirements.md`](requirements.md)（需求为什么难 / 三层需求→MMDA 落点 / **四标准的机械信号** / SERU 四要素 / 需求管理四步 / SRS 形态 / 6 条待裁）；`readme.md` 新增 §7 **与低代码的区别**；`ide/specification.md` 新增 §4.8 **建模域清单（11 域）**与 §4.9 **宿主形态**、§4.2 用例与需求条目挂接；本文件 §三 新增 11 条工程待裁（#9–#19）；`PLAN.md` 升 v1.6（§3.14 需求工程、§3.15 设计器建模域与宿主形态、§5 目录、§6.2 第 21/22/23 条、变更记录 v1.6）；`index.md` 阅读顺序与索引同步 |
+| 2026-09-24（十三轮） | **随想录三问裁定**（用户「独立壳优先 / 组织架构是数据 / BI 要有元数据但要能建模、MetaBiCube 容后再议」）：`ide/specification.md` §4.9 由「待裁张力」改**已裁（独立壳优先）**、§4.8 域 2 / 域 4 / 域 8 / 域 10 更新（组织架构=数据、BI 方向已裁细节后议）；本文件 §五 新增第 9/10/11 条、§三 第 9/10/14 条转已裁；`PLAN.md` 升 **v1.7**（§3.15、§6.2-22/23、§6.3 新增第 5/6/7 条、变更记录）；`index.md` 规范版本升 0.5 |
+| 2026-09-24（十四轮） | **Role 进语言（与 Module 同级）**（用户：「组织架构虽然是数据，但对于业务流程来说是必须的；惯例是在需求阶段就识别关键用户即角色（Role），因此架构设计时 Role 作为和 Module 分解同等重要的设计，进 mmda-lang 语言」）：[`meta-model.md`](meta-model.md) **新增 §8.1 Role（关键用户 · 与 Module 同级）**——属性表（`roleCode`/`auth module`/`actions`/`scope`）、为什么与 Module 同级、与「权限在 IDE 配置」的关系；[`requirements.md`](requirements.md) §2 新增「关键用户（角色 / Role）」行 + 惯例补注（需求阶段识别关键用户）；[`project.md`](project.md) §3 `.mr` 行注明；[`architecture-review.md`](architecture-review.md) 关注点表注明同级；[`workflows.md`](workflows.md) §1.2 增补「配置的是账号→Role 的授予，Role 本身是设计元素」；[`ide/specification.md`](ide/specification.md) §4.8 域 2 改为两层分治；本文件 §五 新增第 12 条、§三 第 10 条补注；`PLAN.md` 升 **v1.8**（§3.15、§6.2-23、§6.3 第 8 条、变更记录） |
+| 2026-09-24（十五轮） | **运行架构落成（吸收作者《分层架构》概念设计图）**：新增 [`runtime.md`](runtime.md)——四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / **缓存 = 横切面**）、两条路径（进入三件事：认证授权 / 校验 / 默认值；返回：组装 → 聚合）、**事务夹在 Before / After 拦截点中间**、**拦截点上升到语言**（`before`/`after` × **封闭生命周期点**枚举 + **设计师配置 / 程序员定制的固定模式**）、缓存单点出口、装配与聚合是生成物、现状与缺口（业务 Controller 手写 74/16/9/3、`EntityFactory` 未融合 Repository）、**7 条待裁**；[`architecture-review.md`](architecture-review.md) 新增 **§2.1b（ARCH-107…110，首版不进硬门禁）**；[`targets.md`](targets.md) L2 补「事务边界 / 生命周期钩子」、能力矩阵新增「生命周期钩子」行 + 缓存行补租户实现；本文件 §五 新增第 13 条、§三 新增第 20/21/22 条；验收钩子实测（Java `EntityService.java:337/378/388/650/658/878/2433`、`ReactiveEntityController.java:1292`、`EntityRepository.java:509/1518`；TS `entity_logic.ts:171/175/183/185/199/201/207`）；`PLAN.md` 升 **v1.9**（§3.16、§5 目录、§6.2 第 24 条、§6.3 第 9 条、变更记录） |
+| 2026-09-24（十六轮） | **API 契约落成（语言层面定义 API + 对接 API 管理工具）**（用户：「后端服务要能集成 API 管理，例如 yapi/apifox/swagger 等插件，从设计、测试和运维几个方面考虑」→ 追加澄清：「就是在语言层面，模块分解成 module 后，怎么考虑定义 api，并支持 api 文档生成，支持外部工具、open api 互动」）：新增 [`api.md`](api.md)——**API 由「模块分解 + Feature + 视图 + Action + Role + 字段约束」推导**（不造 `api` 顶层块 / 不造 DTO 概念）、语言层只补 **`expose` 暴露边界** 与 **稳定度/版本**（`stable`/`beta`/`deprecated` + `since`/`sunset`）、**OpenAPI 3.1 由 Rust 内核生成** + **契约测试成为一致性测试的 API 维度**、设计/测试/运维三面（API 面板 / 机械用例 + Mock / **网关粗粒度 vs Controller 细粒度** + `deprecated` 调用量作退役倒计时）、**与外部工具单向互动**（导出 ✅ / 逆向导入 ✅ / **回写 ❌** / 对账 ✅）、现状实测（**三端 API 文档能力全缺**：Java 无 springdoc、`@Operation/@Tag` 0 个；C# `Swashbuckle.AspNetCore 6.9.0` 0 注解；TS 无生成；端点模板 `/create`·`GET ""`·`/{id}`·`/save`·`/{id}/delete`·`/deleteAll` 在 `mmda-mes` 多控制器逐字重复；`SearchParam.java:7-10` 已有 `pageNo`/`pageSize`/`sorts`）、**8 条待裁**；[`runtime.md`](runtime.md) §1 交叉引用；[`targets.md`](targets.md) L2 + 能力矩阵新增「API 文档 / OpenAPI」行；[`testing.md`](testing.md) §10 补一行；本文件 §三 第 23 条；`PLAN.md` 升 **v1.10**（§3.17、§5 目录、§6.2 第 25 条、变更记录）；`index.md` 版本升 0.8 |
+| 2026-09-24（十七轮） | **API 边界 = module 边界（插件不侵入语言）**（用户：「我期望这些插件不要侵入我的语言层面……实际上就约定了应该开放的 API，对不？至于没有 module 归属的元对象，我还没想清楚」→ 助手答「对」并给出硬理由，用户回「好的」批准落笔）：[`api.md`](api.md) **新增 §1.1**（第一原则 + 插件两条边界 + 判据 + **无归属元对象的六类决策表**，实测语料 `biz/base.ma` 绑定 `data/models/base/` 77 个对象、`data/models/mes/` 138 个）、§6 新增「无归属对象」实测行、§7 新增第 9 条待裁；[`architecture-review.md`](architecture-review.md) §2.1 新增 **ARCH-111**（对外可见的 Record 必须有唯一 owner module，首版不进硬门禁）；[`PLAN.md`](..\PLAN.md) 升 **v1.11**（§3.17 补第一原则、§6.2-25 补第 9 条、§6.3 第 10 条、变更记录）；本文件 §五 第 14 条、§三 第 23 条补注；`index.md` 版本升 0.9 |
+| 2026-09-24（十八轮） | **OpenAPI 原生支持（OAS 3.1.0 基准）+ AI 造数**（用户：「open api 是有参考标准的，这个要原生支持」（附 `https://spec.openapis.org.cn/oas/v3.1.0.html#operation-object-example`）；「API 测试要能借助 AI 的能力自动生成 mock 数据，这个也很关键，这是撰写测试用例的提速手段」）：[`api.md`](api.md) **新增 §3「与 OAS 3.1.0 的逐条对齐」**——§3.1 四条判据（内核一等后端 / 过官方 Schema 校验 / 契约测试双向对账 / 语言层不出现 OAS 术语）、§3.2 根对象与公共对象逐字段来源、§3.3 **Operation 12 字段逐条**（`tags`/`summary`/`description`/`externalDocs`/`operationId`/`parameters`/`requestBody`/`responses`/`callbacks`/`deprecated`/`security`/`servers`）、§3.4 五视图与 Action → 端点与状态码（含非法转移 409 与"存量 `POST /save` 冲突"三选项）、§3.5 **逻辑类型 → JSON Schema 2020-12 映射**（实测 3.1 差异：`nullable` 全文 **0 次**、`contentEncoding` 替代 `format: byte`、`webhooks` 原生、`info.summary` 与 `license.identifier` 新增）、§3.6 securityScheme/scopes、§3.7 `x-mmda-*` 溯源指针、§3.8 **覆盖度自检（23 + 5 + 2 = 30 个对象）**、**§3.9 Mock 数据两层造数**（机械层零 AI + AI 语义层；四条护栏）；§7 现状新增「无归属对象」行、§8 待裁 9 → **16 条**；[`testing.md`](testing.md) **新增 §4.3**（Mock 数据生成：两层分工 / 四条护栏 / 命令面 / 用途三面）+ §8 命令面 `mmda mock` + MCP `mmda_mock_gen` + §10 与 §11 指针；[`ai/tools.md`](ai/tools.md) §2.4 补 `mmda_api_export`/`mmda_api_check`、§2.5 补 `mmda_mock_gen` 与"造数不需双签、断言必须双签"的边界；[`targets.md`](targets.md) L2 与能力矩阵补 OAS 3.1.0 原生与 mock 造数；[`PLAN.md`](..\PLAN.md) 升 **v1.12**（§3.17 两条已裁、§6.2-25 补第 ⑩–⑯ 条、§6.3-10 补充、变更记录）；本文件 §五 第 15 条、§三 第 23 条更新；`index.md` 版本升 0.10 |
+| 2026-09-24（十九轮） | **API 契约四条落定**（用户逐条回：「1. REST语义」「2. 按你建议」「3. 进」「4. 要」）：[`api.md`](api.md) §3.1 判据 2 标 **✔ 已裁：官方 Schema 校验与契约测试进硬门禁**、§3.4 存量路径冲突改写为 **✔ 已裁取 A 方案**（REST 语义 + `legacyPathStyle` 兼容开关、双版本并存、老路径 `deprecated`/`sunset`）、§3.5 类型映射三行标已裁（**精度优先**：`decimal`/`money` → `string` + `pattern`，超 JS 安全整数的 `int64`/`uint64` → `string`，`Timestamp` → `date-time`）、§3.9 护栏 3 标已裁（**种子 + provenance 进版本控制**）、**§8 重构为「8.1 已裁（第 10/11/15/16 条）/ 8.2 待裁（12 条）」**；[`testing.md`](testing.md) §4.3 护栏 3 同步；[`targets.md`](targets.md) L2 补序列化约定；[`PLAN.md`](..\PLAN.md) 升 **v1.13**（§6.2-25 标已裁 4 条、§6.3 第 11 条、变更记录）；本文件 §五 第 16 条、§三 第 23 条更新；`index.md` 版本升 0.11 |
+
+> 注：§五 记录的是**已裁决**项，一、二 两节保留**未裁决**项——两者不要混读。
+
+---
+
+## 五、✔ 已裁决（2026-09-24）
+
+| # | 议题 | 裁决 | 落点 |
+| --- | --- | --- | --- |
+| 1 | `.mmda` 后缀（冲突 3） | 保持扩展名族，`.mmda` 只表示项目清单；**解析器按内容首关键字判 partType** | 本文冲突 3、[`project.md`](project.md) 抬头 |
+| 2 | 能力标记 capability 语法 | 按 [`targets.md`](targets.md) §3 草案进语言；目标缺能力 → 生成期报错 | `targets.md` §3/§8、`..\PLAN.md` §6.3-2 |
+| 3 | UI 契约 | **不统一 UI 抽象**：后端只出渲染描述，各端 kit 自己渲染（**同日已收紧**：UI 契约 = 现有 mmda-vue 前端项目，不考虑 C# MVC 与 Java 的 UI，后端只提供 `MetaUi`——见第 8 条） | [`presentation.md`](presentation.md) §5.1、`..\PLAN.md` §6.3-3 |
+| 4 | 一致性测试归属 | **由 Rust 内核统一驱动**（`mmda test --target java,csharp,ts`） | `..\PLAN.md` §6.3-4、P9 |
+| 5 | 职责、模式与权限配置 | **五类职责不按岗位划分**（一人可兼任业务 + 技术）；**模式与角色权限在 IDE 项目管理里配置**，导航与写入边界按角色权限限制；默认 `mode = 单人`，门禁不因模式而变 | [`workflows.md`](workflows.md) §1.1 / §1.2 / §1.3 |
+| 6 | 测试用例与验收 | **`.mt` 进语言族**；覆盖率门禁（字段/迁移/权限/能力 100%、需求 ≥ 90%）；**AI 用例业务 + 设计师双签**；变异里程碑 + 每日（存活 ≤ 10%）；**中文验收单作为验收凭证**（签字留痕进 changelog）；性能/安全用例分开 | [`testing.md`](testing.md) §11 已裁表、[`workflows.md`](workflows.md) §12 |
+| 7 | 架构评估口径 | **首版架构硬门禁 = ARCH-101 / 102 / 104 / 105 + 302 / 304 / 305**（ARCH-2xx 先告警一个迭代、ARCH-5xx 只进看板）；**抽象度 `A` = 对外契约数 /（对外契约数 + 具体对象数）**（契约 = Action + 视图 + 被外部引用的 Record/Enum） | [`architecture-review.md`](architecture-review.md) §5 / §8 |
+| 8 | UI 契约（收紧） | **UI 契约 = 现有 mmda-vue 前端项目**（`D:\2026\ts\mmda`）；**不考虑 C# MVC 与 Java 的 UI**；**后端只提供 `MetaUi` 元数据**（Java `MetaUi.java` 族 / C# `MetaUi.cs` 族）。UI kit 不进契约、不进语言；一致性测试 UI 维度只测 TS；`capability ui` 只在 `target ts`——**补裁：前端 kit `vui`（Vue）与 `rui`（React）都可选、随技术人员喜好**（自定义前端 UI 插件时按熟悉度挑），属同一前端项目内部自由，**不构成两套 UI 契约** | [`presentation.md`](presentation.md) §5.1、[`targets.md`](targets.md) §8-4 |
+| 9 | 设计器宿主形态 | **独立壳优先**（Tauri + Vue 3 + Syncfusion，本阶段唯一在做的宿主）；**VS Code / IDEA 插件作为后续可选宿主**——内核（`mmda-core` Rust）与图形接口按「宿主可替换」设计（LSP 面 + `*.g` 布局/语义分离），但**不并行开工两套宿主** | [`ide/specification.md`](ide/specification.md) §4.9、`..\PLAN.md` §6.2-22 |
+| 10 | 组织架构建模 | **组织架构 / 岗位 / 职员是「数据」不是「元数据」**——用普通 `Record` + 关系表达（部门树、岗位、任职），**不新增元模型元素**；设计器提供图形化输入（组织架构图 / 岗位矩阵图）与职员清单导入，**产物是数据模型文件**；余：「角色由岗位生成」的映射规则待裁 | [`ide/specification.md`](ide/specification.md) §4.8 域 2、[`workflows.md`](workflows.md) §1.2 |
+| 11 | BI 元数据 | **BI 要有元数据、最终让架构设计师能建模**（属**元模型**范畴，不是纯 IDE 工具面）——**方向已裁**；**但既有 `MetaBiCube/Dimension/Hierarchy/Level/Measure` 很不成熟 → 具体形态与是否移植「容后再议」**（ClickHouse 是否作默认分析存储同此）。可先落：**枚举 → 维度**、固定维度模型 | [`ide/specification.md`](ide/specification.md) §4.8 域 4/域 8、`..\PLAN.md` §6.2-23 |
+| 12 | 角色（Role）的层级 | **Role 是架构设计元素、进 m 语言，与 Module 分解同级**（`flow/roles/*.mr`）——**需求阶段识别关键用户（关键用户即角色）**，故架构设计时 Role 与 Module 同等重要；**组织架构 / 岗位 / 职员仍是「数据」**，是角色的实例来源（设计元素 vs 数据实例，两层不混）。余：**岗位 → Role 的映射规则**待裁（一个岗位可对应多个 Role） | [`meta-model.md`](meta-model.md) §8.1、[`project.md`](project.md) §3、[`ide/specification.md`](ide/specification.md) §4.8 域 2、`..\PLAN.md` §6.3-8 |
+| 13 | 运行架构（四层职责） | **概念设计已确认**：`Controller` = **API 开放**、`Service` = **商业逻辑**、`Repository` = **数据读写层**、**缓存 = 横切面**（`CacheProvider`，Controller 与 Service 两侧直达、`reactive` 双向、**不绕 Repository**）；**事务夹在 Service 的 Before / After 拦截点中间**（`before*` 事务内、`after*` 提交后且必须幂等）；进入路径三件事（认证授权 / 校验 / 默认值）**在 MMDA 里是声明、Controller 是执行点**；返回路径的**组装与聚合是生成物** | [`runtime.md`](runtime.md) §1–§6、[`architecture-review.md`](architecture-review.md) §2.1b（ARCH-107…110）、`..\PLAN.md` §6.3-9 |
+| 14 | API 边界与插件边界 | **module 边界 = API 边界 = 权限边界 = 文档分组边界（四者一个来源）**——权限按 module 授予（`Role.auth module`/`actions`/`scope`）+ `sops` + ARCH-104/106 ⇒ **无归属的元对象结构上不可开放**；**插件不得侵入语言**：只许**读产物**（OpenAPI/`MetaUi`）与**报对账**，**禁止写元数据、禁止把工具概念写进语法**（tag 由 module 树推导）；判据「**凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍**」；**无归属对象默认不开放**——枚举不需归属（随视图下发）、从属与技术对象默认 `internal`、共享基础数据归属基础模块（语料 `Base`：`biz/base.ma` 节点 `model` 绑定 `data/models/base/` **77 个**对象、模块级 `sops: READ`） | [`api.md`](api.md) §1.1、[`architecture-review.md`](architecture-review.md) §2.1（**ARCH-111**）、`..\PLAN.md` §6.3-10 |
+| 15 | **OpenAPI 原生支持（基准 OAS 3.1.0）+ AI 造数** | **原生支持，基准 = OAS 3.1.0**（人读 `https://spec.openapis.org.cn/oas/v3.1.0.html`；机器校验用官方 Schema `https://spec.openapis.org/oas/3.1/schema/2022-10-07`（实测 200）与方言 `…/oas/3.1/dialect/base`（实测 200）；`.cn` 镜像只有 HTML）：**四条判据**＝内核一等后端 / 过官方 Schema 校验 / 契约测试双向对账 / **语言层不出现 OAS 术语**；30 个 OAS 对象逐字段**指明推导来源**（Operation 12 字段、根对象、Schema/security/`x-mmda-*`）；**首版覆盖 23 + 按需 5 + 不做 2**。**AI 造数**（作者："借助 AI 自动生成 mock 数据，是撰写测试用例的提速手段"）：**两层造数**（机械层零 AI、可复现、进基线 + AI 语义层填业务真实感与刁钻样本），**四条护栏**（不得发明结构 / 过 schema + 约束双校验 / 种子 + provenance / **造数不需双签、断言必须双签**） | [`api.md`](api.md) §3（§3.1–§3.9）、[`testing.md`](testing.md) §4.3、[`ai/tools.md`](ai/tools.md) §2.4/§2.5、[`targets.md`](targets.md) L2 + 能力矩阵、`..\PLAN.md` §6.3-10 |
+| 16 | **API 契约四条落定**（作者回「1. REST语义 / 2. 按你建议 / 3. 进 / 4. 要」） | ① **存量路径取 A 方案**：生成物用 **REST 语义**（POST 创建 / PUT 更新 / DELETE 删除 + `/{模块路径}/{资源}` 前缀），**同时给 Profile 开关 `legacyPathStyle: true`** 保留 `POST /save`、`GET ""`、`POST /{id}/delete` 老路径，迁移期双版本并存（老路径标 `deprecated` + `sunset`，调用量归零后移除）；② **序列化取「精度优先」**：`decimal(p,s)` / `numeric` / `money` → **`string` + `pattern`**（TS 端同样生成 `string`，不是 `number`），`int64` / `uint64` 超出 JS 安全整数范围时用 `string`，`Timestamp` → `string` + `format: date-time`（不用 epoch 整数）——**三端序列化必须一致**，进 capability 一致性用例；③ **官方 Schema 校验与契约测试进硬门禁**（B 级：生成后可判定，`mmda api check` 失败即阻断 CI）；④ **AI 造数样本要固化**：种子 + provenance 进版本控制（能重建同一次造数）、过 schema + 约束双校验；**默认只进 mock 与开发期**，断言始终不由 AI 造数产生 | [`api.md`](api.md) §3.1-2 / §3.4 / §3.5 / §3.9 / §8.1、[`testing.md`](testing.md) §4.3、[`targets.md`](targets.md) L2、`..\PLAN.md` §6.3-11 |
