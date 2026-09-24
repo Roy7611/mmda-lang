@@ -141,7 +141,7 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 
 ### 3.4 五视图 / Action → 端点与状态码
 
-**路径形态（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：下表里的 `/{模块路径}/{资源}` 一律写成 **`/api/<模块小写>/<模型名复数>`**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**。例：`GET /api/mes/WorkOrders`、`PUT /api/mes/WorkOrders/{id}`、`POST /api/mes/WorkOrders/{id}/approve`。**残余细则 2c**（未定不许进生成器）：`/api` 写死还是 Profile 可配、复数变形规则（§8.2-2）。
+**路径形态（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：下表里的 `/{模块路径}/{资源}` 一律写成 **`/api/<模块小写>/<模型名复数>`**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**。例：`GET /api/mes/WorkOrders`、`PUT /api/mes/WorkOrders/{id}`、`POST /api/mes/WorkOrders/{id}/approve`。**✔ 已裁 2026-09-24（2c 取 1A 2A）**：**① `/api` 前缀不写死 —— 由模块的 `moduleUrl` 配置**（作者原话：「**实际上我在 module.moduleUrl 中配置了**」；真源 [`meta-model.md`](meta-model.md) 的 Module 元素 `moduleUrl`）；**② 复数变形遵循英文单词规则、前后端同一套实现（以现状为准）**（作者原话：「**复数形式遵循英文单词，前后端都有实现**」）。
 
 | m 声明 | 端点 | 方法 | 成功码 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -330,7 +330,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
 | 1 | 暴露边界的默认值 | **默认 `internal`**，显式 `expose` 才对外（内部实现不会因为存在就变成契约） | §1.2、§1.1 |
-| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**✔ 已裁 2026-09-24（字形取 2b）：「复数形式」**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**：① **`/api` 入口前缀**（现状保留）；② **模块段小写**（`mes`）；③ **资源段 = 模型名原样 + 英语复数**（`WorkOrder` → `WorkOrders`）。**⚠️ 残余细则 2c（未定不许进生成器）**：`/api` 写死还是 Profile 可配（建议 `apiPrefix` 默认 `/api`、网关可剥）+ 复数变形规则（建议英语常规 `+s`／`ies`／`es`、**只加后缀不转写**、不可复数化的名用原形 + 端点显式覆盖） | §3.4 |
+| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**✔ 已裁 2026-09-24（字形取 2b）：「复数形式」**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**：① **`/api` 入口前缀**（现状保留）；② **模块段小写**（`mes`）；③ **资源段 = 模型名原样 + 英语复数**（`WorkOrder` → `WorkOrders`）。**✔ 已裁 2026-09-24（2c 取 1A + 2A）**：**① 前缀不写死 = 模块 `moduleUrl` 配置**（作者原话「**实际上我在 module.moduleUrl 中配置了**」，真源 [`meta-model.md`](meta-model.md) §8）；**② 复数 = 遵循英文单词规则**（`+s`／`y → ies`／`s,x,z,ch,sh → es` 等常规变形），**前后端同一套实现、以现状为准、不引 `pathSegment` 手写覆盖**（作者原话「**复数形式遵循英文单词，前后端都有实现**」） | §3.4 |
 | 3 | 稳定度标记语法与 `since` / `sunset` | **进语言**（`stable` / `beta` / `deprecated` + `since` / `sunset`；三端与网关都要读） | §1.2、§5 |
 | 4 | OpenAPI 版本与扩展字段白名单 | **3.1**；扩展字段**只允许 `x-mmda-*` 出**，`x-yapi-*` / `x-apifox-*` 由外部工具在导入时自加 | §3、§7 |
 | 5 | 命令面 | **独立子命令**（`mmda api export/diff/check` 不并入 `mmda generate`，便于 CI 分开跑） | §2、§4 |

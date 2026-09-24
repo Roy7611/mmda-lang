@@ -180,7 +180,7 @@ Field ──(呈现层)── UiField
 | `moduleType` | `0` Subsystem / `1` Module / `2` Feature |
 | `schemaCode` | 关联 Schema |
 | `recordRef` | Feature 绑定的 Record（type=2） |
-| `moduleUrl` | 路由/入口 |
+| `moduleUrl` | 路由/入口 —— **API 路径的前缀 / 入口段按它派生**（✔ 2026-09-24，见 [`api.md`](api.md) §8.2-2c） |
 | `allowOps` | 操作权限位掩码 |
 | `defaultFilter` / `defaultSort` | 列表默认 |
 
