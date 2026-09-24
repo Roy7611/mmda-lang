@@ -339,7 +339,7 @@ actions/**/*.yaml
 events/**/*.mmda
 ```
 
-识别特征：存在 `manifest.json` 且**无**根 `{projectCode}.mmda`，或 `formatVersion` 为 `"1.0"`/`"1.1"`。迁移工具规划：`mmda migrate --to 2.0 ./legacy-project`。
+识别特征：存在 `manifest.json` 且**无**根 `{projectCode}.mmda`，或 `formatVersion` 为 `"1.0"`/`"1.1"`。迁移工具规划：`mmda migrate --to 2.0 ./legacy-project`。**另有语法级改名迁移**：`mmda migrate --rename @PartitionID=@Partitioned`（✔ 2026-09-25 作者同意；默认 dry-run 出待改清单、`--write` 才落盘；**只动语言文件**，不碰生成区 / KEEP 区）—— 解析器**只认新名**，旧项目升级必经这一步（同一条线见 [`naming.md`](naming.md) §5）。ct`。
 
 | 能力 | 规范 | 上一轮实现（mmda-core / Architect） |
 | --- | --- | --- |

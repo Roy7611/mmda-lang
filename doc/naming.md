@@ -181,7 +181,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 | 落点 | 动作 |
 | --- | --- |
 | `mmda check` | 新增命名检查：声明名不符合 §1（Pascal / camel 误用、`Impl` 后缀、接口缺 `I`）→ **warning**（✔ 2026-09-24 裁：§6-2 取 A，**不阻断**；§6-7 取 A，**不进 `mmda quality gate`**）；**只查生成物与新声明**，不查既有代码；**建议类**（索引 / 函数 / 存储过程前缀 `IDX_` / `FUNC_` / `PROC_`）只出 **suggestion** |
-| 迁移脚本（✔ 2026-09-24 裁：§6-6 取 B） | **P9 交付一个可选迁移脚本**：把既有代码 / KEEP 区里的 `Impl` 后缀、缺 `I` 前缀改成 §1 口径；**默认 dry-run 出清单**，不自动改、不进构建 |
+| 迁移脚本 · 通用改名（✔ 2026-09-24 裁 §6-6 取 B；✔ 2026-09-25 扩为通用 `mmda migrate --rename`） | **P9 交付一个可选迁移脚本** → **统一为 `mmda migrate --rename <old>=<new>`（可重复、默认 `--dry-run` 只出待改清单，`--write` 才落盘）**，覆盖两类：**① 命名约定**（`Impl` 后缀、缺 `I` 前缀改成 §1 口径）；**② 关键字 / 注解改名**（如 **`@PartitionID` → `@Partitioned`**，语料 186 处旧写法；✔ 2026-09-25 作者同意给一次性迁移）；**默认 dry-run 出清单**，不自动改、不进构建 |
 | 设计器（[`ide/specification.md`](ide/specification.md)） | 新建对象 / 字段时按本文**预置大小写**并在重命名时提示影响面 |
 | 代码评审清单（[`architecture-review.md`](architecture-review.md)） | 加一条：**生成物里出现 `Impl` 或接口缺 `I` 即退回**（生成器 bug，不是风格问题；**人工评审项，非 CI 门禁**——与 §6-7 不进硬门禁一致） |
 | 模板资产（[`templates/conventions.template.md`](templates/conventions.template.md)） | 保留，作为项目侧约定模板；**真源仍是本文** |

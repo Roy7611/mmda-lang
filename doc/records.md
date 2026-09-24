@@ -156,6 +156,7 @@ parseTenantID(id) = id >>> 36
 - **为什么改**：元对象上的属性**本来就叫 `partitioned`**（`MetaObject.partitioned`，DB 列也是 `partitioned`），注解跟属性同名 —— 一个概念只留一个名字；
 - **两种形态**（同一件事）：**① 字段级行尾裸关键字 `partitioned`**（不带范围，简洁，与 `readonly` / `indexed` 同一风格）：`addressId uint64 identity generated readonly partitioned,`；**② 注解 `@Partitioned [min, max]`**（**带段范围**时用这个，独占一行在字段上方）；
 - **旧名 `@PartitionID` 已废**：语料里 **186 处仍是旧写法**，属**待迁移**；m 语言解析器只认 `@Partitioned`（旧名 = 未知名 ✅ 按 §1.2 的封闭关键字表直接报错，提示改名）；
+- **✔ 一次性迁移（2026-09-25 作者同意）**：**`mmda migrate --rename @PartitionID=@Partitioned`** —— 默认 **`--dry-run`**（只出「文件:行:列 + 改动」清单），**`--write`** 才落盘；**只动语言文件**（`.mm` / `.me` / `.ms` / `.mi` / `.mmda` …），不碰生成区与 KEEP 区；与 [`naming.md`](naming.md) §5 的命名迁移脚本**同一条线**，一并归 **P9**；
 - **唯一性校验**：**一个对象只能有一个 `partitioned` 字段**（分区主键唯一）→ `mmda check` **error**。
 
 **分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`uint64 identity partitioned`**（见 [`datatypes.md`](datatypes.md) §5）。
