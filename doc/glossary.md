@@ -160,6 +160,7 @@
 | FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitSet）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
+| `.m` | **m 语言源文件的统一扩展名**（✔ 2026-09-25 收敛）：**文件里存 m 语言就用它**，partType 由**内容首关键字**判定，不再按类型分片（旧族 `.mm` / `.me` / `.ms` / `.mi` … 为历史形态，见 [`project.md`](project.md) §1） |
 | view（视图） | **定义式，不是查询式**：`view X : B { 列 }` 的 **`:` 是 C# 风格的继承 / 实现**，语义 = **对 `X` 进行定义**（`B` 是基，可以是 `record`，见语料 `view Product : Bom`）；`as` = 引用该基的别名，`join` / `union` = 再挂别的基（横向 / 纵向）；**列清单逐字段显式写出**（每个基的字段都要写、名字对得上，不一致用 `as` 对齐，对齐规矩照 SQL）；**基可以是 `record` 或另一个 `view`**；**段对视图可选 —— 只读视图（大多数）不写段** |
 | `@Partitioned` / `partitioned` | **分区主键**（✔ 2026-09-25 由 `@PartitionID` 改名）：**字段级行尾 `partitioned`**（不带范围）／ **注解 `@Partitioned [min,max]`**（带段范围）—— 与元对象属性 `MetaObject.partitioned` 同名；一个对象只能有一个 |
 | 基础表（base table） | **UNION 进某个视图的那几张表**（视图的组成表）—— 「标识共享组」即一个视图的基础表集合；SQL 现成词，不用「成员表 / 来源表」 |
