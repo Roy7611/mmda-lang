@@ -24,6 +24,8 @@
 > 这条边界就是「尊重 java / c# 的习惯」的**可执行版本**：不是「看着像就行」，而是**契约处零差异、实现处随习惯**。
 >
 > **两类例外**（不进 HTTP 契约，但**有硬要求**，不交给本地习惯）：**常量与枚举成员**（§1，三端统一 `UPPER_SNAKE`）、**数据库标识符**（§3.3，表与视图 = 类名 PascalCase、列 = 属性名 camelCase，**逐字同模型名**）。
+>
+> 另有**一类放宽**（进不了契约、也**不要求**统一）：**前端与 Flutter 的本地名**——组件名 / 文件名 / CSS class（含 BEM）/ 静态资源名**允许 `-` 与 `_`**（`kebab-case` / `snake_case`），见 **§3.4**。
 
 ---
 
@@ -85,6 +87,7 @@
 | 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](project.md)（`*.mm` 一对象一文件） |
 | 局部变量 / 参数 | `camelCase` | `camelCase` | `camelCase` | — |
 | 泛型参数 | `T` / `TKey` | 同 Java | 同 Java | — |
+| **前端 / Flutter 本地名**（组件名 · 文件名 · CSS class · 静态资源名） | **允许 `kebab-case` / `snake_case`**（含 `-`、`_`） | 同（Dart 文件名本就走 `snake_case`） | 同 | ✔ 2026-09-24 作者裁：**尊重他们的习惯**（组件名、CSS BEM），细则见 §3.4 |
 
 > **SQL 标识符不在本清单**（✔ 2026-09-24 改判）：表 / 视图 / 列**属硬规则**（表与视图 = 类名、列 = 属性名），见 **§3.3**。
 
@@ -127,6 +130,27 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 **收益**：**表名 = 类名、列名 = 属性名 → ORM 零映射**（JPA 不用 `@Table` / `@Column`，EF 不用 `HasColumnName`）、JSON 载荷名与列名同形、**DDL 与模型可以逐字对账**（L3 增一项，见 [`targets.md`](targets.md) §5）。
 
 **`mmda doctor` 增一项自检**：连目标库时读 MySQL 的 `lower_case_table_names`、并对各方言各跑一次「带引号 / 不带引号」的标识符探测，**行为不一致即 error**（与 [`operations.md`](operations.md) §10 的 doctor 清单合并登记）。
+
+---
+
+### 3.4 前端与 Flutter 的本地命名（✔ 2026-09-24 作者裁：**尊重他们的习惯**）
+
+**作者原话**：「**前端和 flutter 尊重他们的习惯，允许 snake 命名法，包括 `-` 和下划线，例如组件名称，css bem**」。
+
+| 对象 | 规则 | 例 |
+| --- | --- | --- |
+| **Vue / TS 组件** | **PascalCase 或 `kebab-case` 都合法**（**不强制 Pascal**）；组件标签用 `kebab-case` | `MaterialPicker.vue` 或 `material-picker.vue`；标签 `<material-picker>` |
+| **文件名 / 目录名** | 随各生态：Vue 可 Pascal 或 kebab；**Dart 官方风格 = `snake_case`** | `material_picker.dart` · `order-detail/` |
+| **CSS / 样式** | **BEM 等既有体系照用**（`__` 元素、`--` 修饰符） | `.material-picker__input--disabled` |
+| **静态资源** | **`snake_case` / `kebab-case`**（跟工具链与 CDN 习惯） | `assets/images/order_detail.png` |
+| **Flutter 资源与主题名** | 同上（`snake_case` 优先） | `lib/widgets/material_picker.dart` |
+
+**边界（写死，别越界）**：
+
+- **这些名字都不进契约**——[`presentation.md`](presentation.md) §5 已裁「**`MetaUi` 里不许出现框架专属概念（组件名、CSS、事件名）**」；因此**换皮肤、改组件名、改 CSS 不算契约破坏**（与 [`vision.md`](vision.md) 的「换皮肤不构成第二套 UI 契约」一致）。
+- **`MetaUi` 与载荷里的名字仍按 §1 / §2**：`View` 名、字段名、事件名、i18n key、API 路径段与 `operationId`、指标名**一律 Pascal / camel / `UPPER_SNAKE`**，不因为前端放宽而改变。
+- **语言级标识符不放松**：**Dart 的类名仍 PascalCase、成员仍 camelCase**（Dart 官方风格本就如此）；放宽只限**文件名 / 组件标签 / CSS class / 资源名**这类"外部命名"。
+- **为什么不强推 Pascal**：这些名字由**工具链**消费（Vue SFC 解析与按需加载、CSS 处理、Dart 包资源解析、CDN 路径），跟生态打架没有收益；而**契约面在后端**（只有 `MetaUi`），放宽不会造成跨端漂移。
 
 ---
 
