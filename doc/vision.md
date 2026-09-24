@@ -124,7 +124,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 目标 | 现状 | 落点 |
 | --- | --- | --- |
 | 分层 | ✔ 已裁 | [`runtime.md`](runtime.md)：Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面 |
-| 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](meta-model.md)（`partitionKey` / `@PartitionID`）、[`project.md`](project.md) §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
+| 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](meta-model.md)（`partitionKey` / `@Partitioned`）、[`project.md`](project.md) §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
 | 热插拔模块化 | ✔ 见 §5.3（module 粒度） | module 边界四合一（[`api.md`](api.md) §1.1） |
 | 高性能 | ✔ 机制已定 | 生成原生代码、表达式下推到存储、`@Computed` / `@trigger` 生成库侧 `trigger` / `procedure`（[`readme.md`](readme.md) §5）；性能效率信号见 [`quality.md`](quality.md) §1.2 |
 | 安全、防黑客 | ✔ 基准已裁 | [`quality.md`](quality.md) §1.6（安全性）与 **§3.2（OWASP ASVS 门禁口径）**、[`api.md`](api.md) §3.6（scope）、ARCH-111（[`architecture-review.md`](architecture-review.md)）；**ASVS L1 自动化子集进硬门禁、Top 10 作报告项** |

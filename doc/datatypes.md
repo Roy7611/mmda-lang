@@ -94,7 +94,7 @@
 
 语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1，默认最大容量 **2000**（可由 Profile 调整）；可指定字符编码 `charset`。
 
-> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@PartitionID` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
+> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@Partitioned` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
 >
 > ```
 > MAX_TENANT_ID = 0x7FF_FFFF    // 高 28 位是租户 id（上限 2^27−1 → bit 63 恒 0、ID 恒为正 long）
@@ -109,11 +109,11 @@
 >
 > ```
 > record Address {
->     @PartitionID [10000,0x000F_FFFF]      // 独占一行（字段级注解）
+>     @Partitioned [10000,0x000F_FFFF]      // 独占一行（字段级注解）
 >     addressId uint64 identity generated readonly,
 > ```
 >
-> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3；**组就声明在视图处（视图即组）**，见同文件 §7。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `uint64 identity partitioned`**——
+> 即 **分区主键 = 带 `@Partitioned` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处；**注意：语料里的注解写的还是旧名 `@PartitionID`（186 处）**，见 [`records.md`](records.md) §2.3 的改名说明）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3；**组就声明在视图处（视图即组）**，见同文件 §7。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `uint64 identity partitioned`**——
 >
 > - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
 > - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
@@ -122,7 +122,7 @@
 >
 > **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 [`workflows.md`](workflows.md) §1。
 >
-> 因此语料那两行（`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；✔ **大小写敏感面同日已裁（2026-09-25，作者：「类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似」）**：**类型名与约束名一律大小写不敏感**（`BIGID` = `bigid`、`indexed` = `INDEXED`），**标识符（Record / 字段 / 枚举成员）仍大小写敏感**（[`naming.md`](naming.md) §1）—— **`errata.md` §二-6 至此清零**。
+> 因此语料那两行（**原文用旧名**：`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；✔ **大小写敏感面同日已裁（2026-09-25，作者：「类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似」）**：**类型名与约束名一律大小写不敏感**（`BIGID` = `bigid`、`indexed` = `INDEXED`），**标识符（Record / 字段 / 枚举成员）仍大小写敏感**（[`naming.md`](naming.md) §1）—— **`errata.md` §二-6 至此清零**。
 
 ---
 

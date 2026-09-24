@@ -266,12 +266,12 @@ record Pallet {
 
 | 注解 | 语义 | MetaCol 映射 | 约束 |
 |------|------|--------------|------|
-| `@PartitionID range` | `MetaObject.partitionKey` + `minID` / `maxID` | 分区主键 realId 范围（见下） |
+| `@Partitioned range` | `MetaObject.partitionKey` + `minID` / `maxID` | 分区主键 realId 范围（见下） |
 | `@Unique` | 分区内业务唯一编码/单号（校验，非 DB `unique index`） | `uniqueKey` | 通常一条/实体 |
 | `@Name` | 默认显示名；列表超链接等 | `nameCol` | 可多个 |
 | `@Thumbnail` | 缩略图 URL；列表中显示在名称前 | `thumbnailCol` | 仅一个 |
 
-**`@PartitionID` 范围语法**（映射 `MetaObject.partitionKey`、`minID`、`maxID`；`min`/`max` 可省略，表示该字段数据类型的默认最小/最大值）：
+**`@Partitioned` 范围语法**（映射 `MetaObject.partitionKey`、`minID`、`maxID`；`min`/`max` 可省略，表示该字段数据类型的默认最小/最大值）：
 
 | 写法 | 含义 |
 |------|------|
@@ -291,7 +291,7 @@ record Pallet {
 /// 贸易伙伴: 与租户有贸易往来的实体，包括客户、供应商、承运商等
 record Partner {
     /// 伙伴ID: 贸易伙伴唯一标识
-    @PartitionID [0x800000,0x7fffffff]
+    @Partitioned [0x800000,0x7fffffff]
     partnerId bigint identity,
 
     /// 伙伴编码: 贸易伙伴唯一编码（租户内）

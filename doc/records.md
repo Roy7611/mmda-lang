@@ -37,6 +37,7 @@ quantity decimal(18,3) positive,
 | `indexed` | 建索引 |
 | `unique` | 唯一索引（隐含 `indexed`） |
 | `identity` | 唯一标识；等价 `indexed` + `unique`；默认配 `readonly` |
+| `partitioned` | **分区主键**（✔ 2026-09-25 新增，字段级）：与 `@Partitioned` 注解**同一件事**的两种形态 —— 行尾简写不带范围（用元对象的默认段）；`BIGID` = `uint64 identity partitioned` 就展开成它。**一个对象只能有一个 `partitioned` 字段** |
 | `generated` | 生成列（DB 自增、或由 `@Computed` 公式映射） |
 | `default` *value* | 默认值；`now` = 当前时间；位串可写 `b'0` |
 | `charset` *name* | 字符编码：`ascii`、`utf` 等 |
@@ -57,7 +58,7 @@ quantity decimal(18,3) positive,
 > **实测（语料 378 个语言文件）**：行尾字段级约束 **`readonly` 1040 处 / `indexed` 491 处**；具名声明 **342 处**，其中 **2 列及以上 45 处**（2 列 32、3 列 12、4 列 1 —— 最长 `IDX_tool_asequip(asEquip,maintenancePlanId,planToMaintain,lastMaintained)`）。
 > ✔ **已裁（2026-09-25 作者）**：**未定义的名字就是错，必须报错** —— 作者原话：「**posittive 写错了肯定要报错，语法都不对，你咋能过。你没有词法分析器吗？**」
 >
-> - **行尾关键字表 + 注解名表都是「语言关键字」，进词法分析器的 token 表**（`indexed` / `unique` / `identity` / `generated` / `readonly` / `default` / `charset` / `future` / `cancellable`… 与 `@Index` / `@Unique` / `@Id` / `@Ref` / `@One` / `@Many` / `@Computed` / `@PartitionID` / `@State` / `@Name` / `@Thumbnail`…）；
+> - **行尾关键字表 + 注解名表都是「语言关键字」，进词法分析器的 token 表**（`indexed` / `unique` / `identity` / `generated` / `readonly` / `default` / `charset` / `future` / `cancellable`… 与 `@Index` / `@Unique` / `@Id` / `@Ref` / `@One` / `@Many` / `@Computed` / `@Partitioned` / `@State` / `@Name` / `@Thumbnail`…）；
 > - **拼错 / 未知名 → 解析期报错（error）**，报在 `<file>:<line>:<col>`（例：`quantity decimal(18,3) posittive` → `error: 未知约束关键字 posittive`）；
 > - **因此不要「自定义约束名的扩展白名单」** —— 先前提的 `Profile` / `customProperties` 两种白名单方案 **作废**（没有「自定义关键字」这回事）；
 > - **解析器位置**：`mmda-syntax`（**P2**：按内容首关键字判 partType、诊断带 `file:line:col`）—— **仓里目前还没有解析器实现，所以现阶段没有任何东西能拦住拼错**；这不是设计上的灰区，是 **P2 未开工**。
@@ -91,7 +92,7 @@ items OrderItem[+] readonly,
 | `@Many` | 一对多；（可 `@Many eager`） | MetaRelation（默认 lazy） |
 | `@State StmName` | 状态字段，下一行须为枚举；`default` 为初始状态 | 状态列 + STM 名 |
 | `@Computed expr` | 计算字段；下一行为存储/展示类型 | `computed` + `formula` |
-| `@PartitionID range` | 分区主键 realId 范围（多租户） | `partitionKey` + `minID`/`maxID` |
+| `@Partitioned range` | 分区主键 realId 范围（多租户） | `partitionKey` + `minID`/`maxID` |
 | `@Unique` | 分区内业务唯一编码（**非** DB unique index） | 列级 `uniqueKey` |
 | `@Name` | 默认显示名（可多个） | `nameCol` |
 | `@Thumbnail` | 列表缩略图 URL（唯一） | `thumbnailCol` |
@@ -115,7 +116,7 @@ items OrderItem[+] readonly,
 | 典型 UI | dropdown | searchBox |
 | API 序列化 | ID + 显示标签 | 嵌套对象 |
 
-### 2.3 `@PartitionID` 范围语法
+### 2.3 `@Partitioned` 范围语法
 
 `[min,max]`、`(min,max]`、`[..max]`、`[min..]`、`(0..]`；`[`/`(` 与 `]`/`)` 表示开闭；省略端点 = 该数据类型的默认最小/最大值。
 
@@ -127,7 +128,7 @@ MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
 parseTenantID(id) = id >>> 36
 ```
 
-**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`，即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
+**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`，即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
 
 **为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
 
@@ -136,7 +137,7 @@ parseTenantID(id) = id >>> 36
 - **不做 UNION 的表可以共用默认段**：语料实测 **169 张表共用 `[10000, 0x000F_FFFF]`**；只有**标识共享组**内的表才显式细分。
 - **语料实测与作者《标识共享》文档逐段吻合**：
 
-| 标识共享组（视图族） | 表 | 段（作者文档） | 语料 `@PartitionID` |
+| 标识共享组（视图族） | 表 | 段（作者文档） | 语料（旧名 `@PartitionID`） |
 | --- | --- | --- | --- |
 | 人 | Tenant / Bank Account | `0` – `0x7FF`（2047） | 语料未见（其余段逐一吻合） |
 | 人 | Department 部门 | `0x800`（2048）– `0x7FFF`（32767） | `[2048, 32767]` ✔ |
@@ -150,7 +151,14 @@ parseTenantID(id) = id >>> 36
 | 工装器具 | Equipment · Workstation / Tool | — | `[0x20000, 0x7ffff]` / `[0x80000, 0x7fffff]` |
 
 - **作者文档里的六个标识共享组**：① **收付款方 Party**（贸易伙伴 / 联系人 / 分支机构 / 职员）+ **组织单元 Organization Unit**（Department / Partner）+ **人 Person**（Employee / Driver / Worker）；② **库存地点 Inventory Location**（Warehouse / Production Loc / Project）+ **运输地点 Transport Location**（仓库 / 工厂 / 交通站点 / 项目现场）；③ **工装器具**（物流搬运设备 Handling Equipment / 生产设备 Equipment / 工具 Tool / 运输车辆 Transport Vehicle）；④ **物料 Sku**（MaterialINSku = 物料 + Sku）；⑤ **可搬运物 Handlable**（穿梭车 / 搬运单元 Handling Unit 托盘·料箱 / 货柜 LicensePlate）；⑥ **生产计划任务 ProductionScheduleTask**（生产订单 ProductionOrder / 生产任务 ProductionTask）。
-- **分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@PartitionID [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`uint64 identity partitioned`**（见 [`datatypes.md`](datatypes.md) §5）。
+- **✔ 注解改名（2026-09-25 作者）**：**`@PartitionID` → `@Partitioned`**（作者原话：「**`@PartitionID` 改为 `@Partitioned`，字段级支持 `partitioned` 跟在后面**」）。
+
+- **为什么改**：元对象上的属性**本来就叫 `partitioned`**（`MetaObject.partitioned`，DB 列也是 `partitioned`），注解跟属性同名 —— 一个概念只留一个名字；
+- **两种形态**（同一件事）：**① 字段级行尾裸关键字 `partitioned`**（不带范围，简洁，与 `readonly` / `indexed` 同一风格）：`addressId uint64 identity generated readonly partitioned,`；**② 注解 `@Partitioned [min, max]`**（**带段范围**时用这个，独占一行在字段上方）；
+- **旧名 `@PartitionID` 已废**：语料里 **186 处仍是旧写法**，属**待迁移**；m 语言解析器只认 `@Partitioned`（旧名 = 未知名 ✅ 按 §1.2 的封闭关键字表直接报错，提示改名）；
+- **唯一性校验**：**一个对象只能有一个 `partitioned` 字段**（分区主键唯一）→ `mmda check` **error**。
+
+**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`uint64 identity partitioned`**（见 [`datatypes.md`](datatypes.md) §5）。
 
 **✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](workflows.md) §1）。
 
@@ -340,14 +348,14 @@ view OrderItemV : OrderItem as it
   —— `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2`、`data/models/mes/Maintainable.mm:2`。
 - **语料形态**：`/// VIEW` + `view <名> { 列定义 }` —— **列直接写在视图里**（= 各基础表的**公共列**），语料 `union` / `from` **0 命中**；
   即**语料的 `view` 已经是 UNION 视图的结果形态，只是没写 `union` 子句**。
-- **`Maintainable` 视图自带段**：`@PartitionID [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
+- **`Maintainable` 视图自带段**：`@Partitioned [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
 - ⚠️ **实现侧只有 join、还没有 UNION**：`MetaView.java:20-28` = 主表 `t` + `relatives`（join 关系）+ 列别名 + `whereCondition` / `orderBy`（`D:\2026\java\mmda-core\mmda-core-metadata\...\MetaView.java`）。
 - **校验（✔ 2026-09-25 作者「同意进」）**：① 同组基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）→ **`mmda check` 硬门禁（error，生成期就拦，非 warning）**；② **一张表最多属于一个组**（它只有一段）；③ 基础表段落在 realId 空间内 —— ②③ 与 ① 是**同一批校验**，一起在 `mmda check` 里实现。
 **✔ 三条已裁（2026-09-25 作者）**：
 
 1. **列清单逐字段显式写出**：**每个基的字段都要写**（不许省略、不许自动推断）。**名字要对得上**；基之间列名不一致时**用 `as` 对齐** —— 作者原话：「**每个表的字段都要写，并且名字要对的上，用 `as`，或者你模仿 SQL**」→ **对齐规矩照 SQL**（列按**位置**对齐；视图列名由别名决定，与 SQL 的 `UNION` 一致）。
 2. **基可以是视图** → 继承链允许：`view party : person`（段校验按**叶子表**做）。
-3. **视图可以有段，但大多没必要** —— 作者原话：「**视图可以要段，大多情况不更新，没必要段**」→ 段对视图**可选**：**只读视图（大多数）不写段**；只有确实需要区间的视图才声明 `@PartitionID`（语料里 `Product` / `Maintainable` 带、`person` 不带，正是这个意思）。
+3. **视图可以有段，但大多没必要** —— 作者原话：「**视图可以要段，大多情况不更新，没必要段**」→ 段对视图**可选**：**只读视图（大多数）不写段**；只有确实需要区间的视图才声明 `@Partitioned`（语料里 `Product` / `Maintainable` 带、`person` 不带，正是这个意思）。
 
 ---
 

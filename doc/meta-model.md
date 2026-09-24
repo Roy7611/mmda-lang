@@ -46,8 +46,8 @@ Field ──(呈现层)── UiField
 | `objType` | enum | `T` \| `V` \| `TA` \| `TAF` \| `VAF` |
 | `uniqueKey` | string? | 业务唯一字段名 |
 | `nameCol` | string? | 显示名称字段 |
-| `partitionKey` | string? | 分区主键字段（`@PartitionID` 所在列） |
-| `partitioned` | bool | **分区标记**：有 `@PartitionID` 即为 `true`；`BIGID` = `uint64 identity partitioned`；物理表分区 + 按租户 / 段隔离查询（`MetaObject.partitioned`） |
+| `partitionKey` | string? | 分区主键字段（`@Partitioned` 所在列） |
+| `partitioned` | bool | **分区标记**：有 `@Partitioned` 即为 `true`；`BIGID` = `uint64 identity partitioned`；物理表分区 + 按租户 / 段隔离查询（`MetaObject.partitioned`） |
 | `minID` / `maxID` | int? | **分段**：该表在**标识共享组**里领的段，取值为 **realId（真实 id，去掉租户标识后的那部分）**下限/上限；**由架构师 / 设计师分配**（工具不自动分配，见 [`workflows.md`](workflows.md) §1）；空 = 类型默认值 |
 | `parentIdCol` | string? | 树形父键 |
 | `superName` | string? | 继承基类 Record |
@@ -57,7 +57,7 @@ Field ──(呈现层)── UiField
 
 `objType` 语义：`T` 持久化实体；`V` 只读视图；`TA` 实体 + Action；`TAF` 实体 + Action + Flow/审计；`VAF` 视图 + Action + Flow。
 
-**多租户**：`partitionKey` 指向带 `@PartitionID` 的主键列；**完整 ID = 高 28 位 tenantId（27 位有效）+ 低 36 位 realId**（`records.md` §2.3）；**分段 `minID` / `maxID` 在本对象上配置，取值是 realId（真实 id —— 去掉租户标识之后的那部分）范围**。
+**多租户**：`partitionKey` 指向带 `@Partitioned` 的主键列；**完整 ID = 高 28 位 tenantId（27 位有效）+ 低 36 位 realId**（`records.md` §2.3）；**分段 `minID` / `maxID` 在本对象上配置，取值是 realId（真实 id —— 去掉租户标识之后的那部分）范围**。
 
 ---
 
@@ -112,7 +112,7 @@ Field ──(呈现层)── UiField
 | `@Many` | `MetaRelation` | 一对多 |
 | `@State Stm` | 状态列 + STM | 枚举字段 + 状态机名 |
 | `@Computed` | `computed` + `formula` | 计算列 |
-| `@PartitionID range` | `partitionKey` + `minID`/`maxID` | 分区 realId 范围 |
+| `@Partitioned range` | `partitionKey` + `minID`/`maxID` | 分区 realId 范围 |
 | `@Unique` | 列级 `uniqueKey` | 分区内业务唯一 |
 | `@Name` / `@Thumbnail` | `nameCol` / `thumbnailCol` | 显示名 / 缩略图 |
 
