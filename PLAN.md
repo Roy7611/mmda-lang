@@ -1,8 +1,8 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.18 · 2026-09-24
+> v1.19 · 2026-09-24
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
-> 已拍定决策见 §0，未决项见 §6，**2026-09-24 的二十一项裁决见 §6.3**。
+> 已拍定决策见 §0，未决项见 §6，**2026-09-24 的二十二项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
 > **目标端契约**见 [`doc/targets.md`](doc/targets.md)，**逐行对照清单**见 [`doc/contracts-inventory.md`](doc/contracts-inventory.md) —— 两者是 P6 的前置。
 
@@ -341,12 +341,13 @@
 | **P5** DDL | `mmda-emit-ddl`：MySQL/PostgreSQL/SQLServer/SQLite/Oracle/DM/Kingbase/Ansi | 与 Java 8 方言 + C# 3 方言产出逐条对账，差异列表化并裁决 | 中 |
 | **P6** 代码生成 | `mmda-codegen` 重写 `mmda-factory`：Java / C# / TS（+Dart/JS，**Dart 端服务于移动端 Flutter**——方向已裁、排 P8 之后），**按 capability 分档** | 前置：`doc/targets.md` + `doc/contracts-inventory.md`；Java/C# 产物与旧 factory 等价；KEEP 区不被覆盖（有回归用例） | 大 |
 | **P7** IDE | 现有 Tauri + Vue 壳 + Monaco（语言 id `m-lang`）+ LSP + 图形通道 + 多语言映射编辑器 + git/svn | 跳转、补全、诊断、图形/文本双向编辑、多语言并排编辑可用；**插件宿主可用**：设计器插件可安装 / 卸载 / 校验签名，市场走**离线 registry** 起步（[`doc/ide/plugins.md`](doc/ide/plugins.md) §9 / §12） | 大 |
-| **P8** 事件层 | m 事件契约冻结 → Java 补齐总线 / C# 对齐 | 事件声明生成的接口在两侧底座可编译运行，一致性用例通过 | 大 |
+| **P8** 事件层与总线 | m 事件契约冻结 → Java 补齐总线 / C# 对齐；**总线内嵌执行器**（语义对齐 Flink：State / Event Time / Watermark / Window / Checkpoint）+ **Outbox** + 失败队列与重放 + **DataFlow 三张图的 view 种类**（`mf-flow` / `mf-map`）+ AsyncAPI 3.1 产物（真源 [`doc/event_bus.md`](doc/event_bus.md)） | 事件声明生成的接口在两侧底座可编译运行，一致性用例通过；**到货例（`event_bus.md` §7.3）零手写代码跑通**；幂等与重放用例通过 | 大 |
 | **P9** 一致性套件与验收 | `mmda-test`：**用例从声明机械生成 + AI 生成人审**（[`doc/testing.md`](doc/testing.md)），跨端跑（`mmda test --target java,csharp,ts`）、影响面（`--impact`）、变异（`--mutate`）、中文验收单（`mmda accept --lang zh`） | 第一批用例（长度/引用/迁移矩阵/权限矩阵/租户/DDL/事件）三端结果一致；覆盖率（字段/迁移/权限/能力 100%）与变异存活率达标；验收单可签字 | 中 |
+| **P10**（可选）总线外接引擎 | `RuntimeProfile.engine = flink`：Flink 集群作**可选后端**（IOT / 实时大吞吐），Java 侧直连、C# 侧 Kafka/HTTP 桥接 | 真实 IOT 场景压测达标（吞吐 / 时延 / 故障恢复）后再启；**语义一致性用例仍以 `embedded` 为准** | 大 |
 
 **L2（国产化）验收腿（✔ 2026-09-24 裁，矩阵见 [`doc/vision.md`](doc/vision.md) §5.2.1）**：CI 跑 **x86_64 + aarch64** 两套（海光/兆芯 + 鲲鹏/飞腾）；**CI 基线 OS = openEuler LTS**，**验收 OS = 麒麟 V10 SP3 服务器版 + 统信 UOS 服务器版 V20**；**JDK = 毕昇 JDK 21（AArch64/x86_64）+ 上游 OpenJDK 21 兜底**；交付 = **离线包**（生成物 + 两套交叉编译产物 + 国产 OS 基础镜像 `Dockerfile` + `docker save` tar + 校验和清单）+ **`mmda doctor`** 自检（内核/glibc/架构/JDK）；**设计器不进国产 OS**（只承诺运行时 + 内核 CLI）；**架构支持等级写进 capability 声明**（龙芯如纳入，C# 端须显式标 `community`）。交叉编译与容器基座随 **P5**，验收腿随 **P9**。
 
-**顺序**：P0 → P1→P2→P3 是「语言自洽」的最短闭环；P4 先做业务最急的宿主（Java）；P5 / P9 可并行给人（P6 以 P0.5 为门禁）；P7、P8 最后，且**不要并行开**。
+**顺序**：P0 → P1→P2→P3 是「语言自洽」的最短闭环；P4 先做业务最急的宿主（Java）；P5 / P9 可并行给人（P6 以 P0.5 为门禁）；P7、P8 最后，且**不要并行开**；**P10 只在有真实 IOT 客户时开**。
 
 **测试前置**：机械用例的生成能力**不是 P9 才做**——P2/P3 的校验规则**就是**断言的来源（规则写好即可产出用例），P5 的方言对账与 P6 的 KEEP 区回归都复用同一套用例；P9 只负责补上「三端跑同一批用例 + 影响面 + 变异 + 验收单」。
 
@@ -365,6 +366,7 @@ doc/                        规范真源（根 = 语言规范；分支见下）
   ├── records.md            对象：Record / Field / Enum / View
   ├── statements.md         语句、表达式、行为与状态机
   ├── events.md             事件驱动架构 + 事件声明语法
+  ├── event_bus.md          事件总线与集成编排（底座 ESB：端点 / DataFlow 三张图 / 一致性 / 多租户）
   ├── presentation.md       呈现层：UiField / 分组 / i18n / 五视图 / 渲染契约
   ├── meta-model.md         元模型元素与到旧实现的映射
   ├── project.md            项目格式（目录、扩展名、清单、changelog、归档）
@@ -461,6 +463,7 @@ tools/                      方言/类型映射数据表
 | 19 | **核心平台统一 MIT**（作者：「**核心平台 MIT**」）——开源侧许可**全栈统一为 MIT**（仓根 `LICENSE`）：m 语言规范 + **Rust 内核 / 三端薄适配 / IDE 壳**；原记「规范 MIT / 内核 Apache-2.0」，现合为一份。理由：**集成方零摩擦、法务最简单**。**代价（要知道）**：MIT **不带专利授权与商标条款**——商标靠 README / 官网声明，专利风险靠防御性公开与自有专利布局 | [`doc/vision.md`](doc/vision.md) §5.1、[`doc/protection.md`](doc/protection.md) §7.1、[`doc/targets.md`](doc/targets.md) §8-5、[`doc/errata.md`](doc/errata.md) §五-20 |
 | 20 | **移动端宿主 = Flutter（方向已裁）**（作者：「**移动端考虑 flutter 支持**」）——移动端**不做响应式 Web / 小程序路线**，宿主形态定为 **Flutter**（复用 P6 的 **Dart** 生成端）；**首版仍不做移动端**（先 Web + 桌面 Tauri），排 **P8 之后**作为独立 `target`。**随之新开的待裁**：`MetaUi` 将出现**第二个渲染方**（Flutter），与已裁的「UI 契约 = mmda-vue、`capability ui` 只在 `target ts`」冲突 | 见 [`doc/targets.md`](doc/targets.md) §8-6、[`doc/errata.md`](doc/errata.md) §三-26、[`doc/vision.md`](doc/vision.md) §8-6/7 |
 | 21 | **OWASP ASVS 进入（硬门禁）**（作者：「**OWASP ASVS 进入**」）——**ASVS L1 的可自动化子集进 `mmda quality gate` 硬门禁**（六类：认证与会话 / 访问控制 / 输入校验 / 敏感数据 / 错误处理 / 密码学）；**ASVS L2·L3 与需人工渗透的条款不进**（进报告与待评清单）；**OWASP Top 10 作报告项**（多数由生成器结构性消除：注入靠参数化、失效访问控制靠 `scope`、敏感数据暴露靠字段标记）；引用**必须写版本号**，版本差异进 errata 不静默升级 | [`doc/quality.md`](doc/quality.md) **§3.2**（门禁口径）+ §1.6 安全性、[`doc/vision.md`](doc/vision.md) §5.4 安全行 + §8-3、[`doc/errata.md`](doc/errata.md) §五-20 |
+| 22 | **事件总线与集成编排（底座 ESB 能力）落成**——作者原话：「我一直想让 mmda 底座提供 ESB 的能力，将最终的集成能力大幅提升，减少集成成本。最终效果是**只要配置就能基本覆盖 80% 的 API 接口集成**」「**Event → Message → 数据 Data**」「我更偏向 **Flink 的概念**，适合未来开发 IOT、实时数据流监控等」——① **新增 [`doc/event_bus.md`](doc/event_bus.md)**：概念模型 **Event → Message → Data**（Message = Header + Payload，对齐 Spring Integration，不自造）、**三类集成**（数据 / 流程 / 接口，共用一套运行时）、**端点三类来源**（内部 module 边界**零配置推导** / 外部**可配置** / 底座内置）、**DataFlow 三张图**（节点图 / 数据流图 / 数据映射图）、**DataMapper** 四类算子（校验 / 过滤 / 转换 / 计算，细则另开专文）、**State / Event Time / Watermark / Window / Checkpoint**、**Outbox（事务性发件箱）**、多租户三档、监控指标与**自有 UI** 面板、CLI/MCP 面；② **引擎裁决（最重）**：**借 Flink 的语义，不绑 Flink 的运行时**——硬事实：**Flink 只有 JVM/Python 面、无 .NET 实现**，且是独立集群运行时，而我们的底座是「随业务系统部署的库」→ 定为 **引擎可替换**（`RuntimeProfile.engine`：`embedded` 默认 / `flink` 留口子），**语义清单逐条对齐 Flink 且可测**；③ **语言层零新增**（编排落图不落语法；判据：能从 module / 数据模型推导的不再声明），`events.md` 只管语言面、`event_bus.md` 管运行时与集成面；④ **阶段**：**P8 扩为「事件层与总线」**（补 Java 侧空白——C# 已有 `IEventBus` / `RedisEventHub` / `SignalR`，Java 侧 `mmda-core-messaging` 36 文件全是通知器）、**新增 P10**（Flink 可选后端，视 IOT 客户再启）；⑤ **待裁 7 条见 [`doc/event_bus.md`](doc/event_bus.md) §15（建议 1A…7A）**，其中「多租户隔离档」与 [`doc/runtime.md`](doc/runtime.md) §9-8（插件隔离级别）**合并裁决** | [`doc/event_bus.md`](doc/event_bus.md)（全文 + §15）、[`doc/events.md`](doc/events.md)（分工与指针）、[`doc/targets.md`](doc/targets.md) §1 L2、[`doc/ide/graph-files.md`](doc/ide/graph-files.md) §4.5、[`doc/ide/specification.md`](doc/ide/specification.md) §4.8 域 6、[`doc/quality.md`](doc/quality.md) §2.3、[`doc/errata.md`](doc/errata.md) §五-21 + §三-27 |
 
 ---
 
@@ -503,6 +506,9 @@ dotnet test "D:/2026/cs/MMDA/Tests/Mmda.Core.Data.Test/Mmda.Core.Data.Test.cspro
 
 # P9 一致性：三端跑同一组用例
 cargo run -p mmda-cli -- test --target java,csharp,ts --cases examples/mmda-mes/tests
+
+# P8 总线：失败事件重放（同一幂等键，重放前校验前提条件）
+cargo run -p mmda-cli -- bus replay --flow goods-arrived --from dead-letter
 ```
 
 **回滚**：`D:\2026\rust` **已接入 git**（公开仓 `github.com/Roy7611/mmda-lang`，首提交 `0679a30`），每阶段一个分支/标签；`E:\Dev\mmda-architect` 在 P0 决定仓库关系前**不动它**；`D:\2026\java` 在 P4 之前只增不改（唯一的既有改动是删除已归档的 `mmda-lang/`）；`D:\2026\cs\MMDA` **本阶段只读不写**。
@@ -539,3 +545,4 @@ cargo run -p mmda-cli -- test --target java,csharp,ts --cases examples/mmda-mes/
 - v1.16（2026-09-24）：**L2 国产化目标矩阵落定**（作者取 `1A 2A 3A 4A 5A`）。落点：① [`doc/vision.md`](doc/vision.md) **新增 §5.2.1 L2 目标矩阵**（五条决策 + 依据 + 验收口径 + 阶段落点；§5.2 的 L2 行改标已裁）；② 本文件 §4 新增「**L2（国产化）验收腿**」段（CI 双架构 / 基线 openEuler / 验收麒麟+统信 / 毕昇 JDK 21 / 离线包 + `mmda doctor` / 设计器不进国产 OS / 支持等级进 capability）；③ [`doc/ide/specification.md`](doc/ide/specification.md) §4.9 增第 3 条口径（**设计器不承诺国产 OS**，两条改三条）；④ [`doc/targets.md`](doc/targets.md) §8-5 补矩阵摘要；⑤ [`doc/vision.md`](doc/vision.md) §8-4 待裁项标已裁（余「龙芯何时纳入 / 申威是否需要」等客户点名）；本文件 §6.3 新增第 16 条、变更记录；`doc/errata.md` §五 第 18 条 + §三 第 24 条更新 + 校勘第二十二轮；`doc/index.md` 版本升 0.14。**实测依据**：Rust `loongarch64-unknown-linux-gnu` = Tier 2 with host tools（kernel ≥5.19 / glibc ≥2.36 / LSX）；毕昇 JDK 21 官方只出 Linux/AArch64 与 Linux/x86_64；.NET RID 目录含 `linux-loongarch64` 但 supported-os 表 Linux 仅 Arm32/Arm64/x64。
 - v1.17（2026-09-24）：**共赢落成「插件市场 + 设计阶段原生支持插件式开发」**（作者原话：「共赢做插件市场，留这个口子，设计阶段原生支持插件式开发」）。落点：① [`doc/ide/plugins.md`](doc/ide/plugins.md) **升 0.2**——新增 **§8 设计阶段原生支持（五条可检判据 + 语言层无插件概念的硬边界）**、**§9 插件市场**（三形态 registry / 清单增补字段 `kernel`·`targets`·`capabilities`·`publisher`·`signature`·`license` / 上架三关与兼容矩阵 / 三级签名与信任链）、**§10 扩展点规划**（`validationRules`·`importers`·`reportPanels`·`templatePackages`·`codegenHooks`·`stageActions`·`kernelBackends`）、**§11 权限与硬边界**（最小权限 + 禁写语言文件按后缀拒绝 + 插件校验只出 warning + 不进语法）、**§12 加载形态待裁**（首版只开设计器插件；内核侧三选，**建议 sidecar + JSON-RPC**，Rust dylib 因无稳定 ABI 不可行）；② [`doc/vision.md`](doc/vision.md) §2 共赢行补市场与闭源增值内容分发渠道、§8-5 标已裁；③ 本文件 §6.3 新增第 17 条；④ [`doc/errata.md`](doc/errata.md) §五 第 19 条 + §三 第 24 条 ⑤ 标已裁 + 新增第 25 条（插件形态与商业条款待裁）+ 校勘第二十三轮；⑤ [`doc/index.md`](doc/index.md) 版本升 0.15。**商业条款（分成 / 伙伴分级）不进技术契约。**
 - v1.18（2026-09-24）：**插件语义纠正 + 核心平台 MIT + 移动端 Flutter + OWASP ASVS 进门禁**（作者原话：「我说的插件是支持用户自己开发业务功能模块，至于 IDE 插件对他们没那么重要，支持更好」「核心平台 MIT」「移动端考虑 flutter 支持」「OWASP ASVS 进入」）。落点：① **[`doc/runtime.md`](doc/runtime.md) 新增 §7「业务功能模块插件（插件的主形态）」**——§7.1 与既有概念对齐（**插件就是 `module`**，语言层零新增）、§7.2 包形态（`jar`/`dll`/npm + 清单 `mmda-plugin.json`）、§7.3 数据模型**硬约束**（只在自己的 module 内新建；不许改他人表结构；不许直接读写对方库表；装载期冲突检测**冲突即拒载**）、§7.4 装载与运行语义（启动 + 热装载、跨插件 = 跨 module、升级不覆盖 KEEP 区、内核版本不满足则拒载）、§7.5 二开链路、§7.6 主/次与「一个市场，两类插件」；同文 **§7 现状与缺口 → §8、§8 待裁 → §9**（待裁新增 8/9/10：隔离级别 / 插件与 module 粒度 / 数据模型扩展边界），全仓引用随之更新；② **[`doc/vision.md`](doc/vision.md) §5.1 许可表改为「全栈 MIT」**（原「规范 MIT / 内核 Apache-2.0」，并写明代价：**MIT 不带专利授权与商标条款**）、§2 共赢行、§5.4 安全与多端行、§8-1/2/3 标已裁 + 新增待裁 6/7（`MetaUi` 第二渲染方、移动端是否进首版）；③ **[`doc/quality.md`](doc/quality.md) 新增 §3.2「OWASP ASVS 的门禁口径」**（ASVS L1 自动化子集进 `mmda quality gate`、L2·L3 与人工渗透不进、Top 10 作报告项、**引用必须写版本号**）+ §1.6 补安全验收基准；④ [`doc/targets.md`](doc/targets.md) §8 新增第 6 条（移动端 Flutter 对 `capability ui` 的冲击）；⑤ 本文件 §6.3 新增第 18–21 条（另 §6.3-17 ⑥ 标注纠正）；⑥ `doc/errata.md` §五 第 20 条、§三 第 24 条更新 + 新增第 26 条、校勘第二十四轮；⑦ `doc/index.md` 版本升 0.16。
+- v1.19（2026-09-24）：**事件总线与集成编排（底座 ESB 能力）落成**（作者原话：「我一直想让 mmda 底座提供 ESB 的能力……最终效果是**只要配置就能基本覆盖 80% 的 API 接口集成**」「**Event → Message → 数据 Data**」「我更偏向 **Flink 的概念**，适合未来开发 IOT、实时数据流监控等」，并给出 Spring Integration 与 Flink 两张调研图）。落点：① **新增 [`doc/event_bus.md`](doc/event_bus.md)**（**概念模型 Event → Message → Data**（Message = Header + Payload）/ **三类集成**：数据·流程·接口 / **端点三类来源**：内部 module 边界零配置 + 外部可配 + 底座内置 / **DataFlow 三张图**：节点图·数据流图·数据映射图，落在 `*.mf.g` 拟增 `mf-flow`/`mf-map` view 种类 / **DataMapper** 四类算子 / **State·Event Time·Watermark·Window·Checkpoint** / **Outbox 事务性发件箱** / **Exactly-once 的现实口径**（状态 exactly-once + 汇端幂等）/ 多租户三档 / 监控指标与自有 UI / CLI·MCP / **与标准 ESB 的差异** / **7 条待裁**）；② **引擎裁决（本文最重）**：**借 Flink 的语义，不绑 Flink 的运行时**——两条硬事实（**Flink 只有 JVM/Python 面、无 .NET 实现**，与已裁的 B3「Java/C# 各自实现底座」冲突；**Flink 是独立集群运行时而我们的底座是随业务系统部署的库**）→ **引擎可替换**（`RuntimeProfile.engine`：`embedded` 默认 / `flink` 留口子 / 第三方 .NET 消息框架 ❌ 不作引擎），**语义清单逐条对齐 Flink 且可测**；③ **语言层零新增**（编排落图不落语法）；④ [`doc/events.md`](doc/events.md) 补**分工说明**（语言面 vs 运行时面）+ 三处指针；⑤ [`doc/targets.md`](doc/targets.md) §1 L2 补「事件端点与数据流编排」；[`doc/ide/graph-files.md`](doc/ide/graph-files.md) §4.5 补规划注记；[`doc/ide/specification.md`](doc/ide/specification.md) §4.8 域 6 补第 ⑥ 项（数据流编排 = ESB）；[`doc/quality.md`](doc/quality.md) §2.3 补**总线 / 集成采集面**；⑥ 本文件 §4 **P8 扩为「事件层与总线」** + **新增 P10**（Flink 可选后端）+ §5 目录 + §8 命令；§6.3 新增第 22 条；⑦ `doc/errata.md` §五 第 21 条 + §三 第 27 条 + 校勘第二十五轮；⑧ `doc/index.md` 版本升 0.17（阅读顺序插入 `event_bus.md` 为第 7 篇）。

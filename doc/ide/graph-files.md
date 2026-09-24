@@ -225,6 +225,8 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 | `mf-bpmn` | `.mf` | `.mf.g` | BPMN sheet |
 | — | `.mi` | — | 内置 UI 设计器，无 `.g` |
 
+> ⏳ **规划（待裁）**：数据流编排的三张图（**节点图 / 数据映射图**）拟扩展为 `mf-flow` / `mf-map` 两个 view 种类，落在既有 `*.mf.g` 上（**不新增扩展名**）——见 [`../event_bus.md`](../event_bus.md) §7.2 与 §15-3。
+
 ## 7. 插件式架构
 
 两层插件，职责分离：

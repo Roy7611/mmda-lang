@@ -1,7 +1,7 @@
 # m 语言规范（总览）
 
 > 本文是语言规范的**入口与设计原则**；语法细则在分篇文档里，不要在这里堆细则。
-> 分篇：[datatypes.md](datatypes.md)（类型）、[records.md](records.md)（对象）、[statements.md](statements.md)（表达式与行为）、[events.md](events.md)（事件）、[presentation.md](presentation.md)（呈现）、[meta-model.md](meta-model.md)（元模型）、[project.md](project.md)（项目格式）。
+> 分篇：[datatypes.md](datatypes.md)（类型）、[records.md](records.md)（对象）、[statements.md](statements.md)（表达式与行为）、[events.md](events.md)（事件）、[event_bus.md](event_bus.md)（事件总线与集成编排）、[presentation.md](presentation.md)（呈现）、[meta-model.md](meta-model.md)（元模型）、[project.md](project.md)（项目格式）。
 > 未裁决的口径见 [errata.md](errata.md)；工具与 IDE 见 [index.md](index.md#工具与-ide)。
 > **愿景与四层目标（为什么做 m 与 MMDA：商业 / 技术 / 用户 / 架构）见 [vision.md](vision.md)**；本文只管**语言本身**。
 
@@ -34,7 +34,7 @@
 ```
 L1 业务架构   Subsystem / Module / Feature        biz/*.ma
 L2 领域模型   Record / Field / Relation / Enum / View / STM   data/**
-L3 事件与集成 Event / Channel / Subscriber         flow/*.mf、事件声明
+L3 事件与集成 Event / Channel / Subscriber         flow/*.mf、事件声明（总线与编排见 [event_bus.md](event_bus.md)）
 ```
 
 ## 4. 最小全貌示例

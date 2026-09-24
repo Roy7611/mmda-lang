@@ -9,27 +9,28 @@
 
 | # | 文档 | 内容 |
 | --- | --- | --- |
-| 1 | [vision.md](vision.md) | **愿景与目标**（为什么做 m 与 MMDA）：商业 / 技术 / 用户 / 架构四层目标与逐条机制、**open core 边界与许可**、**国产化三级承诺**、部署方式口径、业务可测指标、5 条待裁 |
+| 1 | [vision.md](vision.md) | **愿景与目标**（为什么做 m 与 MMDA）：商业 / 技术 / 用户 / 架构四层目标与逐条机制、**open core 边界与许可（全栈 MIT）**、**国产化三级承诺**、部署方式口径、业务可测指标、待裁 |
 | 2 | [readme.md](readme.md) | 语言规范总览：定位、设计原则、吸收哪些语言的什么、导读 |
 | 3 | [datatypes.md](datatypes.md) | 数据类型全集与跨语言/跨数据库映射 |
 | 4 | [records.md](records.md) | 对象：字段、限制关键字、关系注解、对象级约束、Enum、View |
 | 5 | [statements.md](statements.md) | 语句与表达式：声明、切片、模式匹配、约束表达式、行为与状态机 |
-| 6 | [events.md](events.md) | 事件驱动架构 + 事件声明语法（event / channel / subscribe） |
-| 7 | [presentation.md](presentation.md) | 呈现层：UiField、分组、i18n、五视图 |
-| 8 | [meta-model.md](meta-model.md) | 元模型元素（L1/L2/L3）与到旧实现结构的映射 |
-| 9 | [project.md](project.md) | 项目格式：目录、扩展名、清单、变更日志、归档、多租户 |
-| 10 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
-| 11 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
-| 12 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
-| 13 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**优秀需求四标准各自对应的机械信号**、SERU 四要素、需求管理四步、SRS 形态与追溯链 |
-| 14 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
-| 15 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 |
-| 16 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、AI 时代 review 分层、IDE 全生命周期能力 |
-| 17 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
-| 18 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合 |
-| 19 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
-| 20 | [glossary.md](glossary.md) | 术语表 |
-| 21 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
+| 6 | [events.md](events.md) | 事件驱动架构 + 事件声明语法（event / channel / subscribe）——**语言面真源** |
+| 7 | [event_bus.md](event_bus.md) | **事件总线与集成编排（底座 ESB 能力）**——**运行时与集成面真源**：概念模型 Event → Message → Data、三类集成、端点、DataFlow 三张图、DataMapper、时间与状态语义、Outbox、多租户、监控 UI、**引擎选型（语义对齐 Flink、运行时可替换）** |
+| 8 | [presentation.md](presentation.md) | 呈现层：UiField、分组、i18n、五视图 |
+| 9 | [meta-model.md](meta-model.md) | 元模型元素（L1/L2/L3）与到旧实现结构的映射 |
+| 10 | [project.md](project.md) | 项目格式：目录、扩展名、清单、变更日志、归档、多租户 |
+| 11 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
+| 12 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
+| 13 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
+| 14 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**优秀需求四标准各自对应的机械信号**、SERU 四要素、需求管理四步、SRS 形态与追溯链 |
+| 15 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
+| 16 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 |
+| 17 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、**OWASP ASVS 门禁口径**、IDE 全生命周期能力 |
+| 18 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
+| 19 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合、**业务功能模块插件（§7）** |
+| 20 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
+| 21 | [glossary.md](glossary.md) | 术语表 |
+| 22 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
 
 ## 工具与 IDE
 
@@ -41,7 +42,7 @@
 | [ide/plugins.md](ide/plugins.md) | 插件 API、扩展点、**插件市场**与**设计阶段原生支持**（§8–§12） |
 | [ide/diagrams.md](ide/diagrams.md) | E-R / STM / DFD / 模块树与元模型映射 |
 | [ide/diagram-adapters.md](ide/diagram-adapters.md) | 图形引擎适配器接口 |
-| [ide/graph-files.md](ide/graph-files.md) | 图形投影文件 `*.g` 的格式 |
+| [ide/graph-files.md](ide/graph-files.md) | 图形投影文件 `*.g` 的格式（含 `.mf.g` DFD/BPMN 多 sheet） |
 | [ide/i18n.md](ide/i18n.md) | Shell 与模型双层国际化 |
 | [design-notes.md](design-notes.md) | 设计笔记（原 `mmda-workflow.md`，含业务/数据/流程/交互各层 M语言 示例） |
 
@@ -68,13 +69,13 @@
 
 | 位置 | 内容 |
 | --- | --- |
-| [`..\PLAN.md`](..\PLAN.md) | **落地计划**（决策台账、阶段 P0–P8、验收、回滚） |
+| [`..\PLAN.md`](..\PLAN.md) | **落地计划**（决策台账、阶段 P0–P10、验收、回滚） |
 | `E:\Dev\mmda-architect` | 上一轮尝试：Rust 内核 1699 行、IDE 壳（Tauri + Vue）、381 文件真实语料、Python 反向工具（**无版本控制**） |
-| `D:\2026\java` | **后端 A（Java）**：元数据 18 张表、8 个 DDL 方言、`mmda-factory` 生成器 11713 行；**无事件总线** |
+| `D:\2026\java` | **后端 A（Java）**：元数据 18 张表、8 个 DDL 方言、`mmda-factory` 生成器 11713 行；**无事件总线**（`mmda-core-messaging` 全是通知器） |
 | `D:\2026\cs\MMDA` | **后端 B（C#）**：762 `.cs` / 70,831 行，模块与 `Meta*` 类名和 Java 同构，**有** `IEventBus`/RedisEventHub/SignalR、`Mmda.Ui.*`（**遗留，不纳入 UI 契约**）、`Mmda.Iot.*`；SVN 工作副本 + `Mmda.Core/` 嵌套 git |
 | `D:\2026\ts\mmda` | **前端运行时（TS）**：`@mmda/core`（`metamodel.ts`、`metaui/*`、`logic/validators/*`）+ `vui*`(Vue) / `rui*`(React) 皮肤，共 20 个包 |
 
 ## 规范版本
 
-- m 语言规范：草案 **0.16**（2026-09-24：合并 → 补入 C# 后端实测与目标端契约 → 三条裁决落地 + P0.5 契约盘点 → 架构评估 → UI 契约收紧 → 质量定量层 → 需求工程与设计器建模域 → 宿主形态 / 组织架构是数据 / BI 元数据方向三裁 → Role 进语言（与 Module 同级） → 运行架构与拦截点上升到语言 → API 契约与 API 管理集成 → API 边界 = module 边界（插件不侵入语言） → OAS 3.1.0 原生支持 + AI 造数 → **API 契约四条落定（REST 语义 / 精度优先序列化 / 官方 Schema 门禁 / AI 造数固化）** → **仓重命名 `D:\2026\c` → `D:\2026\rust` 并接入 git（无规范内容变更，仅仓路径与台账）** → **愿景与四层目标落成 [`vision.md`](vision.md)（open core 边界 / 国产化全三级 / 部署方式只作部署方式 / 业务可测指标）** → **L2 国产化目标矩阵落定（x86_64 + aarch64 / 麒麟·统信验收 + openEuler 基线 / 毕昇 JDK 21 / 设计器不进国产 OS / 离线交付）** → **共赢落成插件市场 + 设计阶段原生支持插件式开发（[`ide/plugins.md`](ide/plugins.md) §8–§12）** → **插件主形态纠正为「业务功能模块插件」（[`runtime.md`](runtime.md) §7）+ 核心平台统一 MIT + 移动端 Flutter + OWASP ASVS 进硬门禁（[`quality.md`](quality.md) §3.2）**）
+- m 语言规范：草案 **0.17**（2026-09-24：合并 → 补入 C# 后端实测与目标端契约 → 三条裁决落地 + P0.5 契约盘点 → 架构评估 → UI 契约收紧 → 质量定量层 → 需求工程与设计器建模域 → 宿主形态 / 组织架构是数据 / BI 元数据方向三裁 → Role 进语言（与 Module 同级） → 运行架构与拦截点上升到语言 → API 契约与 API 管理集成 → API 边界 = module 边界（插件不侵入语言） → OAS 3.1.0 原生支持 + AI 造数 → **API 契约四条落定（REST 语义 / 精度优先序列化 / 官方 Schema 门禁 / AI 造数固化）** → **仓重命名 `D:\2026\c` → `D:\2026\rust` 并接入 git（无规范内容变更，仅仓路径与台账）** → **愿景与四层目标落成 [`vision.md`](vision.md)（open core 边界 / 国产化全三级 / 部署方式只作部署方式 / 业务可测指标）** → **L2 国产化目标矩阵落定（x86_64 + aarch64 / 麒麟·统信验收 + openEuler 基线 / 毕昇 JDK 21 / 设计器不进国产 OS / 离线交付）** → **共赢落成插件市场 + 设计阶段原生支持插件式开发（[`ide/plugins.md`](ide/plugins.md) §8–§12）** → **插件主形态纠正为「业务功能模块插件」（[`runtime.md`](runtime.md) §7）+ 核心平台统一 MIT + 移动端 Flutter + OWASP ASVS 进硬门禁（[`quality.md`](quality.md) §3.2）** → **事件总线与集成编排落成（[`event_bus.md`](event_bus.md)：底座 ESB、概念模型 Event → Message → Data、DataFlow 三张图、引擎语义对齐 Flink 而运行时可替换）**）
 - 上一轮规范：草案 0.1（2026-06，`archive/2026-06/`）
