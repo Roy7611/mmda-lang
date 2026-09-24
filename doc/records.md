@@ -45,7 +45,15 @@ quantity decimal(18,3) positive,
 | `hidden` | UI 默认隐藏；外键为 `hidden` 时其 `@One` 导航默认 **lazy** |
 | `writeonly` | 仅写（少见） |
 
-> ⚠️ **待裁决**：这些是**自定义命名约束**（未定义就静默通过 = 灰区，见 `errata.md` 二-1）；它们与 `#ge(0)`、`#(d{11})` 形式的**约束表达式**是两套机制还是同义，见 `errata.md` 二-9。
+> ✔ **已裁（2026-09-25）：约束按层级分两种形态**（作者原话：「**你还要区分字段级和表级约束**」「**字段级约束，直接在字段后面跟着，`indexed`、`unique` 什么的，简洁**」「**如果是两个字段建立一个索引，那就得单独定义了**」）：
+>
+> | 层级 | 形态 | 例子 |
+> | --- | --- | --- |
+> | **字段级** | **跟在字段行尾的裸关键字**（简洁、不占行） | `mobile char(11) indexed,`、`orderDate date default now indexed future,`、`addressId uint64 identity generated readonly,` |
+> | **对象级 / 组合** | **写在 record 体末尾、单独具名声明**——**两个及以上字段建一个索引必须走这条** | `@Index IDX_changelog_key(refName,refKey)`、`@Index IDX_flowtrails(objName,objId,actTime)`、`@ForeignKey FK_…(…) ref …` |
+>
+> **实测（语料 378 个语言文件）**：行尾字段级约束 **`readonly` 1040 处 / `indexed` 491 处**；具名声明 **342 处**，其中 **2 列及以上 45 处**（2 列 32、3 列 12、4 列 1 —— 最长 `IDX_tool_asequip(asEquip,maintenancePlanId,planToMaintain,lastMaintained)`）。
+> **仍未定**：**两套名字表都要封闭**（行尾关键字表 + 注解名表；未知名 / 拼错 → `mmda check` 报错），扩展名的白名单机制待定（Profile 还是 `customProperties`）；另 §二-9 的「命名约束 vs 约束表达式 `#ge(0)`」仍待裁。
 
 ### 1.3 集合字段（`@Many`）
 
@@ -102,13 +110,21 @@ items OrderItem[+] readonly,
 
 `[min,max]`、`(min,max]`、`[..max]`、`[min..]`、`(0..]`；`[`/`(` 与 `]`/`)` 表示开闭；省略端点 = 该数据类型的默认最小/最大值。
 
-多租户：完整 ID 高 16 位为 tenantId、低 48 位为 realId，`minID`/`maxID` 约束 realId 范围。
+多租户：**完整 ID（`BIGID`）= 高 28 位 tenantId + 低 36 位 realId**（✔ 2026-09-25 按作者给的常量与底座源码改正 —— **原写「高 16 位 / 低 48 位」是旧布局残留，已废**）：
+
+```
+MAX_TENANT_ID = 0x7FF_FFFF   // 高 28 位是租户 id（bit 63 恒 0）
+MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
+parseTenantID(id) = id >>> 36
+```
+
+`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）；`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
 
 ---
 
 ## 3. 对象级约束
 
-写在 record 体**末尾**（字段定义之后）：
+写在 record 体**末尾**（字段定义之后）—— **字段级约束不在这里重复；多字段建立的索引 / 唯一的键 / 外键 / 检查必须在此单独具名声明**（✔ 2026-09-25）：
 
 ```sql
 @Id PK_orderitem(orderId, itemId),

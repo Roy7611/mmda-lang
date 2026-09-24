@@ -94,7 +94,16 @@
 
 语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1，默认最大容量 **2000**（可由 Profile 调整）；可指定字符编码 `charset`。
 
-> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@PartitionID` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](design-notes.md) §8.3）同属**多租户主键**机制。**⏳ 仍待补**：**位宽分配**（tenantId 占多少位、序列位与机器位怎么分）、**生成方**（内核 or 数据库）、**类型名规范写法**（`BIGID` / `bigid`）—— 见 [`errata.md`](errata.md) §二-6。
+> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@PartitionID` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
+>
+> ```
+> MAX_TENANT_ID = 0x7FF_FFFF    // 高 28 位是租户 id（上限 2^27−1 → bit 63 恒 0、ID 恒为正 long）
+> MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id（上限 2^36−1 ≈ 687 亿）
+> parseTenantID(partitionId) = partitionId >>> 36
+> buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
+> ```
+>
+> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源**：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](design-notes.md) §7.2。**⏳ 仍待你定**：① **类型名规范写法**（`BIGID` / `bigid`）；② **`MAX_TENANT_ID = 0x7FF_FFFF` 是 27 位值而注释写「高 28 位」** —— 若是有意保留 bit 63（ID 恒为正）就照此定死，若是笔误（应为 `0xFFFFFFF`）说一声；③ 旧 javadoc 里的「48bits 实际的 id」= 16+48 旧布局残留，**以常量为准**—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 

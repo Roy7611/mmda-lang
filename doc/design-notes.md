@@ -187,7 +187,7 @@ Record 体末尾可声明**对象级**主键、索引与检查约束（会生成
 | 注解 | 含义 |
 |------|------|
 | `@Id (col1,col2,…)` | 组合主键；未命名时默认 `ID_{RecordName}`。单字段主键用字段 `identity` 即可 |
-| `@Index name(cols…)` | 命名索引（落库）；唯一索引加后缀 `unique` |
+| `@Index name(cols…)` | 命名索引（落库）；唯一索引加后缀 `unique`；**两个及以上字段建立的索引必须在此单独具名声明**（不能挤在字段行尾）——语料 342 处具名声明，其中 2 列及以上 45 处（2 列 32 / 3 列 12 / 4 列 1） |
 | `@ForeignKey FK_…(localCols) ref Entity(refCols)` | 外键；多列关联时在对象级声明，可选 `on update cascade` / `on delete set null` 等 |
 | `@Check CHK_name(expr)` | 检查约束；MMDA 布尔表达式 |
 
