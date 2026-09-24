@@ -48,7 +48,7 @@ Field ──(呈现层)── UiField
 | `nameCol` | string? | 显示名称字段 |
 | `partitionKey` | string? | 分区主键字段（`@PartitionID` 所在列） |
 | `partitioned` | bool | **分区标记**：有 `@PartitionID` 即为 `true`；`BIGID` = `uint64 identity partitioned`；物理表分区 + 按租户 / 段隔离查询（`MetaObject.partitioned`） |
-| `minID` / `maxID` | int? | **分段**：该表在**标识共享组**里领的段，取值为 **realId（真实 id，去掉租户标识后的那部分）**下限/上限；空 = 类型默认值 |
+| `minID` / `maxID` | int? | **分段**：该表在**标识共享组**里领的段，取值为 **realId（真实 id，去掉租户标识后的那部分）**下限/上限；**由架构师 / 设计师分配**（工具不自动分配，见 [`workflows.md`](workflows.md) §1）；空 = 类型默认值 |
 | `parentIdCol` | string? | 树形父键 |
 | `superName` | string? | 继承基类 Record |
 | `extendType` | enum | `NONE` \| `EXTENDS` \| `INHERITS` |

@@ -120,6 +120,8 @@
 > - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §5）；
 > - **`minId` / `maxId` 是「真实 id」（realId）的范围** —— **去掉租户标识之后的那部分**（比较前先 `getRealID(id) = id & MAX_REAL_ID`，`Tenancy.java:95-97`）。
 >
+> **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 [`workflows.md`](workflows.md) §1。
+>
 > 因此语料那两行（`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；**⏳ 仍待你定**：只剩**大小写敏感面**（类型名不敏感 / 标识符敏感，助手建议类型名不敏感）。—— 见 [`errata.md`](errata.md) §二-6。
 
 ---

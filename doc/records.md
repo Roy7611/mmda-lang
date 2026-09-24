@@ -145,7 +145,9 @@ parseTenantID(id) = id >>> 36
 - **作者文档里的六个标识共享组**：① **收付款方 Party**（贸易伙伴 / 联系人 / 分支机构 / 职员）+ **组织单元 Organization Unit**（Department / Partner）+ **人 Person**（Employee / Driver / Worker）；② **库存地点 Inventory Location**（Warehouse / Production Loc / Project）+ **运输地点 Transport Location**（仓库 / 工厂 / 交通站点 / 项目现场）；③ **工装器具**（物流搬运设备 Handling Equipment / 生产设备 Equipment / 工具 Tool / 运输车辆 Transport Vehicle）；④ **物料 Sku**（MaterialINSku = 物料 + Sku）；⑤ **可搬运物 Handlable**（穿梭车 / 搬运单元 Handling Unit 托盘·料箱 / 货柜 LicensePlate）；⑥ **生产计划任务 ProductionScheduleTask**（生产订单 ProductionOrder / 生产任务 ProductionTask）。
 - **分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@PartitionID [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`。**类型侧**：`BIGID` = **`uint64 identity partitioned`**（见 [`datatypes.md`](datatypes.md) §5）。
 
-**⏳ 待裁四条**：① 段由**人工填 `@PartitionID [min,max]`**（现状）还是**设计器自动分配**？② 是否需要**显式声明「标识共享组」**（把表归组，工具据此校验段不重叠并生成 UNION 视图）？③ **段重叠**是否进 `mmda check` 硬门禁？④ **UNION 视图在语言里怎么写**（`view` 的形态）。
+**✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](workflows.md) §1）。
+
+**⏳ 待裁三条**：② 是否需要**显式声明「标识共享组」**（把表归组，工具据此校验段不重叠并生成 UNION 视图）？③ **段重叠**是否进 `mmda check` 硬门禁？④ **UNION 视图在语言里怎么写**（`view` 的形态）。
 
 ---
 
