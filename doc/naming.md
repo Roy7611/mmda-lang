@@ -12,14 +12,14 @@
 
 ## 0. 一句话与边界
 
-**一句话**：**跨端契约名统一（一份真源、三端逐字同形）；语言本地习惯尊重（方法、常量、包、命名空间、文件名、SQL 标识符）。**
+**一句话**：**跨端契约名统一（一份真源、三端逐字同形，含常量与枚举成员）；语言本地习惯尊重（方法、包、命名空间、文件名、SQL 标识符）。**
 
 **两条判据（判定任何一个名字时先问这个）**：
 
 | 判据 | 含义 | 后果 |
 | --- | --- | --- |
 | ① **进契约的名字三端必须逐字一致** | 类型名 / 字段与属性名 / 枚举成员 / 事件名 / 消息头 / JSON 字段 / 指标名 / i18n key | 不一致 = **契约破**（契约测试必须抓到） |
-| ② **不进契约的名字随本地习惯** | 方法名 / 局部变量 / 常量 / 包与命名空间 / 文件名 / SQL 标识符 | 各端生成器按本地惯例产出，**不算差异** |
+| ② **不进契约的名字随本地习惯** | 方法名 / 局部变量 / 包与命名空间 / 文件名 / SQL 标识符（**常量与枚举成员是例外：§1 三端统一 `UPPER_SNAKE`**） | 各端生成器按本地惯例产出，**不算差异** |
 
 > 这条边界就是「尊重 java / c# 的习惯」的**可执行版本**：不是「看着像就行」，而是**契约处零差异、实现处随习惯**。
 
@@ -34,7 +34,8 @@
 | **多种实现** | **限定词**（别用 `Impl` 或数字） | `AnsiSqlDialect` · `MySqlDialect` · `PostgreSqlDialect` · `DmDialect` · `KingbaseDialect` | 8 个 SQL 方言同构；**禁止** `AnsiSqlDialectImpl` |
 | **类 / 对象 / 枚举 / 视图 / 事件** | **PascalCase** | `Material` · `OrderStatus` · `OrderDetail` · `GoodsArrived` | 对应 `Record` / `Enum` / `View` / `event` |
 | **字段 / 属性** | **camelCase（小写开头）** | `materialCode` · `createdAt` · `isDeleted` | **含 C# 属性**（代价见 §3.2） |
-| **枚举成员** | **PascalCase** | `OrderStatus.Draft` · `OrderStatus.Released` | 成员名进载荷 → 属**契约名**（待裁 1） |
+| **枚举成员** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `OrderStatus.DRAFT` · `OrderStatus.RELEASED` · `YesNo.YES` | 成员名进载荷 → 属**契约名**，**三端一致**（✔ 2026-09-24 作者补充） |
+| **常量** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `MAX_RETRY_COUNT` · `DEFAULT_PAGE_SIZE` | **三端一致**（不随各端习惯，✔ 2026-09-24 作者补充） |
 | **生成的 Handler 接口** | **`I` + 事件名 + `Handler`** | `event GoodsArrived` → 接口 `IGoodsArrivedHandler`，KEEP 区实现 `GoodsArrivedHandler` | [`events.md`](events.md) §3 的接口名由此统一（原记「由 Profile 模板决定」→ 模板可定缀合，**不得违反本文 §1**） |
 
 **为什么禁止 `Impl`**（写清理由，别只留禁令）：
@@ -54,7 +55,8 @@
 | --- | --- | --- | --- |
 | 类型名（Record / Enum / View） | PascalCase，**与 m 语言声明同名** | 内核 IR → 三端生成器 | 标识符对账（§5） |
 | 字段 / 属性名 | camelCase，与声明同名 | 同上 | 同上 |
-| 枚举成员 | PascalCase（按名序列化时） | 同上 | 同上 |
+| 枚举成员 | **`UPPER_SNAKE`**（按名序列化时，载荷里就是 `DRAFT` 这样的字符串） | 同上 | 同上 |
+| 常量 | **`UPPER_SNAKE`**（三端一致） | 同上 | 同上 |
 | **事件名** | PascalCase，与 `event` 声明同名 | [`events.md`](events.md) | 三端事件名对账 |
 | **消息头** | camelCase | [`event_bus.md`](event_bus.md) §1（`eventId` · `occurredAt` · `tenant` · `traceId`） | 头字段对账 |
 | **JSON 字段（载荷）** | **= 字段 / 属性名原样（camelCase），不做二次转换** | 序列化契约（[`api.md`](api.md)） | 契约测试 |
@@ -72,7 +74,7 @@
 | 对象 | Java | C# | TS | 备注 |
 | --- | --- | --- | --- | --- |
 | 方法名 | `camelCase` | `PascalCase` | `camelCase` | 各端惯例（作者原话「其他尊重习惯」） |
-| 常量 | `UPPER_SNAKE` | `PascalCase` | `UPPER_SNAKE` | 常量不进契约 |
+| 常量 | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **三端统一，不随各端习惯**（✔ 2026-09-24 作者补充） |
 | 包 / 命名空间 | `com.x.y`（小写点分） | `X.Y`（Pascal 点分） | 模块路径 | 不进契约 |
 | 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](project.md)（`*.mm` 一对象一文件） |
 | 局部变量 / 参数 | `camelCase` | `camelCase` | `camelCase` | — |
@@ -95,7 +97,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 ## 4. 生成器与 Profile 的责任（可判定）
 
 - **三端生成器（[`PLAN.md`](..\PLAN.md) P6）必须按本文产出标识符**；§1 / §2 的契约名**不许有端开关**（否则契约会漂）；
-- **Profile 能改的只有 §3 清单**（方法名、常量、包、文件名这类本地风格）+ 模板的**缀合方式**；**不能改 `I` 前缀与「禁 `Impl`」**；
+- **Profile 能改的只有 §3 清单**（方法名、包、文件名这类本地风格）+ 模板的**缀合方式**；**不能改 `I` 前缀与「禁 `Impl`」，也不能改常量与枚举成员的 `UPPER_SNAKE`（属 §1）**；
 - [`statements.md`](statements.md) 原记「接口名由 Profile 模板决定」→ **补充**：模板可定缀合，**不得违反 [`naming.md`](naming.md) §1**；
 - 一致性测试（**P9**）**增一项：标识符一致性**——三端产物的类型名 / 属性名 / 事件名 / 消息头名**逐字对账**，进 L3 套件（与 [`targets.md`](targets.md) §5 同口径）。
 
@@ -116,7 +118,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 
 | # | 待裁 | 选项 | 建议 |
 | --- | --- | --- | --- |
-| 1 | **枚举成员风格**（三端是否统一） | A PascalCase ／ B `UPPER_SNAKE` ／ C 随各端 | **1A**（成员名进载荷 → 属契约名，必须统一；Java 里 Pascal 常量完全合法） |
+| 1 | ~~**枚举成员风格**（三端是否统一）~~ → **✔ 已裁（2026-09-24 作者补充）：`UPPER_SNAKE`，单词间 `_` 隔开，三端一致** | ~~A PascalCase~~ ／ **B `UPPER_SNAKE`** ✔ ／ ~~C 随各端~~ | **取 B**（与「常量」同一条规则；载荷里按名序列化就是 `DRAFT` 这样的字符串） |
 | 2 | **命名违规的检查强度** | A warning（不阻断）／ B error（`mmda check` 失败）／ C 仅 IDE 提示 | **2A**（起步 warning，P9 后再评估升级——与「新增门禁要谨慎」的一贯口径一致） |
 | 3 | **C# 属性是否放宽为 PascalCase** | A 不放宽（保持 camel，跨端同名）／ B 放宽 + 序列化别名 ／ C 按项目 Profile 开关 | **3A**（§3.2 的代价分析：收益是跨端同名，代价只是「不像手写 C#」） |
 | 4 | 方法名是否也统一 | A 随各端（Java camel / C# Pascal）／ B 全 camel ／ C 全 Pascal | **4A**（作者原话「其他尊重习惯」） |
