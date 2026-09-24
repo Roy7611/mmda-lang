@@ -122,7 +122,7 @@
 >
 > **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 [`workflows.md`](workflows.md) §1。
 >
-> 因此语料那两行（`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；**⏳ 仍待你定**：只剩**大小写敏感面**（类型名不敏感 / 标识符敏感，助手建议类型名不敏感）。—— 见 [`errata.md`](errata.md) §二-6。
+> 因此语料那两行（`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；✔ **大小写敏感面同日已裁（2026-09-25，作者：「类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似」）**：**类型名与约束名一律大小写不敏感**（`BIGID` = `bigid`、`indexed` = `INDEXED`），**标识符（Record / 字段 / 枚举成员）仍大小写敏感**（[`naming.md`](naming.md) §1）—— **`errata.md` §二-6 至此清零**。
 
 ---
 
