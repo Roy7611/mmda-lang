@@ -1,22 +1,6 @@
 # 项目格式
 
 > 改编自上一轮 `architect/project-format.md`（formatVersion 2.0，原文留档 `archive/2026-06/architect/project-format.md`）。
-> ✔ **扩展名收敛（2026-09-25 作者）**：**「如果（文件）存的是 m 语言，就用 `.m`」** —— **m 语言文本统一一个后缀 `.m`**，不再按 partType 分片；**类型判据回到内容本身**（解析器早就是「按内容首关键字判 partType」，分片后缀本来就是多余的）。
->
-> | 文件 | 收敛后 | 判据 |
-> | --- | --- | --- |
-> | **m 语言源文件**（record / view / enum / stm / role / converter / 数据流 / 跨模块流程 / UI …） | **`.m`** | **内容首关键字**判 partType；目录（`data/models`、`data/enums`、`flow/roles`…）继续承载分类 |
-> | 模块树 | `.ma` | **JSON**（设计器产出，不是 m 语言文本） |
-> | 项目清单 | `{projectCode}.mmda` | JSON（非 M 语言模型） |
-> | 归档包 | `{projectCode}.mmdax` | ZIP |
-> | 图形投影 | `*.g` | 由 `mmda` 生成（如 `Order.m.g`） |
->
-> **实测迁移量（语料 `E:\Dev\mmda-architect\examples\mmda-mes`，378 个语言文件）**：`.mm` **215** / `.me` **113** / `.ms` **41** / `.mi` **1** → **共 370 个改成 `.m`**；`.ma` **2** 个是 JSON（不动）、`*.g` 2、`.mmda` 1。
->
-> **⏳ 待你拍四点**：① **测试文件**（现 `.mt`）算不算 m 语言 → 也改 `.m`（靠目录 `tests/` 区分），还是保留 `.mt`？② **`.ma`（模块树 JSON）** 要不要换个不易混的名字（与 `.m` 只差一个字母）；③ **投影** 统一为 `X.m.g` 还是保持 `X.mm.g` 之类的旧写法（迁移后旧写法不存在）；④ **旧项目迁移**：把文件改名并进 [`naming.md`](naming.md) §5 / `records.md` §2.3 那条 `mmda migrate`（`--rename-ext`）。
->
-> ⚠️ **本节的下列分片后缀表是收敛前的历史形态**，保留作为迁移与旧语料的对照（`errata.md` 冲突 3 的「语言分片保持扩展名族」已被本条取代）。
->
 > **已裁决（2026-09-24，见 [`errata.md`](errata.md) 冲突 3）**：`.mmda` 只表示项目清单，语言分片保持扩展名族；**解析器按内容首关键字判定 partType**（`record` / `enum` / `stm` / `ui` / `view`），扩展名仅作约定、图标与文件关联提示。本文按此描述。
 
 ---
