@@ -68,12 +68,32 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 级 | 范围 | 现状与缺口 | 验收口径 |
 | --- | --- | --- | --- |
 | **L1 数据层** | 国产数据库：达梦 / 人大金仓 / OceanBase / openGauss | 🟡 **Java 侧已有底座**：`mmda-core-sql/.../sql/dialects/` 8 个方言类含 `DmDialect`（达梦）与 `KingbaseDialect`（人大金仓，继承 PG）；`MetaDataType.java:209/213/220/224` 有 `kingbaseType`/`kingbaseName` 与达梦原生类型字段。**C# / TS 侧未核**；m 语言的方言表待建（[`PLAN.md`](..\PLAN.md) §3.6） | 同一份模型在三端生成的 DDL 规范化文本一致（[`targets.md`](targets.md) §5） |
-| **L2 运行层** | 国产 OS（麒麟 / 统信）+ 国产 CPU（鲲鹏 / 飞腾 / 龙芯 LoongArch）+ JDK 国产发行版 | ❌ **此前零口径**（全仓检索「国产 / 信创 / 麒麟 / 鲲鹏 / LoongArch」= 0 命中）：需定 **Rust 交叉编译目标矩阵**、容器基础镜像、JDK 发行版清单 | 在目标 OS + CPU 上跑通内核与三端一致性套件；目标矩阵清单见 §8-4 |
+| **L2 运行层** | 国产 OS + 国产 CPU + JDK 国产发行版 | ✔ **已裁（2026-09-24，取 1A 2A 3A 4A 5A）**：目标矩阵见 §5.2.1——双架构、双 OS 基线、毕昇优先、**设计器不进国产 OS**、离线交付 | 在目标 OS + CPU 上跑通内核与三端一致性套件 |
 | **L3 界面层** | 至少一套**无商业控件**的皮肤 | 🟡 现皮肤 `vui-syncfusion` 依赖 30 个 `@syncfusion/ej2-*@34.2.2`（`packages/vui-syncfusion/package.json:84-109`，海外商业授权） | 自研国产皮肤在无商业控件下跑通主要场景（列表 / 表单 / 树 / 图表） |
 
 **作者口径（原话，2026-09-24）**：「国产化，我会实现一个，例如 naive + 别的表格插件，syncfusion 只是一个选项」。
 
 → 落法：UI kit 是前端自己的事（[`presentation.md`](presentation.md) §5.1），**换皮肤不构成第二套 UI 契约**（契约边界只到 `MetaUi`）；Syncfusion 从「唯一皮肤」降为**可选皮肤之一**，与 `vui` / `rui` / `vui-agnaive` 等并列。
+
+### 5.2.1 L2 目标矩阵（✔ 已裁 2026-09-24，作者取 `1A 2A 3A 4A 5A`）
+
+**五条正交决策与选择**：
+
+| # | 决策 | 采纳 | 内容 | 依据（实测/出处） |
+| --- | --- | --- | --- | --- |
+| 1 | CPU 承诺面 | **A：x86_64 + aarch64 双架构** | 海光 / 兆芯（x86_64）+ 鲲鹏 / 飞腾（aarch64）；**龙芯只承诺「内核交叉编译通过 + 给构建说明」，不进验收矩阵**；申威不承诺 | Rust `x86_64-unknown-linux-gnu` / `aarch64-unknown-linux-gnu` 都是官方目标；`loongarch64-unknown-linux-gnu` 虽已是 **Tier 2 with host tools**（要求 kernel ≥5.19、glibc ≥2.36、LSX），但 **`loongson/jdk21u` 是龙芯自维护分支**、**.NET 官方 supported-os 表不含 LoongArch**（RID 目录里有 `linux-loongarch64`，属社区级）——C# 端在龙芯上无官方支持 |
+| 2 | OS 清单 | **A** | **验收**：银河麒麟 V10 SP3 服务器版（x86_64 + aarch64）、统信 UOS 服务器版 V20；**CI 基线**：openEuler LTS（开源免费，且是麒麟 / 统信的上游根社区） | 客户现场以麒麟 / 统信为主；openEuler 作基线免授权费 |
+| 3 | JDK 发行版 | **A** | **毕昇 JDK 21（AArch64 / x86_64）+ 上游 OpenJDK 21 兜底**；腾讯 Kona / 阿里 Dragonwell / 龙芯 JDK 只在文档里列「已知可替换」，**不进验收矩阵** | 毕昇 JDK 21 官方只出 Linux/AArch64 与 Linux/x86_64 两个平台（openEuler 镜像仓 README 原话） |
+| 4 | 设计器是否承诺国产 OS | **A：不承诺** | **L2 只承诺「运行时 + 内核 CLI」跑在国产 OS/CPU**；设计器（Tauri 壳）仍在 Windows / macOS / Linux-x86 上运行；麒麟 / 统信桌面版的 WebKitGTK / 字体 / 输入法 / deb·rpm 打包**不进首版** | 设计器是开发机工具而非交付物；见 [`ide/specification.md`](ide/specification.md) §4.9 |
+| 5 | 交付与构建形态 | **A** | **离线交付包**：生成物 + 交叉编译产物（`x86_64` / `aarch64` 各一套）+ 国产 OS 基础镜像的 `Dockerfile` + `docker save` 的 tar + 校验和清单；配 **`mmda doctor`** 自检（内核版本 / glibc / 架构 / JDK） | 信创现场多为内网隔离，不能指望在线拉镜像与 yum 源 |
+
+**验收口径（不说口头承诺）**：
+
+1. 在目标 OS + CPU 上跑通 **`mmda test --target java,csharp,ts`** 三端一致性套件，且同一份模型生成的 DDL 规范化文本一致（[`targets.md`](targets.md) §5）；
+2. **架构支持等级写进 capability 声明**——例如将来若把龙芯纳入，C# 端必须显式声明 `community` 等级，**不许用「支持国产化」一句话带过**；
+3. 构建与验收腿：CI 跑 **x86_64 + aarch64** 两套；`mmda doctor` 在两种架构上都给出绿色结论。
+
+**阶段落点**：交叉编译与容器基座随 **P5**（DDL 与生成物）、国产 OS/CPU 的验收腿随 **P9**（一致性套件与验收）——见 [`..\PLAN.md`](..\PLAN.md) §4。
 
 ### 5.3 部署方式（微服务 · 容器化 · 热插拔 · 高可用）——语言层零新增（✔ 2026-09-24）
 
@@ -140,7 +160,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 1 | 规范文本许可最终选型：MIT（现状）还是 CC-BY-4.0（要求署名） | 保持 **MIT**（已入库、宽松利于传播）；若将来要品牌署名再换 |
 | 2 | **移动端（多端）** 是否进首版承诺；若进，宿主形态是独立壳的移动版 / 响应式 Web / 小程序 | 首版**不做**移动端，先 Web + 桌面（Tauri）；把「响应式 `MetaUi` 渲染」作为 L3 皮肤的验收项之一 |
 | 3 | 安全目标是否引入 **OWASP ASVS / Top 10** 作为附加硬门禁 | 引入 **ASVS L1 的自动化子集**（B 级可判定）作为附加门禁；Top 10 作报告项 |
-| 4 | L2 国产化的**目标矩阵清单**（哪些 OS 版本 / CPU 架构 / JDK 发行版进首版验收） | 首版：麒麟 V10 + 统信 UOS（x86_64 与 aarch64）、LoongArch 只保证内核交叉编译通过；JDK 用 OpenJDK 国产发行版之一 |
+| 4 | ~~L2 国产化的**目标矩阵清单**~~ → **✔ 已裁 2026-09-24（`1A 2A 3A 4A 5A`），矩阵见 §5.2.1** | 余：**龙芯（LoongArch）何时纳入生产验收**、**申威是否需要**——等客户点名再开 |
 | 5 | 「共赢」是否落成**插件市场 / 伙伴体系**的机制（当前只有插件 API） | 先只做**插件 API + 签名与兼容性约定**；市场留到有第三方插件之后 |
 
 ---
