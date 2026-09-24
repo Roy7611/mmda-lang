@@ -103,7 +103,17 @@
 > buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
 > ```
 >
-> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源**：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**⏳ 仍待你定**：① **类型名规范写法**（`BIGID` / `bigid`）；② **`MAX_TENANT_ID = 0x7FF_FFFF` 是 27 位值而注释写「高 28 位」** —— 若是有意保留 bit 63（ID 恒为正）就照此定死，若是笔误（应为 `0xFFFFFFF`）说一声；③ 旧 javadoc 里的「48bits 实际的 id」= 16+48 旧布局残留，**以常量为准**—— 见 [`errata.md`](errata.md) §二-6。
+> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源**：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**✔ 租户位宽已确认（2026-09-25，作者原话：「27位没错」）**：**高 28 位字段中 27 位有效（`MAX_TENANT_ID = 0x7FF_FFFF` = 134,217,727，bit 63 保留恒 0）** —— 不是笔误，ID 恒为正 `long`。旧 javadoc 里的「48bits 实际的 id」= 16+48 旧布局残留，**以常量为准**。
+>
+> **语料形态与 `BIGID` 的关系（实测补正）**：`BIGID` 这个名字**只出现在早期文档**（全语料 case-insensitive `bigid` **0 命中**）；语料写的是 ——
+>
+> ```
+> record Address {
+>     @PartitionID [10000,0x000F_FFFF]      // 独占一行（字段级注解）
+>     addressId uint64 identity generated readonly,
+> ```
+>
+> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**⏳ 仍待你定**：**是否在语言里保留 `BIGID` 作为类型别名**（文档用名，等价于 `uint64 identity` + `@PartitionID`），还是严格取语料只写 `uint64 identity`。—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 

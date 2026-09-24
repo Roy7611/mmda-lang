@@ -160,7 +160,7 @@
 | FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitSet）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
-| `BIGID` | **自有整数类型**：本身即 partitionID（分区主键）—— **高 28 位 tenantId + 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成），见 [`datatypes.md`](datatypes.md) §5 |
+| `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@PartitionID [min,max]` + `uint64 identity`**，见 [`datatypes.md`](datatypes.md) §5 |
 | customProperties | API 中 REF/ENUM 的显示标签扩展 |
 | MetaUiField | UI 呈现：formatter、editor、renderer |
 | UiLogic | 前端模块交互逻辑（beforeEdit 等钩子） |

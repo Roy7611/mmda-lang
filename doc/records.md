@@ -118,7 +118,7 @@ MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
 parseTenantID(id) = id >>> 36
 ```
 
-`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）；`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
+**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`，即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
 
 ---
 
