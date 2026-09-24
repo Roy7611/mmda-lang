@@ -211,6 +211,7 @@ manifest: {
 | `codegenHooks` | 生成物后处理（**不改写 KEEP 区**） | 编码 |
 | `stageActions` | 全生命周期八阶段的阶段动作（[`specification.md`](specification.md)） | 全阶段 |
 | `kernelBackends` | 生成后端 / DDL 方言 / 报告输出（**内核侧，形态见 §12 待裁**） | 编码 |
+| `journeyViews` | **只读「旅程视图」**（服务设计的多触点旅程图）——**展示面，不进真源、不改语言层**（✔ 2026-09-24 裁决，见 [`../ux.md`](../ux.md) §7） | 设计 |
 
 ## 11. 权限与硬边界（**可执行，不靠自觉**）
 

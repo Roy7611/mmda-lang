@@ -89,7 +89,8 @@
 | 10 | 人性化帮助（Help and documentation） | `tooltip` / `placeholder` / `///` 文档 → 帮助面板与 API 文档**同源** | [presentation.md](presentation.md) §2、[api.md](api.md) | B |
 
 > **这张表的用法**：#1/#2/#4/#5/#6/#9 是 **A 类**（能从声明机械判定，能进 `mmda check` 信号集）；#7/#8/#10 是 **B 类**（半自动，出清单由人确认）；**没有一条是 D 类**——凡是「只能靠感觉」的，本文一律不写进这张表（审美走 §2 的 Desirability 层，归皮肤）。
-> **强度待裁**：这张表**以什么强度生效**（报告项 / warning / 硬门禁）见 §11-2。**不先决定强度，就不要写进 `mmda check` 的断言集。**
+> **生效强度（✔ 已裁 2026-09-24，作者取 B）**：**A 类子集进 `mmda check`，出 warning、不阻断、不进 `mmda quality gate`**（与 [naming.md](naming.md) §5 的命名检查同档）。
+> **两个「等级」不是一回事，别混**：表中 A/B 列是 [quality.md](quality.md) §1.2 的**可判定性分级**（A 可自动判定 / B 可半自动）；「warning」说的是**检查强度**。落地口径：**表内 A 类那 6 条进 `mmda check` 断言集；B 类 4 条进报告清单**（半自动，出清单由人确认）。
 
 ---
 
@@ -107,7 +108,16 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 | Develop and measure | **逻辑实现**（KEEP 区）+ 运行期观测 | [runtime.md](runtime.md)、[operations.md](operations.md) |
 | User testing of prototypes | **测试** | `.mt` 用例 + 中文验收单 |
 | Project launch | **交付** | 离线包 + `mmda doctor` |
-| **Develop and measure 的「measure」回路** | **⚠️ 缺** | UCD 是**闭环**：上线度量要回流到下一轮研究。我们目前是单向 + 回归。**→ 待裁 §11-1** |
+| **Develop and measure 的「measure」回路** | **✔ 已裁（2026-09-24 取 B）** | UCD 是**闭环**：上线度量要回流到下一轮研究。**裁决 = 回流进 `mmda check` 出 warning**——但注意回流是两半，见下表后的落地口径 |
+
+**回流怎么落地（1B 的两半，写实）**：
+
+| 一半 | 内容 | 落点 |
+| --- | --- | --- |
+| **静态可判定的一半** | 监控与诊断出口的**声明是否存在**（`/metrics` 等）、关键 `Action` 是否有元数据、端点是否声明了鉴权与只绑内网 | **`mmda check` 出 warning**（口径见 [operations.md](operations.md) §4/§8） |
+| **运行期的一半** | 任务完成率、校验失败 top N、最常放弃的操作——**只能实测**（[quality.md](quality.md) 的 C 类） | **`mmda ops` 出清单 → 喂需求与设计评审**；**不许写成 `mmda check` 的静态断言**（那就是拿环境数据当构建门禁） |
+
+**前提（本裁决的依赖）**：`mmda ops` 必须先落地——[operations.md](operations.md) §11-5（助手建议 **5A** 进 P9）。**`mmda ops` 不进首版，这条回流就只能是纸面约定。**
 
 **MVP 金字塔（作者笔记配图）**：`Functional（功能）→ Reliable（可靠）→ Usable（可用）→ Emotional design（情感）`。
 **我们的承诺面 = 下面三层**（功能、可靠、可用——全部可自动判定）；**Emotional design 归皮肤/品牌**，不进规范承诺（与 §2 的「首版不承诺好看」一致）。**Lean UX 的 MVP 语义也吃这一条**：MVP 不是「砍功能的借口」，是**金字塔下三层必须齐**——功能不全、不可靠的「MVP」不是 MVP。
@@ -143,6 +153,8 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 - **不做**：**不新增 `journey` / `touchpoint` 一类元模型元素**——语言层零新增是既有裁决，且「旅程」目前是**分析工具**（画给人看），不是可执行契约；要画就画在设计器插件或外部工具里（只读产物，不进真源，口径同 [ide/plugins.md](ide/plugins.md)）。
 - 落点待定：见 §11-4。
 
+**✔ 已裁（2026-09-24 作者取 4A + B）**：**不进语言与元模型**（多触点仍用 `Role` + 流程 + 事件表达），**同时在设计器插件侧留只读「旅程视图」扩展点**——落 [ide/plugins.md](ide/plugins.md) §10 的扩展点规划，**只读展示面、不进真源、不改语言层**。
+
 ---
 
 ## 8. 包容性与无障碍（Inclusivity / Accessibility）
@@ -157,6 +169,8 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 | 对比度 / 焦点可见 / 动效 | **皮肤侧**（`vui*` / `rui*` 各自负责） | 不在后端契约面 |
 
 基线强度（是否上 WCAG 2.2 AA 的自动化子集）见 **§11-3**。
+
+**✔ 已裁（2026-09-24 作者取 B）**：上表三条**进 `mmda check` 出 warning（不阻断、不进 `mmda quality gate`）**，基线 = **WCAG 2.2 AA 的可自动化子集**；**对比度 / 焦点可见 / 动效等视觉项不进契约、留皮肤**（换皮肤不构成契约破坏，同 [presentation.md](presentation.md) §5.1）。
 
 ---
 
@@ -186,7 +200,11 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 ---
 
-## 11. 待裁（4 条，A/B/C + 建议）
+## 11. 已裁（4 条，✔ 2026-09-24 作者取 `1B 2B 3B 4A+B`）
+
+**结果**：**1B** 度量回流进 `mmda check` 出 warning（**作者未采纳助手建议的 1A**；`mmda ops` 为其前置）· **2B** 十原则的 A 类子集进 `mmda check` 出 warning · **3B** 无障碍可自动化子集出 warning · **4A+B** 旅程不进语言与元模型 + 设计器插件留只读「旅程视图」扩展点。
+
+下表**保留原选项与理由**，供复核（照例：已裁项的回改要另开一轮，别静默改写）。
 
 | # | 议题 | 选项 | 建议与理由 |
 | --- | --- | --- | --- |
