@@ -63,6 +63,8 @@ REF 适合小表、可缓存；HAS_ONE 适合完整导航。见 [meta-model.md](
 
 API：`lockIf`、`hideIf`、`requiredIf`、`onChange`、`onValidate`。
 
+视图级替换（默认呈现不够时）：`setCustomEditor(...)` / `setCustomRenderer(...)`——替换生成的标准编辑控件 / 只读呈现控件，属于**皮肤内部的自由**（[presentation.md](../presentation.md) §5.1）。
+
 ## 缓存
 
 - 元对象：Redis / 进程内（参考 `SqlMetadataProvider`）

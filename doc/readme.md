@@ -5,6 +5,7 @@
 > 未裁决的口径见 [errata.md](errata.md)；工具与 IDE 见 [index.md](index.md#工具与-ide)。
 > **愿景与四层目标（为什么做 m 与 MMDA：商业 / 技术 / 用户 / 架构）见 [vision.md](vision.md)**；本文只管**语言本身**。
 > **运维与可观测性（DevOps 流水线、监控出口、配置管理、应急处理）见 [operations.md](operations.md)**。
+> **上手（五阶段全貌 / 八步实操 / DDL 注释 → `.m` / 配置面速查 / 定制点全景）见 [guide/quickstart.md](guide/quickstart.md)**；**命名约定**见 [naming.md](naming.md)。
 
 ---
 

@@ -51,7 +51,7 @@ Field ──(呈现层)── UiField
 | `parentIdCol` | string? | 树形父键 |
 | `superName` | string? | 继承基类 Record |
 | `extendType` | enum | `NONE` \| `EXTENDS` \| `INHERITS` |
-| `fixedFilter` | string? | 子类型/视图固定过滤 |
+| `fixedFilter` | 子类型/视图固定过滤；**在列表视图上呈现为顶端页签**，习惯把状态字段（如「组建中 / 运作中 / 已关闭」）作为固定过滤器 |
 | `description` | string? | 文档 |
 
 `objType` 语义：`T` 持久化实体；`V` 只读视图；`TA` 实体 + Action；`TAF` 实体 + Action + Flow/审计；`VAF` 视图 + Action + Flow。
@@ -135,7 +135,9 @@ Field ──(呈现层)── UiField
 
 | 属性 | 说明 |
 | --- | --- |
-| `name` | 关系名，如 `items` |
+| `name` | 关系名，如 `items`（作为主表实体的属性名） |
+| `displayLabel` | 显示标题（子表/子网格的标题） |
+| `relationIdx` | **UI 布局顺序**（旧版手册的 `relationIdx`：跟界面内子表/页签的先后有关；与 Field 的 `colIndex` 不同层） |
 | `relationType` | `HAS_ONE`(1) / `HAS_MANY`(2) |
 | `relativeRecord` | 子实体 |
 | `joinOn` | 连接条件 |

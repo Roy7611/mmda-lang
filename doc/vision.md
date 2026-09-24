@@ -6,6 +6,16 @@
 
 ---
 
+## 0. 思想源头：没有银弹（essence vs accidents）
+
+Brooks（《No Silver Bullet》，1986）把软件技术的困难分成两种：**本质困难**（essence——构造复杂的概念设计构想）与**偶然困难**（accidents——把设计表示成语言、并验证表示是否保真的劳动）：
+
+> "Fashioning complex conceptual constructs is the essence; accidental tasks arise in representing the constructs in language."
+
+MMDA 的落法就是压缩这一半：**元数据定义一次，Java / C# / TS / DDL / OAS / 用例都是产物**——人力集中在**本质困难**（业务逻辑、架构决策、数据与流程设计），而不是把设计翻译给三端语言。（同一立场的早期表述见 `archive/2026-06/overview.md`。）
+
+---
+
 ## 1. 一句话
 
 数字化交付的现实是：**架构画在图上、契约写在文档里、实现在代码中**，三份东西靠人同步——一变就散。
