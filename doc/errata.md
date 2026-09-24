@@ -106,6 +106,7 @@
 | 10 | 自然语言式聚合 `sum(amount of each items)` 的文法边界（`of`/`each` 无词法标记） | `doc/archive/2026-06/language/records.md:127` |
 | 11 | **重计算/算法节点如何声明为 native**：`algorithm` 契约、在行为里怎么引用（`@Action dispatch : X` / `@Native(...)` / `.ms` 内），以及 `protection` / `license` 声明是否进语言 | 草案见 [`protection.md`](protection.md) §5 |
 | 12 | **`.mt` 用例语法形态**：`given/when/expect` 是否够、是否复用 M语言 表达式语法、`covers`/`source`/`reviewedBy`/`baseline` 的写法 | 已裁进语言族（§五-6）；草案见 [`testing.md`](testing.md) §9 |
+| 13 | **拦截器 / 钩子这类「纯脚本」是否用 `.m` 扩展名**：作者原话「**我是想那些拦截器，是不是纯脚本程序阿，用 `*.m`**」——现状：规范里**独立文件只有模型分片族**（`.mm` / `.me` / `.ms` / …），脚本只有**内嵌脚本块**（[`runtime.md`](runtime.md) §4.5/§4.6，引擎取 A）；「拦截器」在规范仓仅出现 1 处（[`runtime.md`](runtime.md):57 讲架构图画法：事务/业务逻辑同块、上下夹 Before/After 拦截器），真正在用的是**钩子**（Service 层业务钩子 / `store` 级 SQL 整形钩子），已裁口径是**钩子体 = 程序员用 Java / C# / TS 写**（KEEP 区 + 插件）。**待裁两点**：① 是否给**纯脚本文件**一个独立扩展名 `.m`（判据：正文判不出 partType —— 不是 `record`/`enum`/`view`/`stm`，而是语句序列）；② 若给，拦截器脚本放哪（`flow/interceptors/` 独立目录 / 与对象同目录 `<对象>.m`）。**说明**：助手上一轮把作者这句误读为「整个扩展名族收敛为 `.m`」并落盘，已由 **`df4dc99`（revert `d67fe7e`）整体撤销**，分片族原样保留；本行才是真问题 | [`project.md`](project.md) §1、[`runtime.md`](runtime.md) §4、`doc/ide/plugins.md` |
 
 ---
 
@@ -223,6 +224,7 @@
 | 2026-09-25（六十八轮） | **老库路径 = `D:\Java\mmda`，16+48 旧布局真源取证**（作者：「**老库 `D:\Java\mmda`**」）—— [`datatypes.md`](datatypes.md) §5 补老库路径与**旧布局真源**（老库 `Tenancy.java:14` `0x7FFF` / `:39` `>>> 48` / `:82-83` `<< 48` 与 `0xFFFF_FFFF_FFFFL`），并说明新库 `Tenancy.java:82` / `:27` 的旧话术是**从老库抄来漏改**；本文件 §五 新增第 55 条；`PLAN.md` §6.3 新增第 54 条、升 **v1.62**；`doc/index.md` 升 **0.59**。 |
 | 2026-09-25（六十九轮） | **`@PartitionID` → `@Partitioned` 改名 + 字段级 `partitioned`**（作者原话：「**`@PartitionID` 改为 `@Partitioned`，字段级支持 `partitioned` 跟在后面**」）—— ① 规范正文档 **10 文件 49 处改名**（archive 与台账保留旧名，那里是历史与语料原文）；② [`records.md`](records.md) §1.2 字段级关键字表**新增 `partitioned` 行**、§2.3 新增改名说明 + 两种形态 + 唯一性校验；③ [`glossary.md`](glossary.md) 新增 `@Partitioned` / `partitioned` 词条；④ [`datatypes.md`](datatypes.md) §5 回标「语料原文用旧名」；⑤ 本文件 §五 新增第 56 条；`PLAN.md` §6.3 新增第 55 条、升 **v1.63**；`doc/index.md` 升 **0.60**。 |
 | 2026-09-25（七十轮） | **旧名迁移命令落定 `mmda migrate --rename`**（作者回「**好**」）—— ① [`records.md`](records.md) §2.3 补迁移条款（默认 dry-run 出清单、`--write` 落盘；只动语言文件；归 P9）；② [`naming.md`](naming.md) §5 迁移脚本行**扩为通用改名**（命名约定 + 关键字/注解改名两类，如 `@PartitionID` → `@Partitioned`）；③ [`project.md`](project.md) 迁移段补语法级改名迁移（旧项目升级必经）＋与 [`naming.md`](naming.md) §5 同一条线；④ 本文件 §五 新增第 57 条；`PLAN.md` §6.3 新增第 56 条、升 **v1.64**；`doc/index.md` 升 **0.61**。 |
+| 2026-09-25（七十一轮） | **撤销误读 + 真问题登记**：助手把作者「**存 m 语言就用 `.m`**」误读为「整个扩展名族收敛为 `.m`」并落盘（`d67fe7e`）—— 作者纠正：「**你误解我的意思了，没叫你改原来的，我是想那些拦截器，是不是纯脚本程序阿，用 `*.m`**」→ **`df4dc99`（`git revert d67fe7e`）整体撤销**，**分片扩展名族与 `errata` 冲突 3 原裁决恢复生效**（收敛表 / `glossary` `.m` 词条 / `ide/README` 注 / §五-58 全部撤回）；真问题登记为 §二 第 13 条（**拦截器 / 钩子这类纯脚本是否用 `.m`**）；`PLAN.md` §6.1 第 13 条同步、升 **v1.65**；`doc/index.md` 升 **0.62**。 |
 
 > 注：§五 记录的是**已裁决**项，一、二 两节保留**未裁决**项——两者不要混读。
 

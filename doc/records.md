@@ -330,6 +330,17 @@ view OrderItemV : OrderItem as it
     it.quantity,
     it.amount
 }
+
+view Person : Employee as e where e.status > 0
+{
+  e.empID as personID identity partitioned(1,1000),
+  e.empName as personName
+} 
+union all Contactor as c
+{
+  c.contactorID as personID identity partitioned(1001,100000),
+  c.contactorName as personName
+}
 ```
 
 > ⚠️ `as` 在三种上下文出现（字段别名 / join 别名 / 类型转换），见 `errata.md` 二-7。
