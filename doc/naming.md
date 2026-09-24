@@ -67,7 +67,7 @@
 | **事件名** | PascalCase，与 `event` 声明同名 | [`events.md`](events.md) | 三端事件名对账 |
 | **消息头** | camelCase | [`event_bus.md`](event_bus.md) §1（`eventId` · `occurredAt` · `tenant` · `traceId`） | 头字段对账 |
 | **JSON 字段（载荷）** | **= 字段 / 属性名原样（camelCase），不做二次转换** | 序列化契约（[`api.md`](api.md)） | 契约测试 |
-| **API 路径与 `operationId`** | 属 [`api.md`](api.md) §8.2-②⑫——**✔ 已裁 2026-09-24**：路径 = **`/<模块>/<资源>`**（作者口径「我们是 `/service/repository`」）、`operationId` = **`moduleName_featureName_op`**；**⚠️ 仍开放：「路径段与 `operationId` 的大小写 / 复数规则」（`api.md` §8.2-2b）**；本文明令：**路径段与 `operationId` 也不许出现 `Impl`** | [`api.md`](api.md) | 契约测试 |
+| **API 路径与 `operationId`** | 属 [`api.md`](api.md) §8.2-②⑫——**✔ 已裁 2026-09-24**：路径 = **`/api/<模块小写>/<模型名复数>`**（作者口径：「我们是 `/service/repository`」+「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」）、`operationId` = **`moduleName_featureName_op`**（例 `mes_WorkOrder_create`）；**⚠️ 仍开放：`/api` 前缀写死还是 Profile 可配、复数变形规则（`api.md` §8.2-2c）**；本文明令：**路径段与 `operationId` 也不许出现 `Impl`** | [`api.md`](api.md) | 契约测试 |
 | **指标名** | `mmda_<域>_<对象>_<计量>`（已在 [`operations.md`](operations.md) §3.1） | 自动打点 | 指标名清单对账 |
 | **i18n key** | 见 [`ide/i18n.md`](ide/i18n.md)（Shell 与模型双层 key） | 设计器 | — |
 | **模块 / 权限码 / 端点 id** | 沿用既有（`M.01` · `B` · 端点 id）——见 [`project.md`](project.md)、[`event_bus.md`](event_bus.md) §6 | — | 装载期冲突检测已有 |
@@ -209,7 +209,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 - 字段语法与命名：[`records.md`](records.md) §1.1
 - 文件与目录命名：[`project.md`](project.md)（一对象一文件、文件名 = 主符号名）
 - 三端契约与一致性口径：[`targets.md`](targets.md) §2、§5
-- API 路径与 `operationId`：[`api.md`](api.md) §8.2-②⑫（**✔ 已裁**：路径 = `/<模块>/<资源>`、`operationId` = `moduleName_featureName_op`；**字形大小写仍开放，见 §8.2-2b**）
+- API 路径与 `operationId`：[`api.md`](api.md) §8.2-②⑫（**✔ 已裁**：路径 = `/api/<模块小写>/<模型名复数>`、`operationId` = `moduleName_featureName_op`；**`/api` 前缀与复数变形细则仍开放，见 §8.2-2c**）
 - 指标名：[`operations.md`](operations.md) §3.1
 - 事件与消息头：[`events.md`](events.md) §3、[`event_bus.md`](event_bus.md) §1
 - 阶段落点：[`PLAN.md`](..\PLAN.md) §4（P6 生成器 / P9 一致性套件）

@@ -130,7 +130,7 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 | `summary` | Feature / Record 的 `label` | 工单 | 推导（中文 label 直接出） |
 | `description` | `doc` 字段原文（CommonMark） | … | 推导 |
 | `externalDocs` | 可选 | 模块文档 URL | 可选 |
-| `operationId` | **`<moduleName>_<featureName>_<op>`**（✔ 已裁 2026-09-24，作者原话「我希望是 `moduleName_featureName_op`」） | `M03001_WorkOrder_create` | **✔ 已裁**：ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定**；**字形的具体大小写随 §8.2-2b 一起定** |
+| `operationId` | **`<moduleName>_<featureName>_<op>`**（✔ 已裁 2026-09-24，作者原话「我希望是 `moduleName_featureName_op`」） | `mes_WorkOrder_create` | **✔ 已裁**：ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定**；**字形 = 模块名照抄模块段（小写）、Feature 名照抄模型名（Pascal）**，随 §8.2-2c 一并定稿 |
 | `parameters` | 路径参数 `{id}` + 查询（`SearchParam`：`pageNo`/`pageSize`/`sorts`/filters）+ 头部（`X-Tenant`、`traceparent`） | | 推导 + 待裁（filters 编码） |
 | `requestBody` | `editor` 视图的字段投影 → `application/json`（`content` 必需；`required` 由表单必填推导，默认 `false`） | | 推导 |
 | `responses` | 统一响应封装（Profile 决定 `raw` 还是 `{code,data,msg}`）+ 各状态码（§3.4） | | 需 Profile 声明 |
@@ -140,6 +140,8 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 | `servers` | 一般省略（用根级） | | — |
 
 ### 3.4 五视图 / Action → 端点与状态码
+
+**路径形态（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：下表里的 `/{模块路径}/{资源}` 一律写成 **`/api/<模块小写>/<模型名复数>`**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**。例：`GET /api/mes/WorkOrders`、`PUT /api/mes/WorkOrders/{id}`、`POST /api/mes/WorkOrders/{id}/approve`。**残余细则 2c**（未定不许进生成器）：`/api` 写死还是 Profile 可配、复数变形规则（§8.2-2）。
 
 | m 声明 | 端点 | 方法 | 成功码 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -157,8 +159,8 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 
 **与存量手写代码的冲突（✔ 已裁 2026-09-24：取 A 方案）**：现有三端模板一律 `POST /save`、`GET ""` 取列表、`POST /{id}/delete`，**既不符合 REST 语义也没有模块前缀**。裁决：
 
-- **生成物用 REST 语义**（POST 创建 / PUT 更新 / DELETE 删除 + `/{模块路径}/{资源}` 前缀）——上表即最终形态；
-- **路径两段是哪两段（✔ 已裁 2026-09-24，§8.2-2）**：第一段 = **模块（service）**、第二段 = **资源（repository / Record）**——**作者原话：「我们是 `/service/repository`」**。**⚠️ 残留待裁 2b：路径段的大小写与复数规则**（正文示例是 `mes.workorder` 式小写；**没定下来不许进生成器**）；
+- **生成物用 REST 语义**（POST 创建 / PUT 更新 / DELETE 删除 + `/api/{模块}/{资源复数}` 前缀）——上表即最终形态；
+- **路径两段与字形（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：第一段 = **模块（service）**、第二段 = **资源（repository / Record）**——**作者原话：「我们是 `/service/repository`」**；**字形 = 复数形式**（作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」）= **`/api/<模块小写>/<模型名复数>`**（模块段小写 `mes`、资源段模型名原样 + 英语复数）。**⚠️ 残余 2c：`/api` 前缀写死还是 Profile 可配（建议 Profile `apiPrefix` 默认 `/api`、网关可剥）+ 复数变形规则（建议英语常规 `+s`／`ies`／`es`，**只加后缀不转写**，逆向去 `s` 即回模型名；不可复数化的名用模型原形并允许端点显式覆盖）**——见 §8.2-2；
 - **同时提供 Profile 开关 `legacyPathStyle: true`**，保留 `POST /save`、`GET ""`、`POST /{id}/delete` 老路径，**迁移期双版本并存**（复用 §6 的稳定度机制：老路径标 `deprecated` + `sunset`，调用量归零后移除）；
 - 存量为 B/C 两案（照抄历史包袱 / 只出新路径破坏现有集成）**不采用**。
 
@@ -328,7 +330,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
 | 1 | 暴露边界的默认值 | **默认 `internal`**，显式 `expose` 才对外（内部实现不会因为存在就变成契约） | §1.2、§1.1 |
-| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**⚠️ 残留待裁 2b：路径段的大小写与复数规则**（正文示例是 `mes.workorder` 式小写；**没定下来就不许进生成器**） | §3.4 |
+| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**✔ 已裁 2026-09-24（字形取 2b）：「复数形式」**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**：① **`/api` 入口前缀**（现状保留）；② **模块段小写**（`mes`）；③ **资源段 = 模型名原样 + 英语复数**（`WorkOrder` → `WorkOrders`）。**⚠️ 残余细则 2c（未定不许进生成器）**：`/api` 写死还是 Profile 可配（建议 `apiPrefix` 默认 `/api`、网关可剥）+ 复数变形规则（建议英语常规 `+s`／`ies`／`es`、**只加后缀不转写**、不可复数化的名用原形 + 端点显式覆盖） | §3.4 |
 | 3 | 稳定度标记语法与 `since` / `sunset` | **进语言**（`stable` / `beta` / `deprecated` + `since` / `sunset`；三端与网关都要读） | §1.2、§5 |
 | 4 | OpenAPI 版本与扩展字段白名单 | **3.1**；扩展字段**只允许 `x-mmda-*` 出**，`x-yapi-*` / `x-apifox-*` 由外部工具在导入时自加 | §3、§7 |
 | 5 | 命令面 | **独立子命令**（`mmda api export/diff/check` 不并入 `mmda generate`，便于 CI 分开跑） | §2、§4 |
@@ -336,6 +338,6 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 7 | 网关边界 | **分工**：网关做粗粒度凭证校验，Controller 做细粒度 Role/scope | §5、§4 |
 | 8 | 导入（逆向）的产出 | **先出报告 + 骨架，人审后入真源**（与 P4 反向导出同一工作方式） | §6 |
 | 9 | 基础模块固定名与 `sops` → 权限映射 | **沿用 `Base`**（语料名）；`READ` → **只出读端点**、`CRUD` → **全出** —— **作者此前「还没想清楚」的那部分随本条清掉** | §1.1、§3.6 |
-| 12 | `operationId` 命名规则 | **`moduleName_featureName_op`**（作者原话「我希望是 `moduleName_featureName_op`」）——ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定** | §3.3 |
+| 12 | `operationId` 命名规则 | **`moduleName_featureName_op`**（作者原话「我希望是 `moduleName_featureName_op`」）——ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定**；**字形 = 模块名照抄模块段（小写）、Feature 名照抄模型名（Pascal）**，例 `mes_WorkOrder_create`（随 2c 一并定稿） | §3.3 |
 | 13 | scope 命名与授权粒度 | **按现状 = 模块权限 + Action 权限**（作者原话「这个我们已经实现，按照现状来，模块权限，Action 权限」）：**module 出读 / 写 scope，Action 出专属 scope，Feature 级不出 scope** | §3.6 |
-| 14 | `webhooks` 首版做不做 | ⏳ **仍待裁** —— 作者回「**不明白**」，需先用具体例子说明再重问（「生成的 OpenAPI 里要不要写『平台会主动回调你』的 `webhooks` 段」；订阅与重试语义属 [`event_bus.md`](event_bus.md) §15） | §3.8、[`event_bus.md`](event_bus.md) |
+| 14 | `webhooks` 首版做不做 | **✔ 已裁 2026-09-24：取 B —— 首版不带 `webhooks`**。作者口径：「**webhooks `GET /events/mes/WorkOrders` 这样的习惯，我选择 B**」——对外事件**仍走拉取式端点**（`GET /events/<模块>/<资源复数>`），**生成的 OpenAPI 里不声明回调段**；`webhooks` 本体与「订阅 / 重试 / 签名」语义**留到 [`event_bus.md`](event_bus.md) §15 一起裁**，不进首版承诺 | §3.8、[`event_bus.md`](event_bus.md) §15 |
