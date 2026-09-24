@@ -12,7 +12,7 @@
 | 可空 | 后缀 `?` | `decimal?`、`bigint?`（采用 C# 的表达方式） |
 | 长度 / 精度 | 括号参数 | `decimal(18,3)`、`varchar(100)`（采用数据库的表达方式） |
 | 组合 | `decimal?(18,3)` | 可空、精度 18、小数 3 的定点小数 |
-| 大小写 | 不敏感 | `BYTE` = `Byte` = `byte` |
+| 大小写 | **不敏感** | **类型名与约束名一律大小写不敏感**：`BYTE` = `Byte` = `byte`、`BIGID` = `bigid`、`indexed` = `INDEXED`、`@Ref` = `@ref` —— ✔ 2026-09-25 作者裁：「**类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似**」；**标识符（对象名 / 字段名）不在其列**，按 [`naming.md`](naming.md) 的大小写约定（类 PascalCase、字段 camelCase） |
 
 > ✔ **已裁（2026-09-25，取语料形态）**：**长度一律 `type(size)`、可空一律尾部 `?`** —— `varchar(80)?`、`char(11)?`、`decimal(18,3)?`；早期文档的 `varchar?[30]`、`char[11]`、`varchar?(30)` **标为历史、不进词法器**。**容量与可空各司其职**：`(size)` 管容量、`?` 管可空，不混进方括号（见 [`errata.md`](errata.md) 冲突 5）。
 
@@ -113,7 +113,14 @@
 >     addressId uint64 identity generated readonly,
 > ```
 >
-> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3。**⏳ 仍待你定**：**是否在语言里保留 `BIGID` 作为类型别名**（文档用名，等价于 `uint64 identity` + `@PartitionID`），还是严格取语料只写 `uint64 identity`。—— 见 [`errata.md`](errata.md) §二-6。
+> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `uint64 identity partitioned`**——
+>
+> - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
+> - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
+> - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §5）；
+> - **`minId` / `maxId` 是「真实 id」（realId）的范围** —— **去掉租户标识之后的那部分**（比较前先 `getRealID(id) = id & MAX_REAL_ID`，`Tenancy.java:95-97`）。
+>
+> 因此语料那两行（`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；**⏳ 仍待你定**：只剩**大小写敏感面**（类型名不敏感 / 标识符敏感，助手建议类型名不敏感）。—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 

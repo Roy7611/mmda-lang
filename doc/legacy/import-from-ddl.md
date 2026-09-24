@@ -46,7 +46,7 @@ COMMENT='@Department 部门。部门及分支机构，包括加盟公司'
 ## 多租户 ID（Legacy 运行时）
 
 - 表必须有主键；多租户时主键宜为 **BIGINT**
-- partitionKey：高 16 位 tenant id，低 48 位实体 id
+- partitionKey：高 16 位 tenant id，低 48 位实体 id **（⚠️ 旧口径，已废 —— 现为高 28 位 tenantId（27 位有效）+ 低 36 位 realId，见 [`../records.md`](../records.md) §2.3）**
 - 未表分区时可用 `id BETWEEN min AND max` 隔离租户
 - 应为 uniqueKey 建索引
 

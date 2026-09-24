@@ -163,7 +163,7 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 **关系**（[meta-model.md](../meta-model.md) §4.3 / §5）：`@Ref`（外键 + 显示值对象，**无导航**，小表走缓存，UI 默认 dropdown）↔ `@One`（**有导航属性**，UI 默认 searchBox）↔ `@Many`（子表/子网格）；**同一个外键列因关系类型不同会生成不同的 UiField，呈现可以不一样**。
 一对多关系是**手写的一等声明**（旧版是库里的一个字符串，见 [meta-model.md](../meta-model.md) §5），属性含连接条件 `joinOn`（`remoteKey=@localKey`）、**UI 布局顺序**（`relationIdx`，对应旧版手册的 `relationIdx`）、显示标题（`displayLabel`）、`defaultFilter` / `defaultSort`、加载策略（`eager`/`lazy`）。
 
-**多租户**：`partitionKey` 指向带 `@PartitionID` 的主键列（**完整 ID 高 16 位 tenantId、低 48 位 realId**）；**物理表分区**（`partitioned`）时按当前租户生成分区内查询以优化性能，未分区时用 `id BETWEEN minID AND maxID` 隔离；**应为租户内唯一键（`uniqueKey`）建索引**。
+**多租户**：`partitionKey` 指向带 `@PartitionID` 的主键列（**完整 ID = 高 28 位 tenantId（27 位有效）+ 低 36 位 realId**；✔ 2026-09-25 改正，原写「高 16 位 / 低 48 位」是旧布局残留）；**物理表分区**（`partitioned`）时按当前租户生成分区内查询以优化性能，未分区时用 `id BETWEEN minID AND maxID` 隔离；**应为租户内唯一键（`uniqueKey`）建索引**。
 
 ---
 
