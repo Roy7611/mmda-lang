@@ -19,9 +19,11 @@
 | 判据 | 含义 | 后果 |
 | --- | --- | --- |
 | ① **进契约的名字三端必须逐字一致** | 类型名 / 字段与属性名 / 枚举成员 / 事件名 / 消息头 / JSON 字段 / 指标名 / i18n key | 不一致 = **契约破**（契约测试必须抓到） |
-| ② **不进契约的名字随本地习惯** | 方法名 / 局部变量 / 包与命名空间 / 文件名 / SQL 标识符（**常量与枚举成员是例外：§1 三端统一 `UPPER_SNAKE`**） | 各端生成器按本地惯例产出，**不算差异** |
+| ② **不进契约的名字随本地习惯** | 方法名 / 局部变量 / 包与命名空间 / 文件名 | 各端生成器按本地惯例产出，**不算差异** |
 
 > 这条边界就是「尊重 java / c# 的习惯」的**可执行版本**：不是「看着像就行」，而是**契约处零差异、实现处随习惯**。
+>
+> **两类例外**（不进 HTTP 契约，但**有硬要求**，不交给本地习惯）：**常量与枚举成员**（§1，三端统一 `UPPER_SNAKE`）、**数据库标识符**（§3.3，表与视图 = 类名 PascalCase、列 = 属性名 camelCase，**逐字同模型名**）。
 
 ---
 
@@ -37,6 +39,7 @@
 | **枚举成员** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `OrderStatus.DRAFT` · `OrderStatus.RELEASED` · `YesNo.YES` | 成员名进载荷 → 属**契约名**，**三端一致**（✔ 2026-09-24 作者补充） |
 | **常量** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `MAX_RETRY_COUNT` · `DEFAULT_PAGE_SIZE` | **三端一致**（不随各端习惯，✔ 2026-09-24 作者补充） |
 | **生成的 Handler 接口** | **`I` + 事件名 + `Handler`** | `event GoodsArrived` → 接口 `IGoodsArrivedHandler`，KEEP 区实现 `GoodsArrivedHandler` | [`events.md`](events.md) §3 的接口名由此统一（原记「由 Profile 模板决定」→ 模板可定缀合，**不得违反本文 §1**） |
+| **数据库标识符** | **与模型同名，不转写**：表 / 视图 = **类名 PascalCase** · 列 = **属性名 camelCase** | `Record Material` → 表 `Material`、列 `materialCode`；`View MaterialStock` → 视图 `MaterialStock` | ✔ 2026-09-24 作者裁（原话「**sql 字段命名同属性，表名同类名，视图也是和表一样，便于 orm 的一致性**」）；**引号与前置条件见 §3.3** |
 
 **为什么禁止 `Impl`**（写清理由，别只留禁令）：
 
@@ -64,6 +67,7 @@
 | **指标名** | `mmda_<域>_<对象>_<计量>`（已在 [`operations.md`](operations.md) §3.1） | 自动打点 | 指标名清单对账 |
 | **i18n key** | 见 [`ide/i18n.md`](ide/i18n.md)（Shell 与模型双层 key） | 设计器 | — |
 | **模块 / 权限码 / 端点 id** | 沿用既有（`M.01` · `B` · 端点 id）——见 [`project.md`](project.md)、[`event_bus.md`](event_bus.md) §6 | — | 装载期冲突检测已有 |
+| **数据库标识符（表 / 视图 / 列）** | **= 模型名逐字一致**（表与视图 PascalCase、列 camelCase，**不转写、不加前缀**） | 内核 IR → DDL 生成器（各方言） | **生成 DDL 的标识符逐字对账**（§3.3、[`targets.md`](targets.md) §5） |
 
 ---
 
@@ -79,7 +83,8 @@
 | 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](project.md)（`*.mm` 一对象一文件） |
 | 局部变量 / 参数 | `camelCase` | `camelCase` | `camelCase` | — |
 | 泛型参数 | `T` / `TKey` | 同 Java | 同 Java | — |
-| **SQL 标识符（表 / 列）** | `snake_case`（三端一致，由生成器从声明名转写） | 同 | 同 | **DB 不参与三端一致性测试**（方言差异已由 DDL 对账覆盖，见 [`PLAN.md`](..\PLAN.md) P5）（待裁 5） |
+
+> **SQL 标识符不在本清单**（✔ 2026-09-24 改判）：表 / 视图 / 列**属硬规则**（表与视图 = 类名、列 = 属性名），见 **§3.3**。
 
 ### 3.2 C# 属性的代价（必须写清，别装作没有）
 
@@ -91,6 +96,34 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 | 与 C# 团队的既有代码风格不一致 | 与 JSON 载荷（camelCase）**天然一致**，序列化配置零意外 |
 
 **放宽口子**：若要放宽，只能放宽到「C# 属性 Pascal + **显式序列化别名**」，且必须同步放宽 JSON 契约（**不建议**，等于给契约加第二套名字）。列待裁 3。
+
+---
+
+### 3.3 数据库标识符（✔ 2026-09-24 作者裁：**便于 ORM 的一致性**）
+
+**作者原话**：「**sql 字段命名同属性，表名同类名，视图也是和表一样，便于 orm 的一致性**」。
+
+| 对象 | 规则 | 例 |
+| --- | --- | --- |
+| **表** | **= `Record` 名（PascalCase）**，**不转写、不加前缀** | `Record Material` → `CREATE TABLE "Material"` |
+| **列** | **= 属性名（camelCase）** | `materialCode` → `"materialCode"` |
+| **视图** | **同表规则**（= `View` 名 PascalCase） | `View MaterialStock` → `"MaterialStock"` |
+| 主键 / 外键 / 索引 / 唯一约束名 | **待裁 8**（建议 `PK_` / `FK_` / `IX_` / `UX_` + 表名 + 列名） | `IX_Material_materialCode` |
+
+**代价与前置条件（「便于 ORM 一致性」要付的账，必须与规则一起落地）**：
+
+| # | 前置条件 | 不做会怎样 |
+| --- | --- | --- |
+| 1 | **DDL 一律加方言引号**（由 `Dialect` 的引号能力产出：PostgreSQL / 金仓 / 达梦 / Oracle 用 `"`、MySQL 用反引号、SQL Server 用 `[ ]`） | **不加引号的标识符会被数据库改大小写**：PostgreSQL **折成小写**（官方文档 §4.1.1 Lexical Structure）、Oracle 与 SQL Server **折成大写**——只有加引号才保住 `Material` / `materialCode` |
+| 2 | **MySQL 必须 `lower_case_table_names=0`**（大小写敏感）：Linux 默认 0 ✓，**Windows 默认 1（强制小写）、macOS 默认 2（存为小写）** | 这两种实例上 `Material` 变成 `material`，**与模型名不再逐字一致**：开发机「跑得通但名字变了」，DDL 对账假报差异 |
+| 3 | **达梦的 `CASE_SENSITIVE` 在 Profile 里显式声明** | 同一个库出现两套大小写行为 |
+| 4 | **ORM 侧显式关掉「camelCase → snake_case」自动转换**：Spring Boot / Hibernate 默认的 `SpringPhysicalNamingStrategy` **会把 `materialCode` 转成 `material_code`** → Profile 生成物必须覆盖为 `PhysicalNamingStrategyStandardImpl` + `hibernate.globally_quoted_identifiers=true`；EF Core 的属性名 = 列名**天然一致**（表名配 `ToTable`）；TS 侧（Prisma 等）按生成物显式 `@map` | 出现「表名对了、列名找不到」：JPA 去找 `material_code`，库里有 `"materialCode"` |
+
+**代价（写清，不只写收益）**：手写 SQL / BI 工具 / 临时查询**处处要带引号**（`SELECT "materialCode" FROM "Material"`），漏引号在 PostgreSQL 上直接报 `column "materialcode" does not exist`；`snake_case` 那种「随手写」的便利没有了。
+
+**收益**：**表名 = 类名、列名 = 属性名 → ORM 零映射**（JPA 不用 `@Table` / `@Column`，EF 不用 `HasColumnName`）、JSON 载荷名与列名同形、**DDL 与模型可以逐字对账**（L3 增一项，见 [`targets.md`](targets.md) §5）。
+
+**`mmda doctor` 增一项自检**：连目标库时读 MySQL 的 `lower_case_table_names`、并对各方言各跑一次「带引号 / 不带引号」的标识符探测，**行为不一致即 error**（与 [`operations.md`](operations.md) §10 的 doctor 清单合并登记）。
 
 ---
 
@@ -122,9 +155,10 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 | 2 | **命名违规的检查强度** | A warning（不阻断）／ B error（`mmda check` 失败）／ C 仅 IDE 提示 | **2A**（起步 warning，P9 后再评估升级——与「新增门禁要谨慎」的一贯口径一致） |
 | 3 | **C# 属性是否放宽为 PascalCase** | A 不放宽（保持 camel，跨端同名）／ B 放宽 + 序列化别名 ／ C 按项目 Profile 开关 | **3A**（§3.2 的代价分析：收益是跨端同名，代价只是「不像手写 C#」） |
 | 4 | 方法名是否也统一 | A 随各端（Java camel / C# Pascal）／ B 全 camel ／ C 全 Pascal | **4A**（作者原话「其他尊重习惯」） |
-| 5 | **数据库标识符**（表 / 列） | A `snake_case`（生成器统一转写）／ B 与 Record 同名 Pascal ／ C 交 Dialect 决定 | **5A**（跨库最大公约数，避免大小写敏感差异——MySQL 与达梦的坑） |
+| 5 | ~~**数据库标识符**（表 / 列）~~ → **✔ 已裁（2026-09-24 作者）：表 / 视图 = 类名 PascalCase、列 = 属性名 camelCase、视图同表规则，逐字同模型名（便于 ORM 一致性）——见 §1 / §2 / §3.3** | ~~A `snake_case` 转写~~ ／ **B 与模型同名** ✔（作者口径比 B 更彻底：列也是 camel）／ ~~C 交 Dialect 决定~~ | **取 B+**（本文原建议 5A 被否；**代价 = 处处要加引号 + MySQL 须 `lower_case_table_names=0` + ORM 须关自动转写**，见 §3.3） |
 | 6 | **既有代码 / KEEP 区的 `Impl`** 是否清理 | A 不强制（只约束生成物与新代码）／ B 提供迁移脚本 ／ C 硬禁并全量改造 | **6A**（B 可作可选工具，C 无收益） |
 | 7 | 命名约定是否进硬门禁 | A 不进（warning）／ B 进 `mmda quality gate` | **7A**（与 §6-2 同一件事，合并裁决） |
+| 8 | **主键 / 外键 / 索引 / 唯一约束名格式**（表 / 列已裁，这类名字尚未拍） | A `PK_<表>` / `FK_<表>_<列>` / `IX_<表>_<列>` / `UX_<表>_<列>`（大写前缀 + 模型名原样）／ B `<表>_pkey` 等数据库默认名 ／ C 交 Dialect 决定 | **8A**（与表 / 列同风格：**前缀大写、模型名原样不转写**，便于人工定位与 DDL 对账） |
 
 ---
 
