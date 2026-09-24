@@ -76,6 +76,63 @@
 
 > ⚠️ **两处撞车（规则待裁，见 [`event_bus.md`](event_bus.md) §15-8/9）**：① **「端点」**——[`api.md`](api.md) 里指 **HTTP 接口**（由 module 推导），本文指**集成连接点**；建议规则：**接口一律写「API / 接口」，集成连接一律写「端点」**（要强调时写「集成端点」）。② **「触发器」**——`@trigger`（记录级数据库触发器，[`records.md`](records.md)）与「事件源」同词；规则：`@trigger` 保留，**Trigger 不再作独立概念名**。
 
+### 3.2 易混淆概念辨析（四对 + `stream`，✔ 2026-09-24 裁）
+
+> **为什么要单独列**：这几对词在别的框架里都叫得通，**混着用不会报错，却会让程序员对不上号**。规则是唯一的：**左边是我们用的词，右边是不许当同义词替换的词。**
+
+#### 3.2.1 `publish` / `subscribe` ↔ `produce` / `consume`
+
+| | **publish / subscribe（发布 / 订阅）** | **produce / consume（生产 / 消费）** |
+| --- | --- | --- |
+| 视角 | **业务**：这个事件对**谁可见** | **传输**：这条消息**写给谁** |
+| 基数 | **一对多**——**订阅关系决定可见范围** | **一对一**——一条消息被一个消费者取走（多个消费者是**分工**，不是广播） |
+| 角色 | **Publisher / Subscriber** | **Producer / Consumer** |
+| 有无业务语义 | Subscriber **有**：订阅了哪个事件、交给哪个 Handler（[`events.md`](events.md) §3） | Consumer **可以没有**：搬运、审计、转发也算 |
+| 我们怎么用 | **文档统一用这一组**（语言层的 `subscribe` 就是它） | **只在描述中间件（Kafka / RabbitMQ / Redis）的 API 与配置时用** |
+
+**不变量**：**一个事件 → N 条消息 → N 个订阅者**（同一事件可投影成多条消息：不同协议、不同载荷）；**每个订阅者的消费互相独立**——一个订阅者慢、甚至没有，都不影响别人，事件照样成立。
+**一句话**：`publish / subscribe` 管「**谁看得见**」，`produce / consume` 管「**谁读走了**」。
+
+#### 3.2.2 `channel` ↔ `pipe`
+
+| **Channel（通道）** | **Pipe（管道）** |
+| --- | --- |
+| **MMDA 的正式概念**（见 §3.1「传输」行） | **外部系统词汇，不进 MMDA 术语** |
+| **有投递语义**：点对点（队列）/ 发布订阅（主题） | 只有「单向 + 背压」的流 |
+| 可持久、可多订阅者、可跨进程（`transport` = `memory` / `redis` / `rabbitmq` / `kafka` / `db`） | 一般是内存、单连接：Unix 管道、shell `\|`、Node `stream.pipe`、Go `chan` |
+| **名字唯一**，不许有同义词 | 非要用，必须写明是**外部机制**（如「Unix 管道」） |
+
+**为什么不用 Pipe**：① 与 Channel **叠概念**（违反「一个概念只留一个主人」）；② 程序员对 Pipe 的既有联想**全部撞车**——shell 管道（进程间）、**Angular 的 `\|` 管道（那是转换器，直接撞我们的 `Converter`）**、Node `stream.pipe`（连接流）、Go `chan`（语言级队列）。**流的形状**已由 Channel 的投递语义 + Processor 表达，加一个 `Pipe` 只会多一个同义词。
+
+#### 3.2.3 `inbound` / `outbound` ↔ `inbox` / `outbox`
+
+| **inbound / outbound（入 / 出）** | **inbox / outbox（收件箱 / 发件箱）** |
+| --- | --- |
+| 是**方向**（相对本系统边界）：**入端点**（EventSource 侧）/ **出端点**（Sink 侧） | 是**表**（机构）：**记录集**，要落库 |
+| 端点的**属性** | **可靠性的落点** |
+| **不落库** | 与业务数据**同一个本地事务**（Outbox） |
+| 说「数据从哪来、到哪去」时用它 | 说「**不丢 / 不重**」时用它 |
+| 另有**入参 / 出参**（params）——那是**参数方向**，别拿它当端点方向 | — |
+
+**不变量（请背下来）**：**Outbox 保「不丢」，Inbox 保「不重」**。
+
+- **Outbox（事务性发件箱）** = 业务事务里**同事务**写一行待发记录，提交后由投递器发出（[`event_bus.md`](event_bus.md) §9.2）；
+- **Inbox（去重表）** = 收到消息时按 **`eventId`** 落一行，重复投递直接丢弃（幂等）——它是「**至少一次 + 幂等 = 业务上的 exactly-once**」的另一半（[`event_bus.md`](event_bus.md) §9.3）。
+
+**命名保留**：`Inbox` / `Outbox` 是**行业固定词**（Transactional Outbox Pattern），**不许改成 `SendBox` / `ReceiveBox` 之类自造词**；与邮件客户端的「收件箱 / 发件箱」**同义**，不构成撞车。
+
+#### 3.2.4 速查：别混用
+
+| 你听到的词 | MMDA 里叫什么 | 别混成 |
+| --- | --- | --- |
+| pub / sub | **Publisher / Subscriber** + `subscribe` 声明 | Producer / Consumer |
+| produce / consume、send / receive | **传输实现细节**（中间件的 API 与配置） | 业务角色名 |
+| channel | **Channel（通道）**，有投递语义 | Pipe、Queue、Topic、Stream |
+| pipe | 外部机制（必须写明） | Channel |
+| inbound / outbound | **入端点 / 出端点**（方向） | Inbox / Outbox |
+| inbox / outbox | **Inbox（去重表）/ Outbox（发件箱）**（机构，落库） | 入 / 出方向 |
+| stream | **流**（`DataFlow` 的口语说法）；指具体中间件时写其名（Kafka / Redis Stream） | Channel（Channel 是逻辑传输，Stream 是实现） |
+
 ## 4. 交付与工具
 
 | 术语 | 说明 |

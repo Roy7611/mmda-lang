@@ -70,6 +70,8 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 | Spring 的 `Message Channel` / Kafka Topic | **Channel（通道）** | 队列/主题只是它的**投递语义**，不另立概念 |
 | ETL 的「映射 / 转换规则」 | **DataMapper（数据映射器）** | 它是**配置面**（数据映射图），**不是节点**——配给 Converter / Validator 用 |
 
+> ⚠️ **四对最容易混的概念另见 [`glossary.md`](glossary.md) §3.2**：`publish/subscribe` ↔ `produce/consume`（业务可见性 vs 传输拿走）、`channel` ↔ `pipe`（我们只用 Channel）、`inbound/outbound` ↔ **`inbox/outbox`**（方向 vs 落库的机构）、`stream`。
+
 ---
 
 ## 2. 三类集成——本质都是数据流
@@ -204,7 +206,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 | **外部端点** | 外部系统的接口/表/文件/消息 | **要配**（地址、认证、映射、重试、对账） | 集团 ERP 物料接口、供应商 WebService、车间 PLC/OPC-UA、Kafka、FTP |
 | **底座端点** | 平台内置的源与汇 | 少量 | 定时器（Tick）、本地库表、文件、邮件/短信/钉钉（已有通知器可复用）、SignalR |
 
-**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / **`kind`（实现）** 与 **Connector（端点的实现：内置或插件提供，如 Kafka / RabbitMQ / OPC-UA / HTTP / 文件）** / 方向（入端点｜出端点）/ 协议 / 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
+**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / **`kind`（实现）** 与 **Connector（端点的实现：内置或插件提供，如 Kafka / RabbitMQ / OPC-UA / HTTP / 文件）** / 方向（**入端点｜出端点**——**入/出是方向，不是 Inbox/Outbox**，辨析见 [`glossary.md`](glossary.md) §3.2.3）/ 协议 / 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
 
 **边界（已裁，别越）**：
 
@@ -314,6 +316,8 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **汇端（内部库表）** | **Exactly-once**（等效） | 同库事务 + `eventId` 唯一键 |
 | **汇端（外部系统）** | **最多到「至少一次 + 幂等」** | 外部系统支持事务/幂等键时用 `TwoPhaseCommit` 语义（Flink 的 `TwoPhaseCommitSinkFunction` 是参照）；否则必须要求对方提供幂等键，**否则只能人工对账** |
 | **端到端** | **「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once** | 不承诺「任何外部系统都 exactly-once」——这是物理限制，不是实现偷懒 |
+
+**把两个词记牢（辨析见 [`glossary.md`](glossary.md) §3.2.3）**：**Outbox 保「不丢」（发），Inbox 保「不重」（收）**。发侧的唯一正解是 §9.2 的 Outbox；**收侧对应物是 Inbox（去重表）**——按 `eventId` 落行、重复即丢。两者相加才是上表最后一行那句「业务上的 exactly-once」，**只有一个都不成立**。
 
 ### 9.4 失败与重放
 
