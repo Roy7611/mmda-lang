@@ -87,13 +87,13 @@ STM 图与 M语言 文本共享同一 AST；禁止维护两套状态定义。
 
 ### 4.1 元素映射
 
-| DFD | 元模型 |
-|-----|--------|
-| 外部实体 | 外部系统 / 设备 `Record` 或占位 |
-| 处理过程 | `Action` / `Event Handler` |
-| 数据存储 | `Record` |
-| 数据流 | `Event` + Payload 字段 |
-| 通道 | `Channel` |
+| DFD | 元模型 | MMDA 统一名（[`../glossary.md`](../glossary.md) §3.1） |
+|-----|--------|--------|
+| 外部实体 | 外部系统 / 设备 `Record` 或占位 | **EventSource（事件源）**（入）/ **Sink（数据汇）**（出） |
+| 处理过程 | `Action` / `Event Handler` | **Processor（处理器）**：`Validator` / `Converter` / `Filter` / `Aggregator` / `Router` / `Splitter` |
+| 数据存储 | `Record` | `Record`（同时是 `Sink(Write)` 的落点） |
+| 数据流 | `Event` + Payload 字段 | `Event` + `Payload`（走 `Channel`） |
+| 通道 | `Channel` | `Channel`（点对点 / 发布订阅是它的投递语义） |
 
 ### 4.2 与事件架构的关系
 

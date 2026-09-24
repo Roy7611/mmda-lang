@@ -45,6 +45,31 @@
 2. **Payload 是数据模型的投影**，不是手写 DTO：投影字段来自 `payload { ... }` 子句（已裁：不造 DTO 概念，见 [`api.md`](api.md) §1）。
 3. **幂等键 = `eventId`**：所有汇端（Sink）的幂等都靠它，**这是 exactly-once 口径的落点**（§9.3）。
 
+### 1.1 术语统一（先读这一节，别让名字骗了你）
+
+**命名真源 = [`glossary.md`](glossary.md) §3.1**（作者 2026-09-24 裁：认同 `Validator` / `Converter` / `Filter` / `Aggregator` / `Endpoint` / `Channel` / `EventSource`；**「我不用 Transformer，免得与那个 AI 的 Transformer 架构混淆」**）。本节只讲**这些名字站在流的哪个位置**：
+
+```
+EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Sink
+  事件源          通道       Validator                 数据汇
+  (入端点)                   Converter                 (出端点)
+                             Filter
+                             Aggregator
+                             Router / Splitter
+        ↑                          ↑                       ↑
+   Endpoint(入)  ── 配置 ←── DataMapper（字段级映射，不是节点）──  Endpoint(出)
+```
+
+| 你从别处学到的词 | MMDA 里叫什么 | 为什么 |
+| --- | --- | --- |
+| Flink `Source` / SI `Inbound Channel Adapter` | **EventSource（事件源）** | 入口永远是「产生了什么事件」；实现按 `kind`（设备/定时/回调/CDC/文件/消息/进程内）分 |
+| Flink `Transformation` | **Processor（处理器）** 的四个具体类 | 一个含糊的上位词不如四个能配置的节点：**Validator / Converter / Filter / Aggregator**（+ Router / Splitter） |
+| SI `Transformer` | **Converter（转换器）** | **Transformer 与 AI 的 Transformer 冲突**；且 Converter 在 MMDA 里**本来就有**（`.mc` / `flow/converters/`） |
+| SI `Channel Adapter` | **Endpoint（端点）** | Adapter 词太泛（UI 适配器、图形适配器都叫 Adapter）；端点同时是**配置单元** |
+| Flink `Sink` / SI `Outbound Channel Adapter` | **Sink（数据汇）** | 你原话「数据沉淀、存储、再推送」→ 三种**投递方式**（Write / Push / Call），不是三个概念 |
+| Spring 的 `Message Channel` / Kafka Topic | **Channel（通道）** | 队列/主题只是它的**投递语义**，不另立概念 |
+| ETL 的「映射 / 转换规则」 | **DataMapper（数据映射器）** | 它是**配置面**（数据映射图），**不是节点**——配给 Converter / Validator 用 |
+
 ---
 
 ## 2. 三类集成——本质都是数据流
@@ -135,7 +160,7 @@
 | 维度 | **Spring Integration** | **Apache Flink** |
 | --- | --- | --- |
 | 形态 | **进程内集成框架**（pipes-and-filters） | **独立流计算集群**（Client → JobManager → TaskManager/TaskSlot） |
-| 消息模型 | `Message` = **Header + Payload**；`Message Channel`；**Message Endpoint**（`Service Activator`、`Transformer`、`Filter`、`Router`、`Aggregator`、`Splitter` **都算 Endpoint**） | DataStream / Table-SQL / ProcessFunction |
+| 消息模型 | `Message` = **Header + Payload**；`Message Channel`；**Message Endpoint**（`Service Activator`、`Transformer`、`Filter`、`Router`、`Aggregator`、`Splitter` **都算 Endpoint**）（**这些是 Spring 的词**，MMDA 对应名见 §1.1） | DataStream / Table-SQL / ProcessFunction |
 | 哲学（你可以直接用的部分） | **生产者与消费者不硬编码，靠配置**；「你要写的代码都在 `MessageHandler` 里面」——**商业逻辑与集成逻辑关注点分离** | **状态（State）+ 事件时间（Event Time）/ 水位线（Watermark）+ 窗口（Window）+ 检查点（Checkpoint）** |
 | 持久化 | **要自己接 `MessageStore`**（作者原话痛点） | 状态后端（Memory / **RocksDB** + 增量检查点）、检查点落持久存储 |
 | 一致性 | 需自行组合（事务同步 + 幂等 + 存储） | 检查点 + **两阶段提交 Sink**（`TwoPhaseCommitSinkFunction`）→ 声称端到端 Exactly-once |
@@ -179,7 +204,7 @@
 | **外部端点** | 外部系统的接口/表/文件/消息 | **要配**（地址、认证、映射、重试、对账） | 集团 ERP 物料接口、供应商 WebService、车间 PLC/OPC-UA、Kafka、FTP |
 | **底座端点** | 平台内置的源与汇 | 少量 | 定时器（Tick）、本地库表、文件、邮件/短信/钉钉（已有通知器可复用）、SignalR |
 
-**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / 方向（source｜sink）/ 协议 / 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
+**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / **`kind`（实现）** 与 **Connector（端点的实现：内置或插件提供，如 Kafka / RabbitMQ / OPC-UA / HTTP / 文件）** / 方向（入端点｜出端点）/ 协议 / 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
 
 **边界（已裁，别越）**：
 
@@ -209,28 +234,30 @@
 
 ### 7.3 节点类型（算子清单，收敛到标准词汇）
 
-| 类 | 节点 | 对应标准词汇 |
-| --- | --- | --- |
-| 源 | `Listen`（订阅事件/通道）、`Poll`（定时/轮询）、`Read`（表/文件）、`Receive`（Webhook/API 被调） | Source / Inbound Adapter |
-| 处理 | `Filter`（滤）、`Map`（换）、`Validate`（校）、`Compute`（算）、`Split`（拆）、`Aggregate`（合）、`Join`（拼）、`Deduplicate`（去重）、`Window`（窗） | Transformer / Filter / Router / Splitter / Aggregator |
-| 决策 | `Branch`（条件分支）、`Route`（按类型路由）、`Retry`/`Compensate`（补偿） | Router / ProcessFunction |
-| 动作 | `Call`（调内部 API / Action）、`Invoke`（调外部端点）、`Await`（等人/等外部回调）、`Publish`（发事件） | Service Activator / Outbound Adapter |
-| 汇 | `Write`（落库）、`Send`（发消息/推送）、`Notify`（通知外部系统） | Sink / Outbound Adapter |
+| 类 | 节点（统一名，见 [`glossary.md`](glossary.md) §3.1） | 说明 | 外部对应词（**只作对照，不进 MMDA 文档**） |
+| --- | --- | --- | --- |
+| 入口 | **EventSource（事件源）** | 流从这里开始；`kind` = 设备源 · 定时源 · 回调源 · 库变更源 · 文件源 · 消息源 · 进程内事件源 | Flink `Source` / SI `Inbound Adapter` |
+| 处理 | **Validator** · **Converter** · **Filter** · **Aggregator** | 作者认同的四类算子；**Converter 覆盖字段映射/换算/格式/计算**（配置面 = DataMapper） | Flink `Transformation` / SI `Transformer`·`Filter`·`Aggregator` |
+| 处理（编排） | **Router（路由器）** · **Splitter（拆分器）** | 条件分支/按类型路由；拆分（一条 → 多条，与 Aggregator 对称） | SI `Message Router` / `Splitter` |
+| 动作 | **Call（调内部 API/Action）** · **Await（等人或等外部回调）** · **Publish（发事件）** | 通道内的动作与人工等待；`Call` 就是调 module 推导出来的 API | SI `Service Activator` |
+| 出口 | **Sink（数据汇）** | 三种**投递方式**（属性）：**Write 写入 · Push 推送 · Call 调用** | Flink `Sink` / SI `Outbound Adapter` |
 
 **「到货通知 → 抓取没有的物料信息」作者例（落图后长这样）**：
 
 ```
-Listen(到货事件 WMS.GoodsArrived)
-  → Map(取到货行明细 payload.lines)          ← 数据映射图：外部报文 → 本地字段
-  → Read(本地物料主数据 by materialCode)
-  → Branch(存在?)
-       ├─ 否 → Call(查集团 ERP / 供应商接口 物料查询)
-       │        → Map(映射 + 校验：必填/单位/编码规则)
-       │        → Write(新建物料主数据 + 出入库台账)
+EventSource(到货事件 WMS.GoodsArrived)
+  → Converter(取到货行明细 payload.lines)        ← 数据映射图：外部报文 → 本地字段
+  → Call(查本地物料主数据 by materialCode)       ← Call = 调 module 推导出的 API
+  → Router(存在?)
+       ├─ 否 → Call(查集团 ERP / 供应商接口)
+       │        → Validator(必填 / 单位 / 编码规则)
+       │        → Converter(外部报文 → 本地物料字段)
+       │        → Sink(Write: 新建物料主数据 + 出入库台账)
        │        → Publish(事件 MaterialMasterCreated)   ← 「借助插件体系增加扩展点，发布事件」
-       │        → Notify(外部系统：ERP 回执 / 车间看板)
-       └─ 是 → Read(取库存) → Branch(低于安全库存?) → 是 → Call(生成请购单 Action) → Notify(主管)
-  → Write(到货记录)  → Publish(事件 GoodsArrivedProcessed)
+       │        → Sink(Push: ERP 回执 / 车间看板)
+       └─ 是 → Call(取库存) → Router(低于安全库存?) → 是 → Call(生成请购单 Action) → Sink(Push: 主管)
+  → Sink(Write: 到货记录)
+  → Publish(事件 GoodsArrivedProcessed)
 ```
 
 **这条流水线里没有一行手写代码**——这正是「配置化覆盖 80%」的样子；写代码的只有 `Call` 到外部接口时的**签名/协议细节**（KEEP 区）。
@@ -387,6 +414,8 @@ Listen(到货事件 WMS.GoodsArrived)
 | 5 | **多租户隔离档** | A 共享执行 + 租户键／ B 每租户独立作业／ C 每租户独立环境 | **5A 起步、B/C 按客户**（§10） |
 | 6 | **水位线与迟到数据默认策略** | A 迟到进侧队列 + 可配丢弃／ B 直接丢弃／ C 无限等 | **6A**（IOT 现场必须有迟到兜底） |
 | 7 | **数据映射可否含外部报文形态（JSON Schema/XSD）** | A 可含，作适配资产不进语言真源／ B 不许，一律映射到 Record | **7A**（否则外部报文无依据） |
+| 8 | **Sink 的正式名**（作者未表态，术语统一时待拍） | A **Sink（数据汇）**——沿用 Flink 词、程序员最熟／ B `DataSink`（与 EventSource 对称）／ C `EventSink` | **8A**（「Sink」已在 Flink / Kafka Connect 生态通用，加前缀反而多一个名字） |
+| 9 | **「端点」的限定规则**（撞车：`api.md` 的 HTTP 接口 vs 本文的集成连接点） | A 接口写「API / 接口」、集成连接写「端点」（**要强调时写「集成端点」**）／ B 集成侧改叫 `Connector`（但那是**实现**，会二次撞车）／ C 保持两处同名、靠上下文区分 | **9A**（B 不可行：Connector 已被「端点的实现」占用） |
 
 **与既有待裁的交叉**：`runtime.md` §9-8（**插件隔离级别**）与本文 §10 是同一件事，**合并裁决**（别再开一个口）。商业条款（分成 / 伙伴分级）不进技术契约。
 

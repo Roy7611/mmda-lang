@@ -37,18 +37,19 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 消息（Message）有发送者（Sender）和接收者（Receiver），生产者（Producer）和消费者（Consumer），而事件（Event）有发布者（Publisher）和订阅者（Subscriber），两者类同。
 消息更偏向于技术层面，而事件理解为发生一件什么事，更能在业务层面沟通和建模，因此我们基于事件架构驱动建模，基于消息实现。
 
-消息和事件都可使用生产者（Producer）和消费者（Consumer）模式，按数据流的角度理解：
+消息和事件都可使用生产者（Producer）和消费者（Consumer）模式，按数据流的角度理解（**术语统一见 [`glossary.md`](glossary.md) §3.1 与 [`event_bus.md`](event_bus.md) §1.1**：MMDA 文档**统一用 Publisher / Subscriber**，Producer / Consumer 只在描述外部系统与中间件时使用）：
 
 - 发生一个事件（Event）或者定时事件
 - 触发（Trigger）一次消息（Message）传递，触发方是消息生产者（Producer）
 - 至某个频道（Channel）
 - 消费者（Consumer）订阅了某个频道（Channel），收到消息转交 Handler（例如某个 Service）进行业务处理
-- Consumer 是一种 Endpoint
+- 消费者本身是一个**端点（Endpoint）**
 
-消息有如下概念：
+消息有如下概念（✔ 2026-09-24 术语统一，见 [`glossary.md`](glossary.md) §3.1）：
 
-- 端点（Sink / Endpoint），Sink 负责数据沉淀、存储、推送
-- 触发器（Trigger）是一个事件源（Event Source）
+- **EventSource（事件源）**——流的入口；原本这里写的「触发器 Trigger 是一个事件源」已改为：**Trigger 降为 EventSource 的配置项 `on`**（`@trigger` 那个记录级数据库触发器是另一回事，别混）
+- **Sink（数据汇）**——流的出口，三种投递方式：**写入 Write · 推送 Push · 调用 Call**（原来写成「端点（Sink / Endpoint）」把两个概念叠在一起了，已拆开：**Endpoint 是配置单元，EventSource / Sink 是它在图上的两个方向**）
+- 处理节点统称 **Processor（处理器）**：**Validator / Converter / Filter / Aggregator**（+ Router / Splitter）——**不用 Transformer**（免得与 AI 的 Transformer 混淆）
 
 ### 事件溯源（Event Sourcing）
 
@@ -71,7 +72,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 - Type 事件类型，通常在编程语言中定义一个实现 Event 接口的具体类
 - Timestamp 事件发生的时间点
 - Lifecycle 事件的生命周期定义事件过期策略，避免在总线中过渡阻塞
-- Source 事件的生产者或者叫触发器（Trigger），可以是不同的应用程序、服务、定时器、外部系统或物理设备
+- **EventSource 事件源**（原名「Source 事件的生产者或者叫触发器（Trigger）」，✔ 2026-09-24 按术语统一改名）：可以是不同的应用程序、服务、定时器、外部系统或物理设备
 - Message 事件的消息描述
 - Payload 关联的数据
 
@@ -96,7 +97,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 
 ### 事件过滤器（Event Filter）
 
-有时候我们需要控制事件的可重复频率，例如总线中已经存在托盘进入事件，则不允许重复发布同类事件，在事件总线中定义策略，哪怕生产者发布了事件，
+有时候我们需要控制事件的可重复频率，例如总线中已经存在托盘进入事件，则不允许重复发布同类事件，在事件总线中定义策略，哪怕发布者发布了事件，
 事件总线也将过滤此类事件忽略它。
 
 事件限流需要事件过滤器和时间窗（Time Window），类似 Flink 中的流式计算，因此事件总线中会配置许多过滤器。
