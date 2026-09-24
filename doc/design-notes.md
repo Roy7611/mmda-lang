@@ -799,7 +799,8 @@ mmda 项目目录：
 * `flow/` — **[流程架构]**
   * `flow/roles/*.mr` — 角色（如 `SalesMan.mr`）
   * `flow/converters/*.mc` — 数据转换器（可选）
-  * `flow/crm.mf`、`flow/crm.mf.g` — 跨模块流程 + DFD/BPMN 图形投影
+  * `flow/crm.mf`、`flow/crm.mf.g` — **数据流（DataFlow）+ 其图形投影**（多 sheet）
+  * `flow/crm.mb`、`flow/crm.mb.g` — **跨模块流程（BPMN）+ 其图形投影**（※ 2026-09-24 改判：`.mf` 由「跨模块流程」改为数据流，BPMN 另立 `.mb`）
 * `ui/` — **[交互设计]** `*.mi` 界面定义（**无 `.g`**）
   * `ui/hrm/InterviewEditor.mi`
   * `ui/crm/ProspectEditor.mi`
@@ -819,8 +820,9 @@ mmda 项目目录：
 | `.ms` | 状态机 Meta State machine |
 | `.mr` | 角色 Meta Role |
 | `.mc` | 数据转换器 Meta Converter（补充） |
-| `.mf` | 跨模块流程 Meta Flow（BPMN（.mf）） |
+| `.mf` | **数据流 DataFlow**（节点图 / 数据流图 / 数据映射图；※ 2026-09-24 改判，原为跨模块流程） |
+| `.mb` | **跨模块流程 Meta BPMN**（※ 2026-09-24 新增） |
 | `.mi` | 界面 Meta Interface |
-| `*.{ma,mm,ms,mf}.g` | 图形投影（布局/样式；SSOT 路径 + `.g`） |
+| `*.{ma,mm,ms,mf,mb}.g` | 图形投影（布局/样式；SSOT 路径 + `.g`；※ 2026-09-24 起含 `.mb`） |
 | `.md` | Markdown 文档 |
 | `.mmdax` | 项目 ZIP 归档包 |

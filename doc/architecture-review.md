@@ -23,7 +23,7 @@
 | 边界与依赖（架构师） | 模块树 + 依赖图 | `biz/*.ma` | ARCH-101/102/106 |
 | 数据所有权（架构师、DBA） | E-R 图 + 模块-对象绑定 | `biz/*.ma`、`data/models/**` | ARCH-104/105 |
 | 领域模型（设计师） | 记录模型 / 枚举 / 状态机 | `data/**` | ARCH-203/204/401 |
-| 数据流（设计师） | DFD | `flow/converters/*.mc` | ARCH-103/105 |
+| 数据流（设计师） | DFD / 节点图 / 数据映射图 | `flow/*.mf`（+ `*.mf.g`；跨模块流程另在 `flow/*.mb`） | ARCH-103/105 |
 | 权限与安全（架构师、审计） | 角色权限视图（**Role 与 Module 分解同级**，见 [`meta-model.md`](meta-model.md) §8.1） | `flow/roles/*.mr` | ARCH-304 |
 | 扩展与租户（架构师） | include / 扩展文件 | 项目清单 + `{tenant}/` 文件 | ARCH-302 |
 | 交付与目标端（架构师） | capability / Profile | Profile + capability 声明 | ARCH-305 |

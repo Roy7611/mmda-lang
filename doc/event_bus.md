@@ -119,7 +119,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 ```
 ┌── 控制面（设计期 + 运行期）───────────────────────────────┐
-│ 设计：节点图 / 数据流图 / 数据映射图（*.mf.g 多 sheet）    │
+│ 设计：数据流（*.mf：节点图 / DFD / 映射图）+ 流程（*.mb）  │
 │ 运行：总线拓扑面板 · 端点管理 · 监控 · 失败队列与重放      │  ← 作者要求「有自己的 UI」
 └──────────────────────────────────────────────────────────┘
 ┌── 契约层（内核，Rust）───────────────────────────────────┐
@@ -233,11 +233,14 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | **数据流图**（DFD） | 数据从哪来、经过谁、到哪去（含外部实体与数据存储） | 流程级 | 架构师、设计师 |
 | **数据映射图** | 上游字段 → 下游字段（含转换与计算） | **字段级** | 设计师、实施 |
 
-### 7.2 落文件：**复用 `flow/*.mf`，不新造文件类型**
+### 7.2 落文件：**数据流 = `.mf`，跨模块流程 = `.mb`（✔ 已裁 §15-3）**
 
-既有事实：`flow/*.mf` + `*.mf.g` **已经支持多 sheet**（`mf-dfd` 数据流图 sheet、`mf-bpmn` 流程 sheet，见 [`ide/graph-files.md`](ide/graph-files.md) §4.5、[`ide/diagrams.md`](ide/diagrams.md) §4）。
-→ **DataFlow 的图元 = `*.mf.g` 新增两个 view 种类**（`mf-flow` 节点图、`mf-map` 数据映射图），**不新增扩展名、不新增顶层概念**。
+**✔ 2026-09-24 已裁**（作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」）——扩展名职责重划：
 
+- **`.mf`（Meta Flow）= 数据流（DataFlow）**：一个文件一份数据流编排；其 `*.mf.g` **多 sheet** = **`mf-flow`（节点图）· `mf-dfd`（数据流图）· `mf-map`（数据映射图）**；
+- **`.mb`（Meta BPMN）= 跨模块流程**：BPMN **从 `.mf.g` 的一个 sheet 升格为独立文件类型**，投影 `*.mb.g`（sheet `mb-bpmn`）。
+
+`flow/` 目录不变（`roles/` · `converters/` · `*.mf` · `*.mb`）；`.g` 族扩为 **`{ma, mm, ms, mf, mb}`**（见 [`project.md`](project.md) §1.1–§1.2、[`ide/graph-files.md`](ide/graph-files.md) §2 / §4.5 / §6）。
 **语言层新增 = 0**：`event` / `channel` / `subscribe` 已能声明（[`events.md`](events.md)）；编排属于**元数据图**（可推导的部分零声明，编排是新增信息，落图不落语法）。
 
 ### 7.3 节点类型（算子清单，收敛到标准词汇）
@@ -415,15 +418,15 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ---
 
-## 15. ✔ 已裁（2026-09-24；**仅第 3 条待定**）
+## 15. ✔ 已裁（2026-09-24，**9 条全部已裁**）
 
-> 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」+「**3 待定**」。
+> 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」；第 3 条先回「**3 待定**」，随后另给方案：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」——**9 条至此全部收口**。
 
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
 | 1 | **执行层引擎**（本文最重） | **1A**：**内嵌轻量执行器**（语义逐条对齐 Flink）——随应用部署；`flink` 集群留 **P10** 口子；**第三方消息框架（C）不做** | §5.3、§9.1 |
 | 2 | **外部端点的定义存哪** | **2B**：**反向导入成语言声明**（**与 2A 相对的取法**）。口径见 §6：外部工具里的 collection **仍不是真源**，进入真源只走**单向反向导入（报告 + 骨架 + 人审后入库）**那条已被 API 契约裁定的路；导入后的端点声明**是语言层产物**，外部系统变化靠**再导入 + diff** 跟进（**不自动跟随**） | §6、[`api.md`](api.md) §6 |
-| 3 | **数据流的图元落点** | **⏳ 待定**（A `*.mf.g` 新增 `mf-flow` / `mf-map` view 种类／B 新文件类型 `*.mx`／C 只放 Profile）——**未定不许进生成器** | §7.2 |
+| 3 | **数据流的图元落点** | **✔ 已裁（2026-09-24，作者另给方案）**：**扩展名职责重划**——**`.mf` = 数据流（DataFlow，含节点图 / DFD / 数据映射图，靠 `*.mf.g` 多 sheet）**；**跨模块流程（BPMN）另立 `.mb`（+ `*.mb.g`）**。作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」。**比原选项更明确**：既没有新增 `.mx`，也不是「只放 Profile」——而是**把两种流程拆成两个文件类型** | §7.2、[`project.md`](project.md) §1.2、[`ide/graph-files.md`](ide/graph-files.md) §4.5 |
 | 4 | **端到端一致性承诺写到哪一档** | **4A**：**「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once**（诚实档）；不宣称全链、不止步于至少一次 | §9.3 |
 | 5 | **多租户隔离档** | **5A**：**共享执行 + 租户键**（`tenant` 进 Header、状态与幂等键带租户前缀、命名空间按租户）；**B / C 按客户**（大客户与私有化交付时用）。**本条的裁决同时收口了 [`operations.md`](operations.md) §9 的同一三档** | §10、[`operations.md`](operations.md) §9 |
 | 6 | **水位线与迟到数据默认策略** | **6A**：**迟到进侧输出 / 迟到队列**（可配丢弃或补算），水位线 = `max(occurredAt) − allowedLateness` | §9.1 |
@@ -441,7 +444,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 - [`runtime.md`](runtime.md) — 四层职责、**事务边界**（§3）、拦截点（§4）、**业务功能模块插件**（§7）、待裁（§9）
 - [`api.md`](api.md) — API 契约、OAS 3.1.0 原生、**与外部工具单向互动**（§7）、待裁清单（§8.2）
 - [`statements.md`](statements.md) / [`records.md`](records.md) — STM、`@trigger`、约束关键字（DataMapper 复用）
-- [`ide/diagrams.md`](ide/diagrams.md) §4 / [`ide/graph-files.md`](ide/graph-files.md) §4.5 — DFD 语义映射与 `.mf.g` 多 sheet
+- [`ide/diagrams.md`](ide/diagrams.md) §4 / [`ide/graph-files.md`](ide/graph-files.md) §4.5 — DFD 语义映射与 `*.mf.g` / `*.mb.g` 多 sheet
 - [`ide/specification.md`](ide/specification.md) §4.8 域 6 — 业务流程建模域（BPMN / DFD / 映射）
 - [`ide/plugins.md`](ide/plugins.md) §10 — 扩展点清单；[`quality.md`](quality.md) §2.3 / §3.1 — 运行期指标与业务指标
 - [`contracts-inventory.md`](contracts-inventory.md) §4 — 两端消息与集成能力实测（**C# 有、Java 无**）

@@ -102,7 +102,7 @@ enum OrderStatus : int {
     ├── data/models/*.mm       Record / View
     ├── data/enums/*.me        Enum
     ├── data/stms/*.ms         STM（行为）
-    ├── flow/roles|converters|*.mf   流程架构
+    ├── flow/roles|converters|*.mf|*.mb   流程架构
     └── ui/**/*.mi             交互设计
         ↕ parse / emit
     元模型 AST / IR（语言无关）

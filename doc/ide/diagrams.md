@@ -133,7 +133,8 @@ M  项目制造运营          [Subsystem, type=0]
 | `biz/*.ma` | `*.ma.g` | `ma-module` |
 | `data/models/**/*.mm` | `*.mm.g` | `mm-er` |
 | `data/stms/**/*.ms` | `*.ms.g` | `ms-stm` |
-| `flow/*.mf` | `*.mf.g`（多 sheet） | `mf-dfd` / `mf-bpmn` |
+| `flow/*.mf` | `*.mf.g`（多 sheet） | `mf-flow` / `mf-dfd` / `mf-map` |
+| `flow/*.mb` | `*.mb.g` | `mb-bpmn` |
 | `ui/**/*.mi` | 无 | — |
 
 详见 [graph-files.md](graph-files.md)。

@@ -26,7 +26,7 @@
 | 术语 | 说明 |
 | --- | --- |
 | m 语言 | 元模型文本语法；Monaco 语言 id `m-lang`，MIME `text/x-m-lang` |
-| M 语言分片 | `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mi` —— 按类型的语言文件 |
+| M 语言分片 | `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mb` `.mi` —— 按类型的语言文件 |
 | MMDA 项目 | SSOT：根 `{projectCode}.mmda` 清单 + `biz/` `data/` `flow/` `ui/`；见 [project.md](project.md) |
 | 项目清单 | 根目录 `{projectCode}.mmda`（JSON），非语言模型 |
 | 工作区 | 展开目录，日常编辑与 git/svn（推荐形态） |
@@ -174,7 +174,8 @@
 | `.ms` | `data/stms/` | STM |
 | `.mr` | `flow/roles/` | Role / Auth |
 | `.mc` | `flow/converters/` | Converter |
-| `.mf` | `flow/` | 跨模块 Flow / BPMN |
+| `.mf` | `flow/` | **数据流（DataFlow）**：节点图 / 数据流图 / 数据映射图（✔ 2026-09-24 改判） |
+| `.mb` | `flow/` | **跨模块流程（BPMN）**（✔ 2026-09-24 新增） |
 | `.mi` | `ui/` | 定制 UI（五视图） |
 | `*.g` | 与 SSOT 同目录 | 图形投影（布局/样式） |
 | `.mmdax` | — | ZIP 归档包 |

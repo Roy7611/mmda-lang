@@ -67,7 +67,7 @@ export default {
 | `workflowStageActions` | 工作流操作条增加按钮 |
 | `activities` | 活动栏新图标 + 侧栏 Vue 组件 |
 | `diagramAdapters` | 注册绘图**引擎**（见 [diagram-adapters.md](diagram-adapters.md)） |
-| `graphDesigners` | （API 0.2）注册 **Graph 设计器**，绑定 `.ma`/`.mm`/`.ms`/`.mf` 与 `{SSOT}.g` |
+| `graphDesigners` | （API 0.2）注册 **Graph 设计器**，绑定 `.ma`/`.mm`/`.ms`/`.mf`/`.mb` 与 `{SSOT}.g` |
 | `commands` | 命名命令，可通过 `ctx.executeCommand('pluginId.commandId')` 调用 |
 
 ### 3.1 运行时上下文 `PluginRuntimeContext`
@@ -228,7 +228,7 @@ manifest: {
 
 ### 11.2 硬边界（内核强制，不靠插件自觉）
 
-1. **禁写语言文件**：插件 API **不提供**写 `*.ma` / `*.mm` / `*.ms` / `*.mf` 等语言文件的能力；即使给了 `fs:workspace`，内核也**按后缀拒绝**（写失败 + 审计）。这对应早先已裁的「插件只读产物 + 报对账，禁写语言文件」。
+1. **禁写语言文件**：插件 API **不提供**写 `*.ma` / `*.mm` / `*.ms` / `*.mf` / `*.mb` 等语言文件的能力；即使给了 `fs:workspace`，内核也**按后缀拒绝**（写失败 + 审计）。这对应早先已裁的「插件只读产物 + 报对账，禁写语言文件」。
 2. **不改语言语义**：插件的 `validationRules` 只出 `warning` / `suggestion`，**不许 fail 构建**；要进硬门禁必须由**内核收录为规则**（[`../quality.md`](../quality.md) 的 A/B/C/D 可判定性分级只按内核规则算）。
 3. **不进语法**：语言层没有插件 / 市场关键字（§8 硬边界）。
 4. **工具概念与语言概念互不渗透**：插件不得要求语言新增概念来表达自己的功能（判据同 [`../api.md`](../api.md) §1.1）。

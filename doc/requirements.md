@@ -29,7 +29,7 @@
 | --- | --- | --- | --- | --- |
 | **业务需求**（业务事件、业务实体、业务规则、问题列表、目标与范围） | 项目视图 / 范围文档 | `biz/*.ma` 模块树 + Feature + `REQ-x` 条目 + Profile 里的质量目标 | 架构师 | 每个 Feature 有归属模块；每条业务需求可追溯到 ≥1 模块或流程 |
 | **关键用户（角色 / Role）** | 关键用户清单（SERU 要求**在需求阶段就识别关键用户**；RUP 里是 Actor） | **`flow/roles/*.mr`**（与 `biz/*.ma` 的模块分解**同级**，[`meta-model.md`](meta-model.md) §8.1） | 架构师 + 业务专家 | 每个用例有触发者；无孤立角色（每个 Role 至少关联一个 Action）；覆盖全部关键用户 |
-| **用户需求** | 用例文档（Use Case） | `flow/*.mf` 的活动 / 任务 + `data/stms/*.ms` 的 Action + `ui/**/*.mi` 页面 | 设计师 | 每个用例有触发者与结果事件；零 orphan |
+| **用户需求** | 用例文档（Use Case） | `flow/*.mb` 的活动 / 任务 + `data/stms/*.ms` 的 Action + `ui/**/*.mi` 页面 | 设计师 | 每个用例有触发者与结果事件；零 orphan |
 | **功能需求** | SRS 的功能章节 | `data/models/*.mm` 字段与约束、`@Computed`、Converter | 设计师 | 字段级机械用例覆盖 100% |
 | **非功能需求** | SRS 的非功能章节 | Profile `quality.targets`（性能 / 可靠性阈值，[`quality.md`](quality.md) §2.2）+ capability 声明 | 架构师 | 目标值缺失本身即 A 类不合格（[`quality.md`](quality.md) §1.2） |
 | **设计约束** | SRS 的约束条目 | capability / `protection` / 方言表 / `conventions.md` | 架构师 | 声明与生成物一致（一致性测试，[`targets.md`](targets.md) §5） |
@@ -64,7 +64,7 @@ SERU 是需求方法论（S / E / R / U 四要素），**遗留系统项目同�
 | 要素 | 原意 | MMDA 落点 | 现状 |
 | --- | --- | --- | --- |
 | **S** Subject Area | 按**业务区划**分解系统（强调业务分析，不是功能分解），使各部分业务上相对独立、降低耦合 | `biz/*.ma` 的模块树（Subsystem / Module / Feature）+ 系统逻辑架构图 + 层级菜单 | **已有**（[`readme.md`](readme.md) §3 L1、[`ide/workflow.md`](ide/workflow.md) 第 1 步） |
-| **E** Event | **业务事件是流程的起点**；通过事件找到流程，把不同场景串接起来 | `flow/*.mf` 的流程节点 + [`events.md`](events.md) 的事件声明 | **已有** |
+| **E** Event | **业务事件是流程的起点**；通过事件找到流程，把不同场景串接起来 | `flow/*.mb` 的流程节点 + [`events.md`](events.md) 的事件声明 | **已有** |
 | **R** Report | 从**管控点**出发（从意图出发）确定报表类型，再细化到具体报表项 | 视图 / 报表 / 看板：语言侧只声明**数据源与主题**，报表与 BI 归 IDE 工具面（**见 §7 待裁 3**） | **部分**（呈现层五视图；BI 元数据族目前只在 C# 侧，见 [`contracts-inventory.md`](contracts-inventory.md) §5 报表行） |
 | **U** Use Case | 用例是**需求组织的最小单位**，强调用户视角而非功能分解 | Feature + Action + 用例（`UseCase` 目前是 [`ide/specification.md`](ide/specification.md) §4.2 的 Phase 2 项） | **缺口**（见 §7 待裁 2） |
 

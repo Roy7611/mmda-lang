@@ -92,8 +92,10 @@ ctx.registerContributions({
 | `mmda.designer.ma-module` | `.ma` | `ma-module` |
 | `mmda.designer.mm-er` | `.mm` | `mm-er` |
 | `mmda.designer.ms-stm` | `.ms` | `ms-stm` |
+| `mmda.designer.mf-flow` | `.mf` | `mf-flow` |
 | `mmda.designer.mf-dfd` | `.mf` | `mf-dfd` |
-| `mmda.designer.mf-bpmn` | `.mf` | `mf-bpmn` |
+| `mmda.designer.mf-map` | `.mf` | `mf-map` |
+| `mmda.designer.mb-bpmn` | `.mb` | `mb-bpmn` |
 
 `.mi` 使用内置 `MiUiDesigner`，无 `.g`。
 

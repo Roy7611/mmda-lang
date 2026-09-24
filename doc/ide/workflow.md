@@ -22,7 +22,7 @@ flowchart LR
 | **1 项目** | 欢迎页 | 新建 / 打开工作区或 `.mmdax` | 根目录 `{projectCode}.mmda` |
 | **2 业务架构** | 导航树 · 业务架构 | 子系统 Module 树、功能架构图 | `biz/*.ma` |
 | **3 数据架构** | 导航树 · 数据架构 | Record / Enum / E-R；STM 独立文件 | `data/models/*.mm`、`data/enums/*.me`、`data/stms/*.ms` |
-| **4 流程架构** | 导航树 · 流程架构 | **角色权限** → Converter、STM、BPMN | `flow/roles/*.mr`、`flow/converters/*.mc`、`flow/*.mf` |
+| **4 流程架构** | 导航树 · 流程架构 | **角色权限** → Converter、STM、BPMN | `flow/roles/*.mr`、`flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` |
 | **5 交互设计** | 导航树 · 交互设计 | Feature 引用定制视图 | `ui/**/*.mi` |
 | **6 交付** | 运行活动栏 | Codegen Profile、`mmda validate` / `generate` | `codegen/profiles/`、`generated/` |
 
@@ -86,14 +86,14 @@ flowchart LR
 
 | 子类 | 图形 / 编辑器 | M语言 |
 |------|---------------|------|
-| **数据流** | DFD、Converter 映射 | `flow/converters/*.mc` |
+| **数据流** | 节点图 / DFD / 数据映射图、Converter 映射 | `flow/*.mf`（+ `flow/converters/*.mc`） |
 | **单对象行为** | STM 图 | `data/stms/*.ms` |
 
 ### 4.3 工作流（跨模块）
 
 | 子类 | 图形 / 编辑器 | M语言 |
 |------|---------------|------|
-| **工作流** | BPMN（池 / 活动 / 网关） | `flow/*.mf` |
+| **工作流** | BPMN（池 / 活动 / 网关） | `flow/*.mb` |
 
 BPMN 术语对应：顺序流 `->`、消息流 `-->`；活动分 User / Manual / Service Task 等（与 Action 分类对齐）。
 

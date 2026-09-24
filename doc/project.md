@@ -48,8 +48,10 @@ erp/
 ├── flow/                       # 流程架构
 │   ├── roles/                  # 角色            *.mr
 │   ├── converters/             # 数据转换器      *.mc
-│   ├── mes.mf                  # 跨模块流程 / BPMN
-│   └── mes.mf.g                # 其图形投影（布局）
+│   ├── mes.mf                  # 数据流（DataFlow）：节点图 / 数据流图 / 数据映射图
+│   ├── mes.mf.g                # 其图形投影（多 sheet：mf-flow / mf-dfd / mf-map）
+│   ├── mes.mb                  # 跨模块流程（BPMN）
+│   └── mes.mb.g                # 其图形投影（sheet：mb-bpmn）
 │
 ├── ui/                         # 交互设计：定制视图
 │   └── mes/BomEditor.mi
@@ -73,9 +75,10 @@ erp/
 | 数据架构 · 枚举 | `data/enums/` | `.me` |
 | 数据架构 · STM | `data/stms/` | `.ms` |
 | 流程架构 · 角色权限 | `flow/roles/` | `.mr` |
-| 流程架构 · 数据流 | `flow/converters/` | `.mc` |
+| 流程架构 · 数据转换 | `flow/converters/` | `.mc` |
 | 测试与验收 | `tests/` | `.mt` |
-| 流程架构 · 工作流 | `flow/` | `.mf` |
+| 流程架构 · 数据流 | `flow/` | **`.mf`**（数据流编排：节点图 / 数据流图 / 数据映射图） |
+| 流程架构 · 跨模块流程 | `flow/` | **`.mb`**（BPMN） |
 | 交互设计 | `ui/` | `.mi` |
 
 ### 1.2 扩展名总表
@@ -89,15 +92,17 @@ erp/
 | `.ms` | Meta State machine | `stm` | `stm … on Record.field { action … }` |
 | `.mr` | Meta Role | `role` | `role` + 权限声明；**Role 是架构设计元素（与 Module 分解同级），来自需求阶段识别的关键用户**——见 [`meta-model.md`](meta-model.md) §8.1 |
 | `.mc` | Meta Converter | `converter` | `converter S->T { … }` |
-| `.mf` | Meta Flow | `flow` | 跨模块流程 / BPMN |
+| `.mf` | Meta Flow | `flow` | **数据流（DataFlow）**：节点图 / 数据流图（DFD）/ 数据映射图——**✔ 2026-09-24 改判：由「跨模块流程」改为数据流**（见 [`errata.md`](errata.md) §五-34） |
+| `.mb` | Meta BPMN | `bpmn` | **跨模块流程（BPMN）**——✔ 2026-09-24 新增（原 `.mf` 的职责迁来） |
 | `.mi` | Meta Interface | `ui` | 定制五视图：index / editor / details / search / report |
-| `*.{ma\|mm\|ms\|mf}.g` | Graph 投影 | `graph` | JSON 布局/样式，见 [ide/graph-files.md](ide/graph-files.md) |
+| `*.{ma\|mm\|ms\|mf\|mb}.g` | Graph 投影 | `graph` | JSON 布局/样式，见 [ide/graph-files.md](ide/graph-files.md) |
 | `.mt` | Meta Test | `test` | 测试用例：`given/when/expect` + `covers`/`source`/`reviewedBy`/`baseline`，见 [`testing.md`](testing.md) §9 |
 | `.md` | — | `doc` | 文档 |
 | `.mmdax` | — | `archive` | ZIP 归档包 |
 
 > ✔ 冲突 3 **已裁**（2026-09-24）：`.mmda` 只表示项目清单，语言分片**保族**，`.mt` 同族（见 [`errata.md`](errata.md) §五-1、§五-6）。
 > ⚠️ `.ma` 的**正文**：本文档系（继承上一轮文档）宣称是 M 语言，实际语料是 JSON（`errata.md` 冲突 2）。
+> ✔ **2026-09-24 扩裁（作者原话：「我想把 `.mf` 给数据流图用，跨模块流程 `.mb`」）**：**`.mf` = 数据流（DataFlow，含节点图 / 数据流图 / 数据映射图）**；**`.mb` = 跨模块流程（BPMN）**——两者职责对调/新立，`.g` 族随之扩为 `{ma, mm, ms, mf, mb}`（见 [`errata.md`](errata.md) §五-34）。
 
 ### 1.3 跨目录引用规则
 
@@ -115,7 +120,7 @@ erp/
 
 | role | 路径 | 默认打包 |
 | --- | --- | --- |
-| `core` | `*.mmda`、`biz/`、`data/`、`flow/`、`ui/`、`tests/`、`**/*.{ma,mm,ms,mf}.g`、`codegen/`、`changelog/` | ✓ |
+| `core` | `*.mmda`、`biz/`、`data/`、`flow/`、`ui/`、`tests/`、`**/*.{ma,mm,ms,mf,mb}.g`、`codegen/`、`changelog/` | ✓ |
 | `attachment` | `doc/`、`README.md` | ✓ |
 | `generated` | `generated/` | ✗ |
 | `tooling` | `.cursor/` | 可选 |

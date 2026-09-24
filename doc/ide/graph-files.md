@@ -6,7 +6,7 @@
 
 | 原则 | 说明 |
 |------|------|
-| **SSOT 在 M 语言** | 语义（实体、字段、关系、状态、动作、流程）只写在 `.ma` / `.mm` / `.ms` / `.mf` / `.mi` |
+| **SSOT 在 M 语言** | 语义（实体、字段、关系、状态、动作、流程）只写在 `.ma` / `.mm` / `.ms` / `.mf` / `.mb` / `.mi` |
 | **视图在 `.g`** | 图元位置、尺寸、颜色、路由、折叠、画布缩放等**不写入**源文件 |
 | **后缀伴生** | 在 SSOT 完整文件名后追加 `.g`：`Equipment.mm` → `Equipment.mm.g` |
 | **syncRef 绑定** | `.g` 内每个图元通过 `syncRef` 指向 SSOT 元素；SSOT 删除后图元标记为 orphan |
@@ -26,14 +26,15 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 
 ## 2. 命名规则
 
-**统一规则**：`{path/to/Name}.{ma|mm|ms|mf}.g`
+**统一规则**：`{path/to/Name}.{ma|mm|ms|mf|mb}.g`
 
 | SSOT | 投影 | graphKind |
 |------|------|-----------|
 | `biz/mes.ma` | `biz/mes.ma.g` | `ma-module` |
 | `data/models/mes/Equipment.mm` | `data/models/mes/Equipment.mm.g` | `mm-er` |
 | `data/stms/OrderStatusChanged.ms` | `data/stms/OrderStatusChanged.ms.g` | `ms-stm` |
-| `flow/crm.mf` | `flow/crm.mf.g` | `mf-dfd` / `mf-bpmn`（多视图，见 §4.5） |
+| `flow/crm.mf` | `flow/crm.mf.g` | `mf-flow` / `mf-dfd` / `mf-map`（数据流，多视图，见 §4.5） |
+| `flow/crm.mb` | `flow/crm.mb.g` | `mb-bpmn`（跨模块流程） |
 | `ui/hrm/InterviewEditor.mi` | — | 无 `.g` |
 
 约定：
@@ -41,13 +42,13 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 1. **同目录**：投影与 SSOT 同目录，不放到单独的 `diagrams/` 树（Legacy `diagrams/**/*.json` 迁移为 `*.{ext}.g`）。
 2. **可选**：无 `.g` 时设计器用默认自动布局；首次拖拽或改样式时创建。
 3. **pack**：`.g` 与对应 SSOT 同属 **core**，一并提交 Git。
-4. **Glob**：`**/*.mm.g`、`**/*.ma.g`、`**/*.ms.g`、`**/*.mf.g`。
+4. **Glob**：`**/*.mm.g`、`**/*.ma.g`、`**/*.ms.g`、`**/*.mf.g`、`**/*.mb.g`。
 
 ## 3. partType 与 MIME
 
 | 扩展名模式 | partType | MIME |
 |------------|----------|------|
-| `*.{ma\|mm\|ms\|mf}.g` | `graph` | `application/vnd.mmda.graph+json` |
+| `*.{ma\|mm\|ms\|mf\|mb}.g` | `graph` | `application/vnd.mmda.graph+json` |
 
 ## 4. 文件格式（JSON）
 
@@ -82,7 +83,7 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 | `engineVersion` | 引擎主版本，便于升级兼容 |
 | `canvas` | 视口与网格 |
 | `nodes` / `edges` / `groups` | 图元列表 |
-| `views` | 仅 `flow/*.mf.g`：多 sheet（DFD + BPMN），见 §4.5 |
+| `views` | 仅 `flow/*.mf.g`：多 sheet（`mf-flow` 节点图 / `mf-dfd` 数据流图 / `mf-map` 数据映射图），见 §4.5 |
 
 ### 4.2 图元公共结构
 
@@ -159,16 +160,25 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 | `transition` | 转换（from → to + action） |
 | `composite` | 组合状态区域 |
 
-#### `mf-dfd` / `mf-bpmn`
+#### `mf-flow` / `mf-dfd` / `mf-map`（数据流）
+
+| syncRef.type | 指向 |
+|--------------|------|
+| `endpoint` | 端点（入 / 出，见 [`../glossary.md`](../glossary.md) §3.1） |
+| `processor` | 处理器节点（Validator / Converter / Filter / Aggregator / Router / Splitter） |
+| `flow` | 连接（节点之间的流） |
+| `dataStore` | 数据存储（DFD） |
+| `external` | 外部实体（DFD） |
+| `mapping` | 字段级映射（数据映射图） |
+
+#### `mb-bpmn`（跨模块流程）
 
 | syncRef.type | 指向 |
 |--------------|------|
 | `process` / `activity` | 流程活动 |
 | `gateway` | 网关 |
 | `event` | 开始/结束/消息事件 |
-| `flow` | 顺序流 / 消息流 |
-| `dataStore` | 数据存储（DFD） |
-| `external` | 外部实体（DFD） |
+| `sequenceFlow` / `messageFlow` | 顺序流 / 消息流 |
 
 ## 5. 语义编辑 vs 布局编辑
 
@@ -183,36 +193,25 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 
 设计器内 **禁止** 在 `.g` 中存储仅存在于 M 语言的语义（关系类型、FK 列名、on delete 等）。
 
-## 4.5 多视图：`.mf.g` 的 DFD + BPMN
+## 4.5 多视图：数据流 `.mf.g`（BPMN 已独立成 `.mb`）
 
-一个 `flow/crm.mf` 对应一个 `flow/crm.mf.g`，内含多个 **view**（sheet）：
+**✔ 2026-09-24 已裁**（[`../event_bus.md`](../event_bus.md) §15-3）：**数据流 = `.mf`**（一个文件一份数据流，其 `.g` 多 sheet）；**跨模块流程（BPMN）独立为 `.mb` + `.mb.g`**（单视图 `mb-bpmn`）。
+
+一个 `flow/crm.mf` 对应一个 `flow/crm.mf.g`，内含多个 **view**（sheet）——节点图 / 数据流图 / 数据映射图：
 
 ```json
 {
   "formatVersion": "1.0",
   "syncRef": "flow/crm.mf",
   "views": [
-    {
-      "id": "dfd",
-      "graphKind": "mf-dfd",
-      "label": "数据流图",
-      "canvas": { "zoom": 1 },
-      "nodes": [],
-      "edges": []
-    },
-    {
-      "id": "bpmn",
-      "graphKind": "mf-bpmn",
-      "label": "BPMN",
-      "canvas": { "zoom": 1 },
-      "nodes": [],
-      "edges": []
-    }
+    { "id": "flow", "graphKind": "mf-flow", "label": "节点图",     "canvas": { "zoom": 1 }, "nodes": [], "edges": [] },
+    { "id": "dfd",  "graphKind": "mf-dfd",  "label": "数据流图",   "canvas": { "zoom": 1 }, "nodes": [], "edges": [] },
+    { "id": "map",  "graphKind": "mf-map",  "label": "数据映射图", "canvas": { "zoom": 1 }, "nodes": [], "edges": [] }
   ]
 }
 ```
 
-顶层 `graphKind` 可省略或设为 `mf-multi`；以 `views[].graphKind` 为准。
+顶层 `graphKind` 可省略或设为 `mf-multi`；以 `views[].graphKind` 为准。跨模块流程是**单独的文件**：`flow/crm.mb` + `flow/crm.mb.g`（`graphKind = mb-bpmn`，单视图），不再与数据流挤在同一个 `.g` 里。
 
 ## 6. graphKind 与设计器对照
 
@@ -221,11 +220,13 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 | `ma-module` | `.ma` | `.ma.g` | 子系统 / Module / Feature 框图 |
 | `mm-er` | `.mm` | `.mm.g` | Record 字段 + 关系 E-R |
 | `ms-stm` | `.ms` | `.ms.g` | 状态、动作、转换、组合状态 |
+| `mf-flow` | `.mf` | `.mf.g` | 节点图 sheet（拓扑） |
 | `mf-dfd` | `.mf` | `.mf.g` | 数据流图 sheet |
-| `mf-bpmn` | `.mf` | `.mf.g` | BPMN sheet |
+| `mf-map` | `.mf` | `.mf.g` | 数据映射图 sheet |
+| `mb-bpmn` | `.mb` | `.mb.g` | 跨模块流程（BPMN） |
 | — | `.mi` | — | 内置 UI 设计器，无 `.g` |
 
-> ⏳ **规划（待裁）**：数据流编排的三张图（**节点图 / 数据映射图**）拟扩展为 `mf-flow` / `mf-map` 两个 view 种类，落在既有 `*.mf.g` 上（**不新增扩展名**）——见 [`../event_bus.md`](../event_bus.md) §7.2 与 §15-3。
+> ✔ **已裁（2026-09-24）**：数据流编排的三张图（**节点图 / 数据流图 / 数据映射图**）就是 `mf-flow` / `mf-dfd` / `mf-map` 三个 view 种类，落在 `.mf` 的 `*.mf.g` 上；**跨模块流程（BPMN）另立 `.mb`**（`mb-bpmn`）——作者原话「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」，见 [`../event_bus.md`](../event_bus.md) §15-3 与 [`../project.md`](../project.md) §1.2。
 
 ## 7. 插件式架构
 
@@ -292,7 +293,7 @@ apps/architect-ui/src/plugins/
 ├── designer-ma-module/     # mmda.designer.ma-module
 ├── designer-mm-er/         # mmda.designer.mm-er
 ├── designer-ms-stm/        # mmda.designer.ms-stm
-└── designer-mf-flow/       # mmda.designer.mf-dfd + mf-bpmn
+└── designer-mf-flow/       # mmda.designer.mf-flow / mf-dfd / mf-map（数据流）
 ```
 
 ## 8. 命名建议（汇总）
@@ -312,8 +313,10 @@ apps/architect-ui/src/plugins/
 | `mmda.designer.ma-module` | Designer | `ma-module` |
 | `mmda.designer.mm-er` | Designer | `mm-er` |
 | `mmda.designer.ms-stm` | Designer | `ms-stm` |
+| `mmda.designer.mf-flow` | Designer | `mf-flow` |
 | `mmda.designer.mf-dfd` | Designer | `mf-dfd` |
-| `mmda.designer.mf-bpmn` | Designer | `mf-bpmn` |
+| `mmda.designer.mf-map` | Designer | `mf-map` |
+| `mmda.designer.mb-bpmn` | Designer | `mb-bpmn` |
 
 ### 8.3 Editor tab kind
 
@@ -343,7 +346,7 @@ apps/architect-ui/src/plugins/
 | `lang/graph/mmErSync.ts` | `MetaRecord` ↔ `mm-er` syncRef |
 | `lang/graph/maModuleSync.ts` | `MaModule` ↔ `ma-module` |
 | `lang/graph/msStmSync.ts` | STM AST ↔ `ms-stm` |
-| `lang/graph/mfFlowSync.ts` | Flow AST ↔ `mf-dfd` / `mf-bpmn` |
+| `lang/graph/mfFlowSync.ts` | Flow AST ↔ `mf-flow` / `mf-dfd` / `mf-map` / `mb-bpmn` |
 | `diagram/graphDocument.ts` | `*.g` JSON 类型与读写 |
 
 ## 9. 迁移
