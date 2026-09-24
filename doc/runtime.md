@@ -188,6 +188,30 @@
 
 **约束（不变）**：能力清单**只增不改名**（改名 = 破坏性变更，走语言版本）；**跨模块调用**按 §4.5 口径（**跨模块 = 新事务**）；**某项能力在某端不具备时**，`capability` 声明与三端一致性测试必须能在生成期发现（[`targets.md`](targets.md) §5）。
 
+#### 查询形态与兜底层（⏳ 待裁两条，作者 2026-09-24 追加提案）
+
+**1）类 SQL 查询块** —— 作者原话：「**还有一种可能，给上下文后，写类 SQL 的语句，然后 C#, java 都有 sql 包，能自动翻译执行，也是很好**」。
+两条路线：
+
+- **路线 1（助手建议）**：**类 SQL 由内核解析 → 内核编译成方言 SQL → 宿主只执行**（JDBC / ADO.NET 只作通道）。
+  好处：三端一致由内核保证；L3「DDL / SQL 逐字对账」天然成立（**最终 SQL 在内核手里**）；方言仍走既有 DDL 方言层。
+- **路线 2**：**交给宿主 SQL 包翻译**（Java jOOQ / Spring Data JPA；C# EF Core / SqlSugar）。**代价（已核）**：
+  ① **jOOQ 开源版只覆盖开源库**（PostgreSQL / MySQL / SQLite …）——**SQL Server、Oracle、Db2 与达梦、金仓等不在其列**，
+  商业数据库与部分特性需 Express / Professional / Enterprise（**99 / 399 / 799 €**）；
+  ② **两侧现有 ORM 并不同构**：**Java 底座现状 = Spring Data JPA**（11 个模块 pom 命中）、**C# 底座现状 = Dapper 2.1.35**（14 处 `PackageReference`）——
+  **Dapper 是「字符串 SQL + 对象映射」，根本没有查询 DSL 翻译能力**；要用翻译就得换 EF Core / SqlSugar（新依赖、新语义、新方言行为）。
+  ③ 于是「同一段类 SQL、两端各自翻译一遍」= **把「三端不统一」固化下来**，与 mmda-lang 的初衷（**统一 Java 与 C# 底座的接口方式**）相反。
+
+**范围建议**：类 SQL **只用于只读查询**（join / 聚合 / 子查询 / 报表取数）；**写入仍走 `script.entity.*`**（要审计、行数上限、权限上下文）。
+
+**2）兜底层：注入 `EntityFactory` / `Repository`，直接写 Java / C#** —— 作者原话：「**或者干脆注入 EntityFactory，直接 java/c# 写**」。
+**这不是第三档脚本方案**，而是**已经定下的 KEEP 区宿主代码**（§4.2 注 + 已裁 §9-6「`EntityFactory` + `Repository` 两层、目标消灭手写 SQL 语句与手写字符串字段名」）。
+口径：**注入的入口必须是接口**（面向 `IEntityFactory` / `IRepository` 编程，**不向下转型**到运行时类）、**禁止手写 SQL 字符串与字符串字段名**、**钩子实现进评审清单可见**。
+定位 = **脚本的逃生门**（复杂逻辑 / 性能敏感 / 要用宿主生态与原生调试）—— **脚本不追求万能**，写不动的下沉到宿主代码。
+
+**分层结论（若上两条取助手建议）**：声明式（表达式层，纯函数）→ 轻量逻辑（受限脚本 A）→ 查询（类 SQL 查询块，只读）→ 复杂逻辑（KEEP 区宿主代码）。
+**四档各就各位，不是四选一。**
+
 [^jep372]: JEP 372: Remove the Nashorn JavaScript Engine — JDK 15。
 [^graaljs]: GraalJS Maven artifacts `org.graalvm.polyglot:polyglot` / `:js`；官方文档 "Run GraalJS on a Stock JDK" 明确 stock JVM 非受支持路径。
 [^jint]: .NET 侧：`Microsoft.CodeAnalysis.CSharp.Scripting`（Roslyn）、Jint（纯托管 JS，含 `PrepareScript` 复用与执行限额）、ClearScript（V8）；Jint 文档声明其配置复用「**不是隔离边界**」。
