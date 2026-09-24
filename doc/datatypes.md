@@ -113,7 +113,7 @@
 >     addressId uint64 identity generated readonly,
 > ```
 >
-> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `uint64 identity partitioned`**——
+> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3；**组就声明在视图处（视图即组）**，见同文件 §7。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `uint64 identity partitioned`**——
 >
 > - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
 > - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
