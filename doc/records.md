@@ -55,7 +55,14 @@ quantity decimal(18,3) positive,
 > | **对象级 / 组合** | **写在 record 体末尾、单独具名声明**——**两个及以上字段建一个索引必须走这条** | `@Index IDX_changelog_key(refName,refKey)`、`@Index IDX_flowtrails(objName,objId,actTime)`、`@ForeignKey FK_…(…) ref …` |
 >
 > **实测（语料 378 个语言文件）**：行尾字段级约束 **`readonly` 1040 处 / `indexed` 491 处**；具名声明 **342 处**，其中 **2 列及以上 45 处**（2 列 32、3 列 12、4 列 1 —— 最长 `IDX_tool_asequip(asEquip,maintenancePlanId,planToMaintain,lastMaintained)`）。
-> **仍未定**：**两套名字表都要封闭**（行尾关键字表 + 注解名表；未知名 / 拼错 → `mmda check` 报错），扩展名的白名单机制待定（Profile 还是 `customProperties`）；另 §二-9 的「命名约束 vs 约束表达式 `#ge(0)`」仍待裁。
+> ✔ **已裁（2026-09-25 作者）**：**未定义的名字就是错，必须报错** —— 作者原话：「**posittive 写错了肯定要报错，语法都不对，你咋能过。你没有词法分析器吗？**」
+>
+> - **行尾关键字表 + 注解名表都是「语言关键字」，进词法分析器的 token 表**（`indexed` / `unique` / `identity` / `generated` / `readonly` / `default` / `charset` / `future` / `cancellable`… 与 `@Index` / `@Unique` / `@Id` / `@Ref` / `@One` / `@Many` / `@Computed` / `@PartitionID` / `@State` / `@Name` / `@Thumbnail`…）；
+> - **拼错 / 未知名 → 解析期报错（error）**，报在 `<file>:<line>:<col>`（例：`quantity decimal(18,3) posittive` → `error: 未知约束关键字 posittive`）；
+> - **因此不要「自定义约束名的扩展白名单」** —— 先前提的 `Profile` / `customProperties` 两种白名单方案 **作废**（没有「自定义关键字」这回事）；
+> - **解析器位置**：`mmda-syntax`（**P2**：按内容首关键字判 partType、诊断带 `file:line:col`）—— **仓里目前还没有解析器实现，所以现阶段没有任何东西能拦住拼错**；这不是设计上的灰区，是 **P2 未开工**。
+>
+> **扩展名的白名单机制**（Profile 还是 `customProperties`）~~ → **作废**：关键字表封闭，没有「自定义约束名」这回事（见上）。另 §二-9 的「命名约束 vs 约束表达式 `#ge(0)`」仍待裁。
 
 ### 1.3 集合字段（`@Many`）
 

@@ -1,0 +1,12 @@
+# 统一行尾与文本/二进制判定（规范仓以 Markdown 为主，统一 LF）
+* text=auto eol=lf
+
+# 明确二进制（防 diff/合并把它们当文本）
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
