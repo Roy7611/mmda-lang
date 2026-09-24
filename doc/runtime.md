@@ -212,6 +212,34 @@
 **分层结论（若上两条取助手建议）**：声明式（表达式层，纯函数）→ 轻量逻辑（受限脚本 A）→ 查询（类 SQL 查询块，只读）→ 复杂逻辑（KEEP 区宿主代码）。
 **四档各就各位，不是四选一。**
 
+**3）宿主语言运行期编译（A′，作者 2026-09-24 追加）** —— 作者原话：「**Java Compiler API**」「**Roslyn / DLR**」，即**脚本语言 = 宿主语言本身**（Java 片段 / C# 片段），运行期in-memory 编译后加载执行。
+
+**本机实测（不是推测）**：
+
+| 项 | JDK 17（Liberica） | **JDK 21（L2 基线）** |
+| --- | --- | --- |
+| `ToolProvider.getSystemJavaCompiler()` | `com.sun.tools.javac.api.JavacTool` | 同（**纯 JRE 时为 `null`**） |
+| 内存内编译一个小脚本（3 轮） | 30 / 22 / 19 ms | **34 / 23 / 24 ms** |
+| 字节码 / 调用 | 318 B，`Hook.run(21) = 42` | 同 |
+| **脚本能否读环境变量** | **能**（PATH 长度 4292） | **能** |
+| **脚本能否列宿主目录** | **能**（user.home 169 项） | **能** |
+| **脚本能否拿进程号 / 起进程** | **能**（`ProcessHandle` + `Runtime.exec("cmd /c echo")` 成功） | **能** |
+| **C# / Roslyn**（.NET 10.0.12，Roslyn 5.3.0） | 冷编译 **344 ms**、热编译 **31 ms**（2048 B，`Hook.Run(21)=42`）；脚本同样**能读环境变量、能列目录、能拿进程号、能 `Process.Start("cmd /c echo")`**（实测打印出 `hi`）；`Assembly.Load(byte[])` 进默认上下文 = **不能卸载、无隔离** | |
+
+**结论**：**编译 20~30 ms（Java）/ 31 ms（C# 热）完全可用，问题不在性能，在于「编译出来的脚本与宿主代码完全同权」**——文件、环境、进程、网络、反射全都能碰；
+**Java 21 上没有 SecurityManager 可用**（JEP 411 已弃用），所以 **A′ = 没有沙箱**；Roslyn 侧同理（`AssemblyLoadContext` 是**加载隔离**、不是安全边界；
+且 **Roslyn scripting API 官方不承诺生产支持，官方支持的是编译器 API**）。**另**：**DLR 不是脚本引擎**（表达式树 + 动态调用点缓存，是给语言实现者用的运行时层，IronPython / IronRuby 已停滞）——要用 DLR 仍得嵌第三方语言，即回到 B 档。
+
+**A′ 的代价清单**：① **三端各写一遍**（脚本 = Java 片段 → C# 端得重写一份）——**与 mmda-lang 的初衷（统一 Java 与 C# 底座接口方式）相冲**；
+② **脚本进不了元数据静态校验**（无字段名 / 类型检查，除非另写分析器），**生成器与设计器看不见钩子逻辑**，L3 逐字对账覆盖不到；
+③ **依赖完整 JDK**（`getSystemJavaCompiler()` 在纯 JRE 上为 `null`）；**每次改脚本都要新 ClassLoader**（不池化 = metaspace 泄漏，已知坑）；
+④ **明文可反编译**——与「核心算法下沉 Rust」的保护方向相反。
+
+**助手建议的定位（若采纳）**：**A′ 不是「钩子脚本的语言」，而是 KEEP 区宿主扩展的「运行期加载方式」** ——
+即「注入 `EntityFactory` / `Repository` 直接写」的**热更版本**（构建期编译 = 现在的 KEEP 区宿主代码；运行期编译 = 不打版就能改），
+**适用场景只有「客户现场要改的复杂逻辑、必须用 Java / C# 写」**（MES 现场适配、报表口径）。纪律：**走 KEEP 区**（进评审清单、独立版本、**不进元数据真源**）、
+**独立 ClassLoader / `AssemblyLoadContext` 做加载隔离**（诚实口径：**这不是安全边界**，靠**信任 + 进程 / 模块边界**）、**编译期做引用白名单校验**、明确「**这是信任代码，不是沙箱代码**」。
+
 [^jep372]: JEP 372: Remove the Nashorn JavaScript Engine — JDK 15。
 [^graaljs]: GraalJS Maven artifacts `org.graalvm.polyglot:polyglot` / `:js`；官方文档 "Run GraalJS on a Stock JDK" 明确 stock JVM 非受支持路径。
 [^jint]: .NET 侧：`Microsoft.CodeAnalysis.CSharp.Scripting`（Roslyn）、Jint（纯托管 JS，含 `PrepareScript` 复用与执行限额）、ClearScript（V8）；Jint 文档声明其配置复用「**不是隔离边界**」。
