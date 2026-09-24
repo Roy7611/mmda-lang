@@ -9,27 +9,27 @@
 
 | # | 文档 | 内容 |
 | --- | --- | --- |
-| 0 | [vision.md](vision.md) | **愿景与目标**（为什么做 m 与 MMDA）：商业 / 技术 / 用户 / 架构四层目标与逐条机制、**open core 边界与许可**、**国产化三级承诺**、部署方式口径、业务可测指标、5 条待裁 |
-| 1 | [readme.md](readme.md) | 语言规范总览：定位、设计原则、吸收哪些语言的什么、导读 |
-| 2 | [datatypes.md](datatypes.md) | 数据类型全集与跨语言/跨数据库映射 |
-| 3 | [records.md](records.md) | 对象：字段、限制关键字、关系注解、对象级约束、Enum、View |
-| 4 | [statements.md](statements.md) | 语句与表达式：声明、切片、模式匹配、约束表达式、行为与状态机 |
-| 5 | [events.md](events.md) | 事件驱动架构 + 事件声明语法（event / channel / subscribe） |
-| 6 | [presentation.md](presentation.md) | 呈现层：UiField、分组、i18n、五视图 |
-| 7 | [meta-model.md](meta-model.md) | 元模型元素（L1/L2/L3）与到旧实现结构的映射 |
-| 8 | [project.md](project.md) | 项目格式：目录、扩展名、清单、变更日志、归档、多租户 |
-| 9 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
-| 10 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
-| 11 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
-| 12 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**优秀需求四标准各自对应的机械信号**、SERU 四要素、需求管理四步、SRS 形态与追溯链 |
-| 13 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
-| 14 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 |
-| 15 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、AI 时代 review 分层、IDE 全生命周期能力 |
-| 16 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
-| 17 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合 |
-| 18 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
-| 19 | [glossary.md](glossary.md) | 术语表 |
-| 20 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
+| 1 | [vision.md](vision.md) | **愿景与目标**（为什么做 m 与 MMDA）：商业 / 技术 / 用户 / 架构四层目标与逐条机制、**open core 边界与许可**、**国产化三级承诺**、部署方式口径、业务可测指标、5 条待裁 |
+| 2 | [readme.md](readme.md) | 语言规范总览：定位、设计原则、吸收哪些语言的什么、导读 |
+| 3 | [datatypes.md](datatypes.md) | 数据类型全集与跨语言/跨数据库映射 |
+| 4 | [records.md](records.md) | 对象：字段、限制关键字、关系注解、对象级约束、Enum、View |
+| 5 | [statements.md](statements.md) | 语句与表达式：声明、切片、模式匹配、约束表达式、行为与状态机 |
+| 6 | [events.md](events.md) | 事件驱动架构 + 事件声明语法（event / channel / subscribe） |
+| 7 | [presentation.md](presentation.md) | 呈现层：UiField、分组、i18n、五视图 |
+| 8 | [meta-model.md](meta-model.md) | 元模型元素（L1/L2/L3）与到旧实现结构的映射 |
+| 9 | [project.md](project.md) | 项目格式：目录、扩展名、清单、变更日志、归档、多租户 |
+| 10 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
+| 11 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
+| 12 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
+| 13 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**优秀需求四标准各自对应的机械信号**、SERU 四要素、需求管理四步、SRS 形态与追溯链 |
+| 14 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
+| 15 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 |
+| 16 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、AI 时代 review 分层、IDE 全生命周期能力 |
+| 17 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
+| 18 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合 |
+| 19 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
+| 20 | [glossary.md](glossary.md) | 术语表 |
+| 21 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
 
 ## 工具与 IDE
 
