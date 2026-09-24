@@ -154,7 +154,7 @@ stm BomApproval on Bom.status {
 }
 ```
 
-> ⚠️ 行为是**内联在 record** 还是**独立 `.ms` 文件**（`data/stms/*.ms`），两批文档分叉，见 `errata.md` 冲突 4。
+> ✔ **已裁（2026-09-25，取语料形态）**：**行为住独立 `.ms` 文件**（`data/stms/<模块>/<对象>.ms`，`stm BomApproval on Bom.status { action approve { transition CERTIFIED->APPROVED } }`），**不内联进 record**（见 [`errata.md`](errata.md) 冲突 4）。理由：与「一对象一文件 + 细粒度版本控制」一致，状态图可单独图形编辑；381 文件语料已是此形态、零迁移。
 
 ### 5.4 `@Transaction` 与 `@Event`
 

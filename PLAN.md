@@ -1,8 +1,8 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.45 · 2026-09-24
+> v1.46 · 2026-09-25
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
-> 已拍定决策见 §0，未决项见 §6，**2026-09-24 的三十八项裁决见 §6.3**。
+> 已拍定决策见 §0，未决项见 §6，**2026-09-24 起已定三十九项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
 > **目标端契约**见 [`doc/targets.md`](doc/targets.md)，**逐行对照清单**见 [`doc/contracts-inventory.md`](doc/contracts-inventory.md) —— 两者是 P6 的前置。
 
@@ -408,16 +408,17 @@ tools/                      方言/类型映射数据表
 
 ## 6. 待裁决
 
-### 6.1 语法专题（你已定：另开专题逐个讨论）
+### 6.1 语法专题（逐个讨论，第一轮已裁）
 
-- 口径冲突与待裁决清单**已集中到 [`doc/errata.md`](doc/errata.md)**：五处结构性冲突（冲突 3 已裁）+ 十条语法细项。
-- 本计划只固定一条：**P2 开工前必须选定语法基线**（errata 冲突 1 的文档形态 vs 语料形态），否则 381 个文件无法当回归集。
+- ✔ **语法基线已定（2026-09-25）：一律取语料形态** —— 冲突 1（`@` 注解制）、冲突 2（`.ma` = JSON、`.mm` / `.me` / `.ms` / `.mi` = M 语言文本）、冲突 4（行为住独立 `.ms`）、冲突 5（`type(size)` + 尾 `?` 即 `varchar(80)?`）；**P2 闸门解除**，381 文件可直接当回归集。见 §6.3-39。
+- 口径冲突与待裁决清单**已集中到 [`doc/errata.md`](doc/errata.md)**：五处结构性冲突**全部已裁**（冲突 3 于 2026-09-24；冲突 1 / 2 / 4 / 5 于 2026-09-25）+ 十二条语法细项（§二-6 的 `BIGID` 部分已裁：**`BIGID` 是自有类型 = partitionID + 高位 tenantId**，余位宽分配 / 生成方 / 写法待补）。
+- 语法专题仍待裁：§二-1…5、7…10、11（native 节点声明）、12（`.mt` 正式语法）+ 本轮新攒的**脚本块语法形态**与**类 SQL 查询语法形态**。
 
 ### 6.2 工程与架构未决项
 
 1. **仓库关系**：`E:\Dev\mmda-architect`（Rust 内核 + IDE 壳 + 381 文件语料）与 `D:\2026\rust`（规范 + 计划 + 已迁入的文档）是合并成一个仓，还是「`rust` = 语言内核与规范，architect = IDE 壳，内核作为依赖」？
 2. ~~**`.mmda` 后缀**~~ → **✔ 已裁决，见 §6.3-1**。
-3. **`.ma` 正文形态**：见 errata 冲突 2（JSON vs 语言 DSL），以及「哪些 part 是 JSON、哪些是语言文本」的界限。
+3. ~~**`.ma` 正文形态**~~ → **✔ 已裁（2026-09-25，取语料形态），见 §6.3-39**：**`.ma` = JSON**（模块树，设计器产出）、**`.mm` / `.me` / `.ms` / `.mi` = M 语言文本** → 「哪些 part 是 JSON、哪些是语言文本」的界限随之定死（判据：人写与评审的走文本、设计器产出的结构性文件走 JSON）。
 4. **留档的处置**：`doc/archive/2026-06/` 是否需要长期保留（用于 diff 与追溯），还是在 P0 定完仓库关系后随 architect 仓一并归档。
 5. **svn 集成的具体形态**：git 有本地提交/分支/合并可承载「细粒度版本控制」；svn 无本地暂存且合并体验差。是否为 svn 定义「changelog 为准、文件为辅」的弱集成？
 6. **旧 `mmda_metadata` 库的连接**：`tools/reverse_mmda_project.py:27` 写死 `127.0.0.1:3306 root/<口令见本地环境>`（**原文曾明文写出口令，公开仓脱敏**）。P1/P4 对账需要这个库或一份 dump；是否改环境变量并给我一份 dump？（C# 侧 `Db/mmda_metadata-local.sql` 可能已是一份可用建库脚本。）
@@ -489,6 +490,7 @@ tools/                      方言/类型映射数据表
 | 36 | **脚本的运行身份（作者取 C）**——**作者原话：「C」**：① **默认 = 继承调用者**（按触发它的调用者的权限与数据范围运行，越权同样被拒）；② **可选 `runAs: system`**（定时任务 / 事件消费者 / 系统钩子等无调用者场景），声明**进评审清单可见 + `mmda check` 出 warning**；③ **身份枚举封闭**——只有 `caller`（默认）/ `system`，**不许自定义身份**（自定义身份 = 绕过权限的通用后门）；④ **`system` 的边界**：不受对象级 / 数据范围限制，**但仍受功能开关与审计**，**所有脚本写入必须记 `actor`**（`system:<脚本名>`）；⑤ **租户键仍必须存在**（与 §10 共享执行 + 租户键一致）。**脚本引擎议题至此全部清零。** | [`doc/runtime.md`](doc/runtime.md) §4.5 尾 + §4.2 注、[`doc/operations.md`](doc/operations.md)（审计）、[`doc/errata.md`](doc/errata.md) §五-37、本文件 §6.2-26 / §6.3-34 |
 | 37 | **`api.md` §8.2-2c 取 1A 2A（API 路径前缀与复数形态）**——**作者原话：「1. 1A 2A 实际上我在 module.moduleUrl 中配置了，复数形式遵循英文单词，前后端都有实现」**：① **`/api` 前缀不写死 —— 由模块的 `moduleUrl` 配置**（真源 = [`doc/meta-model.md`](doc/meta-model.md) 的 Module 元素，已在该行补注；**不是 Profile 全局开关**）；② **复数变形 = 遵循英文单词规则**（`+s` / `y → ies` / `s,x,z,ch,sh → es` 等常规变形），**前后端同一套实现、以现状为准**、**不引 `pathSegment` 手写覆盖**；**`api.md` §8.2 至此 16 条全部已裁、无余项**（「未定不许进生成器」的残余清零） | [`doc/api.md`](doc/api.md) §3.4 / §8.2-2、[`doc/meta-model.md`](doc/meta-model.md) Module 表、[`doc/errata.md`](doc/errata.md) §五-38、本文件 §6.2-25 |
 | 38 | **插件口径补两条 + Flutter 已有早期实现**——**作者原话：「2. flutter我也有早期版本的实现，后面再说。业务插件是指用户用java, c#, ts做的，目前不考虑收费和市场」**：① **业务插件 = 用户用 Java / C# / TS 三端原生代码实现**（**不是 m 语言、也不是脚本**；m 只声明接入点与权限）→ [`doc/runtime.md`](doc/runtime.md) §7 补口径；② **不做收费、不做插件市场** → [`doc/ide/plugins.md`](doc/ide/plugins.md) §9 **由「✔ 已裁：做市场」改判为「⏸ 暂缓」**（机制保留为**方向与口子**、**不进首版、不进版本承诺**），[`doc/vision.md`](doc/vision.md) 共赢行 + [`doc/protection.md`](doc/protection.md) 分发渠道项同步加注；③ **移动端 / Flutter：作者已有早期版本实现，版次议题延后**（「后面再说」）——[`doc/errata.md`](doc/errata.md) §三-26 三条**暂挂** | [`doc/runtime.md`](doc/runtime.md) §7、[`doc/ide/plugins.md`](doc/ide/plugins.md) §8 / §9 / §9.1、[`doc/vision.md`](doc/vision.md) §2 共赢 + §8-5、[`doc/protection.md`](doc/protection.md) §7.1、[`doc/targets.md`](doc/targets.md) §8-6、[`doc/errata.md`](doc/errata.md) §五-39 + §三-25 / §三-26、本文件 §6.3-17 / §6.3-20 |
+| 39 | **语法基线取语料形态（四条结构性冲突一并裁掉）+ `BIGID` 定义为自有类型**——**作者原话：「1 语料 / 2. 语料 / 3. 语料 / 4. 按 varchar(80)?」** + 「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」：① **冲突 1 → 语料**：**以 `@` 注解制为基线**（`@Ref` / `@One` / `@Many` / `@Computed` / `@Index` / `@Id` / `@State`），早期文档的 `ref X as y` / `indexed` / `unique` / `computed` 标为历史（实测 `ref ` 与 `computed` 零命中）；② **冲突 2 → 语料**：**`.ma` = JSON**、**`.mm` / `.me` / `.ms` / `.mi` = M 语言文本**（实测 378 个语言文件：215 / 113 / 41 / 1 全文本，`.ma` 2 全 JSON），**判据 = 人写与评审的走文本、设计器产出的结构性文件走 JSON**；③ **冲突 4 → 语料**：**行为住独立 `.ms`**、不内联进 record；④ **冲突 5 → `type(size)` + 尾 `?`**：`varchar(80)?` / `char(11)?` / `decimal(18,3)?`；⑤ **`BIGID` = 自有类型**：**本身即 partitionID、高位存 tenantId**（与 `@PartitionID` / `partitionKey` / `minID`·`maxID` 同属多租户主键机制），**位宽分配 / 生成方 / 类型名写法仍待补**。**P2 语法基线闸门由此解除** | [`doc/errata.md`](doc/errata.md) 冲突 1 / 2 / 4 / 5 + §二-6 + §五-40、[`doc/records.md`](doc/records.md) 顶部、[`doc/datatypes.md`](doc/datatypes.md) §2.1 与 `BIGID` 段、[`doc/statements.md`](doc/statements.md) §5、[`doc/project.md`](doc/project.md) §1.2、[`doc/ide/README.md`](doc/ide/README.md)、[`doc/glossary.md`](doc/glossary.md) §5、本文件 §6.1 / §6.2-3 |
 
 ---
 
@@ -595,5 +597,6 @@ cargo run -p mmda-cli -- bus replay --flow goods-arrived --from dead-letter
 - v1.41（2026-09-24）：**「脚本的查询形态与兜底层」登记为待裁**（作者原话：「**还有一种可能，给上下文后，写类 SQL 的语句，然后 C#, java 都有 sql 包，能自动翻译执行，也是很好**」；「**或者干脆注入 EntityFactory，直接 java/c# 写**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 尾追加「查询形态与兜底层」**：**类 SQL 查询块**两条路线（**路线 1 内核解析 → 内核生成方言 SQL → 宿主只执行**（建议、只读）／ 路线 2 宿主 SQL 包翻译）+ **已核代价**（jOOQ 开源版不含 SQL Server / 达梦 / 金仓，商业库需 99 / 399 / 799 €；Java 现状 Spring Data JPA、**C# 现状 Dapper 2.1.35 无查询 DSL 翻译能力**）+ **兜底层 = 注入 `EntityFactory` / `Repository` 直写宿主代码 = KEEP 区**（非第三档脚本）+ **四档分层结论**；② [`doc/errata.md`](doc/errata.md) §三 新增第 33 条 + 校勘第四十七轮；③ 本文件 §6.2 新增未决项 27；④ [`doc/index.md`](doc/index.md) 版本升 0.39。
 - v1.42（2026-09-24）：**「宿主语言运行期编译（A′）」登记为待裁 + 双端实测**（作者原话：「**Java Compiler API**」「**Roslyn / DLR**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 追加第 3 条「宿主语言运行期编译」**并记入**本机实测表**（JDK 17 / **JDK 21**：内存编译 **19~34 ms**、318 B、调用 `Hook.run(21)=42`；**.NET 10.0.12 + Roslyn 5.3.0**：冷 **344 ms**、热 **31 ms**、2048 B；**脚本能读环境变量 / 列宿主目录 / 拿进程号 / 起进程 → 无沙箱**；`getSystemJavaCompiler()` 在纯 JRE 上为 `null`）；② 助手建议：**A′ 定位为 KEEP 区宿主扩展的「运行期加载方式」（热更版），不做钩子脚本的语言**；③ [`doc/errata.md`](doc/errata.md) §三 新增第 34 条 + 校勘第四十八轮；④ 本文件 §6.2 新增未决项 28；⑤ [`doc/index.md`](doc/index.md) 版本升 0.40。
 - v1.43（2026-09-24）：**脚本语言维持 A + 类 SQL 归入 m 语言未来语法 + A′ 不做脚本语言**（作者原话：「**维持A, m语言，未来如果支持类SQL语法也是有可能的**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.5 重申「维持 A」**（在 Java Compiler API / Roslyn 双端实测之后）；② **§4.6（1）类 SQL 标 ✔ 已裁**：**方向 = 将来可能成为 m 语言自身的查询语法**（内核解析编译、宿主只执行），**不做宿主 SQL 包翻译层**、首版不进、语法归语法专题；③ **§4.6（2）兜底层标 ✔ 已裁**（注入 `EntityFactory` / `Repository` 直写 = KEEP 区）；④ **§4.6（3）A′ 标 ✔ 已裁**（不做钩子脚本语言，保留为 P6 之后的 KEEP 区运行期加载候选）；⑤ 本文件 §6.2-27 / §6.2-28 标已裁、§6.3 新增第 35 条、抬头改「三十五项」；⑥ [`doc/errata.md`](doc/errata.md) §三-33 / §三-34 标已裁 + §五 新增第 36 条 + 校勘第四十九轮；⑦ [`doc/index.md`](doc/index.md) 版本升 0.41。
+- v1.46（2026-09-25）：**语法基线取语料形态（四条结构性冲突一并裁掉）+ `BIGID` 定义为自有类型**（作者原话：「**1 语料 / 2. 语料 / 3. 语料 / 4. 按 varchar(80)?**」；「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）——① [`doc/errata.md`](doc/errata.md) **冲突 1 / 2 / 4 / 5 标 ✔ 已裁**（各带口径 + 实测数字）**+ §二-6 的 `BIGID` 部分标已裁**（余位宽 / 生成方 / 写法）+ **§五新增第 40 条 + 校勘第五十二轮**；② [`doc/datatypes.md`](doc/datatypes.md) §2.1 标 `type(size)` + 尾 `?`、`BIGID` 段改为「自有类型」；③ [`doc/records.md`](doc/records.md) 顶部「语法形态已统一」、[`doc/statements.md`](doc/statements.md) §5「行为住独立 `.ms`」、[`doc/project.md`](doc/project.md) §1.2「`.ma` = JSON」、[`doc/ide/README.md`](doc/ide/README.md)、[`doc/glossary.md`](doc/glossary.md) 新增 `BIGID` 行；④ 本文件 **§6.1 改写**（**P2 语法基线闸门解除**、381 文件可直接当回归集）、§6.2-3 标已裁、**§6.3 新增第 39 条**、抬头改「三十九项」；⑤ [`doc/index.md`](doc/index.md) 版本升 0.44。
 - v1.45（2026-09-24）：**API 2c 取 1A 2A + 插件口径两条 + Flutter 已有早期实现**（作者原话：「**1. 1A 2A 实际上我在 module.moduleUrl 中配置了，复数形式遵循英文单词，前后端都有实现**」；「**flutter我也有早期版本的实现，后面再说。业务插件是指用户用java, c#, ts做的，目前不考虑收费和市场**」）——① [`doc/api.md`](doc/api.md) **§3.4 + §8.2-2 标 ✔ 已裁 2c**（前缀按模块 `moduleUrl` 配置、复数遵循英文单词且前后端同一实现），[`doc/meta-model.md`](doc/meta-model.md) `moduleUrl` 行补注；② [`doc/runtime.md`](doc/runtime.md) **§7 补两条口径**（插件 = 用户用 Java / C# / TS 写的；不做收费与市场）；③ [`doc/ide/plugins.md`](doc/ide/plugins.md) **§9 由「已裁：做市场」改判 ⏸ 暂缓**（§8 / §9.1 加注），[`doc/vision.md`](doc/vision.md) 共赢行、[`doc/protection.md`](doc/protection.md) 分发渠道项加注；④ [`doc/errata.md`](doc/errata.md) **§五-38 / §五-39 新增 + §三-25 / §三-26 部分收口 + 校勘第五十一轮**；⑤ 本文件 §6.2-25 标 2c 已裁、§6.3-17 / §6.3-20 加注、**§6.3 新增第 37 / 38 条**、[`doc/index.md`](doc/index.md) 版本升 0.43。
 - v1.44（2026-09-24）：**脚本的运行身份取 C（脚本引擎议题清零）**（作者原话：「**C**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.5 尾由「⏳ 仍待裁一条」改为「✔ 已裁取 C」**：**默认继承调用者 + 可选 `runAs: system`**（声明进评审清单 + `mmda check` warning）；**身份枚举封闭**（`caller` / `system`，不许自定义）；**`system` 不受数据范围但受功能开关与审计、写入必须记 `actor`（`system:<脚本名>`）**；**租户键仍必须有**；② 本文件 §6.2-26 尾标已裁、§6.3-34 就地补裁、§6.3 新增第 36 条、抬头改「三十六项」；③ [`doc/errata.md`](doc/errata.md) §五 新增第 37 条 + 校勘第五十轮；④ [`doc/index.md`](doc/index.md) 版本升 0.42。

@@ -19,6 +19,12 @@
 **影响面**：解析器输入、IDE 补全、AI 提示词、381 文件能否当回归集。
 **可选方案**：(a) 以语料形态为基线，早期文档标注历史；(b) 以早期文档为基线，重跑反向导出；(c) 两套都支持并定弃用时间表（成本最高，最不推荐）。
 
+> **✔ 已裁（2026-09-25，取语料形态）**：**以 `@` 注解制为基线** —— `@Ref Country(countryCode,fullName)`、`@One` / `@Many`、`@Computed`、`@Index`、`@Id`、`@State`；
+> 早期文档的 `ref X as y` / `indexed` / `unique` / `computed` 写法**标为历史、不进解析器**。
+>
+> 理由：**381 文件即回归集、零迁移成本**（实测 `ref ` 与 `computed` 零命中，`@Ref` 90 / `@Many` 48 / `@Index` 117 / `@Id` 82 / `@Computed` 28 / `@State` 41）；
+> `@` 也是 Java / C# 程序员熟悉的形态。**P2 语法基线闸门由此解除**（`PLAN.md` §6.1）。落点：[`records.md`](records.md) 顶部、`PLAN.md` §6.3-39。
+
 ### 冲突 2：`.ma` 的正文形态
 
 - 文档：`doc/project.md`（原 `architect/project-format.md:125`）称「所有 `.ma`–`.mi` 文件正文为 M 语言方言」，`:201` 给出 `subsystem mes in Erp { module M.03 … }` 示例。
@@ -26,6 +32,13 @@
 
 **影响面**：解析器分派、编辑器语言模式、`biz/` 的编辑体验。
 **可选方案**：(a) `.ma` 保持 JSON（结构化、好程序化修改，但架构师手写体验差）；(b) 改为 M 语言 DSL（与文档一致，但要迁移现有文件）。
+
+> **✔ 已裁（2026-09-25，取语料形态）**：**`.ma` 正文 = JSON**（模块树，设计器产出，`$schema = …/ma-module/v1`）；
+> **`.mm` / `.me` / `.ms` / `.mi` = M 语言文本**。实测（`E:\Dev\mmda-architect\examples\mmda-mes`，共 378 个语言文件）：
+> `.mm` **215 / 全文本**、`.me` **113 / 全文本**、`.ms` **41 / 全文本**、`.mi` **1 / 文本**（`ui BomList for Bom { index: BomList }`）；
+> `.ma` **2 / 全 JSON**、`*.g`（图布局）与 `.mmda`（清单）同属 JSON。
+>
+> **判据：人写与评审的走 M 语言文本（可 diff、可图形编辑）；设计器产出的结构性文件走 JSON。** 落点：[`project.md`](project.md) §1.2、[`ide/README.md`](ide/README.md)、`PLAN.md` §6.3-39。
 
 ### 冲突 3：`.mmda` 后缀的两种含义
 
@@ -51,6 +64,11 @@
 **影响面**：STM 与 Record 的耦合方式、`data/stms/*.ms` 是否保留、IDE 状态图编辑。
 **可选方案**：(a) 保留 `.ms` 独立文件（行为与结构解耦，便于图形编辑）；(b) 行为内联进 record（一处看全，但大表会很长）。
 
+> **✔ 已裁（2026-09-25，取语料形态）**：**行为住独立 `.ms` 文件**（`data/stms/<模块>/<对象>.ms`：`stm BomApproval on Bom.status { action approve { transition CERTIFIED->APPROVED } }`），
+> **不内联进 record**；早期文档的 `@Action 付款:给新订单付款` + `pay(NEW->PAYED)` 内联形态**标为历史**。
+>
+> 理由：与「一对象一文件 + 细粒度版本控制」一致，状态图可单独图形编辑；语料已是此形态（41 个 `.ms`）、零迁移。落点：[`statements.md`](statements.md) §5、`PLAN.md` §6.3-39。
+
 ### 冲突 5：字符串长度与可空的位置
 
 | 写法 | 出处 |
@@ -62,6 +80,9 @@
 
 **影响面**：词法/语法层最底层的选择，影响所有字段。
 **建议**：长度一律 `type(size)`，可空一律尾部 `?`（`varchar(80)?`）——与语料现状最接近，改动最小。**仍需你确认**。
+
+> **✔ 已裁（2026-09-25，取 `type(size)` + 尾 `?`）**：`varchar(80)?`、`char(11)?`、`decimal(18,3)?` —— **容量与可空各司其职**（`(size)` 管容量、`?` 管可空，不混进方括号）；
+> 早期文档的 `varchar?[30]` / `char[11]` / `varchar?(30)` **标为历史、不进词法器**。落点：[`datatypes.md`](datatypes.md) §2.1、`PLAN.md` §6.3-39。
 
 ---
 
@@ -76,7 +97,7 @@
 | 3 | `[+]` / `[*]` 集合基数与 `type[]` 数组语法会撞 | `doc/readme.md:72`、`:186` |
 | 4 | 文档标签写进语法：`@Action 付款:给新订单付款`；建议一律走 `///` 文档注释 | `doc/readme.md:84` |
 | 5 | `b0000` 位字面量与 BitSet 宽度：定宽？加成员是否变更存储宽度？ | `doc/readme.md:158` |
-| 6 | 大小写敏感面：`BIGID`（错字还是别名？）vs 「数据类型大小写不敏感」；标识符敏感与否未写 | `doc/readme.md:106` vs `doc/datatypes.md:31` |
+| 6 | ~~**`BIGID` 是错字还是别名**~~ → **✔ 已裁（2026-09-25）：都不是——`BIGID` 是自有类型**：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）→ 见 §五-40。**余下待裁**：**位宽分配**（tenantId 占多少位、序列位 / 机器位怎么分）、**生成方**（内核 or 数据库）、**类型名规范写法**（`BIGID` / `bigid`）、**大小写敏感面**（类型名不敏感 / 标识符敏感） | `doc/readme.md:106` vs [`datatypes.md`](datatypes.md) §5 |
 | 7 | `as` 三种词义：字段别名 / join 别名 / 类型转换 | `doc/readme.md:64`、`:137` vs `:270`、`:273` |
 | 8 | 无符号两套写法：`decimal(19,4) unsigned` vs `uint64` | `doc/readme.md:76` vs `doc/datatypes.md:18` |
 | 9 | 约束表达式 `#ge(0)` / `#(d{11})` 与命名约束 `positive` / `future` 是两套机制还是同义？语料里 `#ge(` 零命中 | `archive/2026-06/language/expressions.md:71` 与 `doc/readme.md:115` |
@@ -181,6 +202,7 @@
 | 2026-09-24（四十九轮） | **脚本语言维持 A + 类 SQL 归 m 语言未来语法 + A′ 不做脚本语言**（作者原话：「维持A, m语言，未来如果支持类SQL语法也是有可能的」）——`runtime.md` §4.5 重申「维持 A」（在 Java Compiler API / Roslyn 实测之后）、**§4.6（1）类 SQL 标已裁**（方向 = m 语言未来的查询语法，不做宿主 SQL 包翻译层、首版不进、语法归语法专题）、**§4.6（2）兜底层标已裁**（KEEP 区）、**§4.6（3）A′ 标已裁**（不做脚本语言，保留为 P6 之后的 KEEP 区运行期加载候选）；本文件 §三-33 / §三-34 标已裁 + §五 新增第 36 条；`PLAN.md` §6.2-27 / §6.2-28 标已裁、§6.3 新增第 35 条、抬升 **v1.43**（变更记录 53）；`doc/index.md` 升 **0.41**。 |
 | 2026-09-24（五十轮） | **脚本运行身份取 C**（作者原话：「C」）——`runtime.md` §4.5 尾由「⏳ 仍待裁一条」改为 **✔ 已裁取 C**（默认继承调用者 + 可选 `runAs: system`；声明进评审清单 + `mmda check` warning；身份枚举封闭 `caller` / `system`；`system` 不受数据范围但仍受功能开关与审计、必须记 `actor`；租户键仍必须有）；**脚本引擎议题至此全部清零**；`PLAN.md` §6.2-26 尾与 §6.3-34 就地补裁、§6.3 新增第 36 条、升 **v1.44**（变更记录 54）；`doc/index.md` 升 **0.42**。 |
 | 2026-09-24（五十一轮） | **API 2c 取 1A 2A + 插件口径补两条 + Flutter 早期实现**（作者原话：「1. 1A 2A 实际上我在 module.moduleUrl 中配置了，复数形式遵循英文单词，前后端都有实现」；「flutter 我也有早期版本的实现，后面再说。业务插件是指用户用 java, c#, ts 做的，目前不考虑收费和市场」）——`api.md` §3.4 + §8.2-2 标 ✔ 已裁（前缀按模块 `moduleUrl` 配置、复数遵循英文单词且前后端同一实现）、`meta-model.md` `moduleUrl` 行补注；`runtime.md` §7 补「插件 = 用户用 Java / C# / TS 写的」+「不做收费与市场」；`ide/plugins.md` §9 改判 ⏸ 暂缓（§8 / §9.1 加注）；`vision.md` 共赢行、`protection.md` 分发渠道项加注；本文件 §五 新增第 38 / 39 条、§三-25 / §三-26 部分收口；`PLAN.md` §6.2-17 / §6.2-20 / §6.2-25 加注、§6.3 新增第 37 / 38 条、升 **v1.45**（变更记录 55）；`doc/index.md` 升 **0.43**。 |
+| 2026-09-25（五十二轮） | **语法基线取语料（四条结构性冲突一并裁掉）+ `BIGID` 定义为自有类型**（作者原话：「1 语料 / 2. 语料 / 3. 语料 / 4. 按 varchar(80)?」；「另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId」）——冲突 1 / 2 / 4 / 5 标 ✔ 已裁（各带口径与实测数字：`.mm` 215 / `.me` 113 / `.ms` 41 / `.mi` 1 全文本）；§二-6 的 `BIGID` 部分标已裁（余位宽 / 生成方 / 写法待补）；`datatypes.md`、`records.md`、`statements.md`、`project.md`、`ide/README.md`、`glossary.md` 同步；本文件 §五 新增第 40 条；`PLAN.md` §6.1 改写（**P2 闸门解除**）、§6.2-3 标已裁、§6.3 新增第 39 条、升 **v1.46**；`doc/index.md` 升 **0.44**。 |
 
 > 注：§五 记录的是**已裁决**项，一、二 两节保留**未裁决**项——两者不要混读。
 
@@ -229,3 +251,4 @@
 | 37 | **脚本的运行身份（✔ 2026-09-24，作者取 C）** | 作者原话：「**C**」——**默认继承调用者 + 允许声明 `runAs: system`**：① **默认 = 继承调用者**（按触发它的那个调用者的权限与数据范围运行，越权同样被拒）；② **可选 `runAs: system`**（无调用者场景：定时任务 / 事件消费者 / 系统钩子），声明**进评审清单可见 + `mmda check` 出 warning**；③ **身份枚举封闭**（只有 `caller` / `system`，**不许自定义身份**）；④ **`system` 边界**：不受对象级 / 数据范围限制，**但仍受功能开关与审计**——所有脚本写入必须记 `actor`（`system:<脚本名>`）；⑤ **租户键仍必须存在**（与 §10 共享执行 + 租户键一致） | [`runtime.md`](runtime.md) §4.5 尾、`operations.md`（审计）、`PLAN.md` §6.3-36；**`runtime.md` 脚本议题至此清零** |
 | 38 | **`api.md` §8.2-2c 取 1A 2A（API 路径前缀与复数形态，✔ 2026-09-24）** | 作者原话：「**1. 1A 2A 实际上我在 module.moduleUrl 中配置了，复数形式遵循英文单词，前后端都有实现**」：① **`/api` 前缀不写死 —— 由模块的 `moduleUrl` 配置**（真源 = `meta-model.md` 的 Module 元素，已在该行补注）；② **复数变形 = 遵循英文单词规则**（`+s` / `y → ies` / `s,x,z,ch,sh → es` 等常规变形），**前后端同一套实现、以现状为准**、**不引 `pathSegment` 手写覆盖**；**§8.2 至此 16 条全部已裁、无余项** | [`api.md`](api.md) §3.4 / §8.2-2、[`meta-model.md`](meta-model.md)（`moduleUrl` 行）、`PLAN.md` §6.3-37 |
 | 39 | **插件口径补两条 + Flutter 已有早期实现（✔ 2026-09-24）** | 作者原话：「**flutter 我也有早期版本的实现，后面再说。业务插件是指用户用 java, c#, ts 做的，目前不考虑收费和市场**」：① **业务插件 = 用户用 Java / C# / TS 三端原生代码实现**（**不是 m 语言或脚本写的**；m 只声明接入点与权限）→ `runtime.md` §7 补口径；② **不做收费、不做插件市场** → [`ide/plugins.md`](ide/plugins.md) §9 **由「✔ 已裁：做市场」改判为「⏸ 暂缓」**（机制保留为**方向与口子**、**不进首版、不进版本承诺**），[`vision.md`](vision.md) 共赢行 + [`protection.md`](protection.md) 分发渠道项同步加注；③ **移动端 / Flutter**：**作者已有早期版本实现**，**版次议题延后**（「后面再说」）——§三-26 的 Flutter 第二渲染方三条**暂挂**、不进首版承诺 | [`runtime.md`](runtime.md) §7、[`ide/plugins.md`](ide/plugins.md) §8 / §9 / §9.1、[`vision.md`](vision.md)、[`protection.md`](protection.md)、`PLAN.md` §6.2-17 / §6.2-20 / §6.3-38 |
+| 40 | **语法基线取语料形态（四条结构性冲突一并裁掉）+ `BIGID` 定义为自有类型（✔ 2026-09-25）** | 作者原话：「**1 语料 / 2. 语料 / 3. 语料 / 4. 按 varchar(80)?**」+「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」：① **冲突 1 → 语料**：`@` 注解制为基线（`@Ref` 90 / `@Index` 117 / `@Id` 82；`ref ` 与 `computed` **零命中**）；② **冲突 2 → 语料**：`.ma` = **JSON**、`.mm` / `.me` / `.ms` / `.mi` = **M 语言文本**（实测 215 / 113 / 41 / 1 全文本，`.ma` 2 全 JSON）；③ **冲突 4 → 语料**：**行为住独立 `.ms`**，不内联进 record；④ **冲突 5 → `type(size)` + 尾 `?`**（`varchar(80)?`）；⑤ **`BIGID` 既非错字也非 `bigint` 别名 = 自有类型**（partitionID + 高位 tenantId），位宽与生成方待补。**P2 语法基线闸门由此解除** | 本文冲突 1 / 2 / 4 / 5 + §二-6、[`datatypes.md`](datatypes.md) §2.1 与 `BIGID` 段、[`records.md`](records.md) 顶部、[`statements.md`](statements.md) §5、[`project.md`](project.md) §1.2、[`ide/README.md`](ide/README.md)、[`glossary.md`](glossary.md) 编码与映射、`PLAN.md` §6.1 / §6.3-39 |

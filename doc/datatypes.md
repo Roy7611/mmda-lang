@@ -14,7 +14,7 @@
 | 组合 | `decimal?(18,3)` | 可空、精度 18、小数 3 的定点小数 |
 | 大小写 | 不敏感 | `BYTE` = `Byte` = `byte` |
 
-> ⚠️ **待裁决**：早期文档还出现过 `varchar?[30]`、`char[11]` 两种方括号写法，与实际语料的 `varchar(80)` 不一致。建议统一为 `type(size)` + 尾部 `?`（`varchar(80)?`），见 [`errata.md`](errata.md) 冲突 5。
+> ✔ **已裁（2026-09-25，取语料形态）**：**长度一律 `type(size)`、可空一律尾部 `?`** —— `varchar(80)?`、`char(11)?`、`decimal(18,3)?`；早期文档的 `varchar?[30]`、`char[11]`、`varchar?(30)` **标为历史、不进词法器**。**容量与可空各司其职**：`(size)` 管容量、`?` 管可空，不混进方括号（见 [`errata.md`](errata.md) 冲突 5）。
 
 ---
 
@@ -94,7 +94,7 @@
 
 语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1，默认最大容量 **2000**（可由 Profile 调整）；可指定字符编码 `charset`。
 
-> ⚠️ `BIGID`（早期文档与语料均出现）是 `bigint` 的别名还是错字，待裁决，见 `errata.md` 二-6。
+> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@PartitionID` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](design-notes.md) §8.3）同属**多租户主键**机制。**⏳ 仍待补**：**位宽分配**（tenantId 占多少位、序列位与机器位怎么分）、**生成方**（内核 or 数据库）、**类型名规范写法**（`BIGID` / `bigid`）—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 

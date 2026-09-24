@@ -1,6 +1,6 @@
 # 对象：Record、Field、Enum、View
 
-> 语法形态有两批来源，**未统一**，见 [`errata.md`](errata.md) 冲突 1 与冲突 4。
+> ✔ **语法形态已统一（2026-09-25，取语料形态）**：**以 `@` 注解制为基线** —— `@Ref Country(countryCode,fullName)`、`@One` / `@Many`、`@Computed`、`@Index`、`@Id`、`@State`；行为住**独立 `.ms`**（不内联进 record）。早期文档的 `ref X as y` / `indexed` / `unique` / `computed` / `@Action` 内联写法**标为历史、不进解析器**（见 [`errata.md`](errata.md) 冲突 1 与冲突 4，实测：381 文件里 `ref ` 与 `computed` **零命中**、`@Ref` 90 / `@Index` 117 / `@Id` 82）。
 > 本文以「对象是什么、有哪些元素、各自什么语义」为主，示例优先给**实际语料形态**（381 个文件在用），早期文档形态在对照处标注。
 
 ---
