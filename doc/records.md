@@ -120,6 +120,29 @@ parseTenantID(id) = id >>> 36
 
 **租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`，即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
 
+**为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
+
+- **目的**：一组**要 UNION 成一个视图**的表（如「人」= Tenant / Bank Account / Department / Employee / Partner / Contactor），各自在 realId 空间里领**互不重叠的一段** → UNION 之后**主键天然不冲突**，视图不需要额外加「来源表」列或前缀。
+- **两级划分**：**租户位（高 28 位）决定「谁的」、段（`minID` / `maxID`）决定「哪个表的」**；两者合成才是完整的 `partitionId` 空间（`Tenancy.getMinEntityID` / `getMaxEntityID`）。
+- **不做 UNION 的表可以共用默认段**：语料实测 **169 张表共用 `[10000, 0x000F_FFFF]`**；只有**标识共享组**内的表才显式细分。
+- **语料实测与作者《标识共享》文档逐段吻合**：
+
+| 标识共享组（视图族） | 表 | 段（作者文档） | 语料 `@PartitionID` |
+| --- | --- | --- | --- |
+| 人 | Tenant / Bank Account | `0` – `0x7FF`（2047） | 语料未见（其余段逐一吻合） |
+| 人 | Department 部门 | `0x800`（2048）– `0x7FFF`（32767） | `[2048, 32767]` ✔ |
+| 人 | Employee 职员 | `0x8000`（32768）– `0x7F_FFFF`（8388607） | `[32768, 0x7fffff]` ✔ |
+| 人 | Partner 贸易伙伴 | `0x80_0000` – `0x7FFF_FFFF` | `[0x800000, 0x7fffffff]` ✔ |
+| 人 | Contactor 联系人 | `0x8000_0000` – `0xFFFF_FFFF` | `[0x80000000, 0xffffffff]` ✔ |
+| 地 | Warehouse 仓库 | `0` – `0x7FF` | 语料未见 |
+| 地 | ProductionLoc 生产地点 | — | `[0x10000, 0x1ffff]` |
+| 地 | Project 项目现场 | — | `[0x800000, 0xffffffff]` |
+| 物料 | Material 物料 / Sku | — | `[32768, 0x7fffff]` / `[0x800000, 0x7fffffff]` |
+| 工装器具 | Equipment · Workstation / Tool | — | `[0x20000, 0x7ffff]` / `[0x80000, 0x7fffff]` |
+
+- **作者文档里的六个标识共享组**：① **收付款方 Party**（贸易伙伴 / 联系人 / 分支机构 / 职员）+ **组织单元 Organization Unit**（Department / Partner）+ **人 Person**（Employee / Driver / Worker）；② **库存地点 Inventory Location**（Warehouse / Production Loc / Project）+ **运输地点 Transport Location**（仓库 / 工厂 / 交通站点 / 项目现场）；③ **工装器具**（物流搬运设备 Handling Equipment / 生产设备 Equipment / 工具 Tool / 运输车辆 Transport Vehicle）；④ **物料 Sku**（MaterialINSku = 物料 + Sku）；⑤ **可搬运物 Handlable**（穿梭车 / 搬运单元 Handling Unit 托盘·料箱 / 货柜 LicensePlate）；⑥ **生产计划任务 ProductionScheduleTask**（生产订单 ProductionOrder / 生产任务 ProductionTask）。
+- **⏳ 待裁四条**：① 段由**人工填 `@PartitionID [min,max]`**（现状）还是**设计器自动分配**？② 是否需要**显式声明「标识共享组」**（把表归组，工具据此校验段不重叠并生成 UNION 视图）？③ **段重叠**是否进 `mmda check` 硬门禁？④ **UNION 视图在语言里怎么写**（`view` 的形态）。
+
 ---
 
 ## 3. 对象级约束
@@ -269,6 +292,8 @@ enum PartnerRole : BitSet {
 ---
 
 ## 7. View
+
+> ✔ **视图与标识共享（2026-09-25）**：多表 **UNION** 成视图时**主键不冲突**靠 §2.3 的**分段**保证 —— 同一视图族的表各领一个不重叠的 realId 段，故视图**不需要额外加「来源表」列**。
 
 ```sql
 view OrderItemV : OrderItem as it

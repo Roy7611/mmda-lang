@@ -113,7 +113,7 @@
 >     addressId uint64 identity generated readonly,
 > ```
 >
-> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**⏳ 仍待你定**：**是否在语言里保留 `BIGID` 作为类型别名**（文档用名，等价于 `uint64 identity` + `@PartitionID`），还是严格取语料只写 `uint64 identity`。—— 见 [`errata.md`](errata.md) §二-6。
+> 即 **分区主键 = 带 `@PartitionID` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3。**⏳ 仍待你定**：**是否在语言里保留 `BIGID` 作为类型别名**（文档用名，等价于 `uint64 identity` + `@PartitionID`），还是严格取语料只写 `uint64 identity`。—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 

@@ -47,7 +47,7 @@ Field ──(呈现层)── UiField
 | `uniqueKey` | string? | 业务唯一字段名 |
 | `nameCol` | string? | 显示名称字段 |
 | `partitionKey` | string? | 分区主键字段（`@PartitionID` 所在列） |
-| `minID` / `maxID` | int? | 分区 realId 下限/上限；空 = 类型默认值 |
+| `minID` / `maxID` | int? | 分区 realId 下限/上限（= 该表在**标识共享组**里领的段）；空 = 类型默认值 |
 | `parentIdCol` | string? | 树形父键 |
 | `superName` | string? | 继承基类 Record |
 | `extendType` | enum | `NONE` \| `EXTENDS` \| `INHERITS` |
