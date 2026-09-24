@@ -4,6 +4,7 @@
 > 分篇：[datatypes.md](datatypes.md)（类型）、[records.md](records.md)（对象）、[statements.md](statements.md)（表达式与行为）、[events.md](events.md)（事件）、[event_bus.md](event_bus.md)（事件总线与集成编排）、[presentation.md](presentation.md)（呈现）、[meta-model.md](meta-model.md)（元模型）、[project.md](project.md)（项目格式）。
 > 未裁决的口径见 [errata.md](errata.md)；工具与 IDE 见 [index.md](index.md#工具与-ide)。
 > **愿景与四层目标（为什么做 m 与 MMDA：商业 / 技术 / 用户 / 架构）见 [vision.md](vision.md)**；本文只管**语言本身**。
+> **运维与可观测性（DevOps 流水线、监控出口、配置管理、应急处理）见 [operations.md](operations.md)**。
 
 ---
 

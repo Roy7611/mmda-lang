@@ -357,6 +357,8 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ## 12. 可观测性与 UI（作者原话：入/出可监控、有日志、有自己的 UI）
 
+> **运维面（标准出口协议、DevOps 流水线、配置管理、应急处理）见 [`operations.md`](operations.md)**；本节只讲**总线自己的采集面与面板**。
+
 ### 12.1 指标（进 [`quality.md`](quality.md) §2.3 运行期指标族）
 
 | 面 | 指标 |
