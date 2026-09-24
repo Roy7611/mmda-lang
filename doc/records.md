@@ -124,7 +124,7 @@ parseTenantID(id) = id >>> 36
 
 **为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
 
-- **目的**：一组**要 UNION 成一个视图**的表（如「人」= Tenant / Bank Account / Department / Employee / Partner / Contactor），各自在 realId 空间里领**互不重叠的一段** → UNION 之后**主键天然不冲突**，视图不需要额外加「来源表」列或前缀。
+- **目的**：一组**要 UNION 成一个视图**的表（如「人」= Tenant / Bank Account / Department / Employee / Partner / Contactor），各自在 realId 空间里领**互不重叠的一段** → UNION 之后**主键天然不冲突**，视图不需要额外加「来自哪张基础表」的标记列或前缀。
 - **两级划分**：**租户位（高 28 位）决定「谁的」、段（`minID` / `maxID`）决定「哪个表的」**；两者合成才是完整的 `partitionId` 空间（`Tenancy.getMinEntityID` / `getMaxEntityID`）。
 - **不做 UNION 的表可以共用默认段**：语料实测 **169 张表共用 `[10000, 0x000F_FFFF]`**；只有**标识共享组**内的表才显式细分。
 - **语料实测与作者《标识共享》文档逐段吻合**：
@@ -149,7 +149,7 @@ parseTenantID(id) = id >>> 36
 
 **✔ 已裁（2026-09-25 作者）**：**标识共享组放在视图声明处 —— 视图即组**（「**标识共享组在视图那里可否**」→ 可以，且语料已如此：`view person` / `view organizationunit` / `view materialnsku` / `view Maintainable`）—— 详见 §7。
 
-**⏳ 待裁两条**：① **段重叠**是否进 `mmda check` 硬门禁？② **UNION 视图的成员表与嵌套怎么声明**（见 §7 待裁三点）。
+**⏳ 待裁两条**：① **段重叠**是否进 `mmda check` 硬门禁？② **UNION 视图的基础表（= UNION 进该视图的那几张表，SQL 里 view 的 base table）与嵌套怎么声明**（见 §7 待裁三点）。
 
 ---
 
@@ -301,23 +301,23 @@ enum PartnerRole : BitSet {
 
 ## 7. View
 
-> ✔ **视图与标识共享（2026-09-25）**：多表 **UNION** 成视图时**主键不冲突**靠 §2.3 的**分段**保证 —— 同一视图族的表各领一个不重叠的 realId 段，故视图**不需要额外加「来源表」列**。
+> ✔ **视图与标识共享（2026-09-25）**：多表 **UNION** 成视图时**主键不冲突**靠 §2.3 的**分段**保证 —— 同一视图族的表各领一个不重叠的 realId 段，故视图**不需要额外加「来自哪张基础表」的标记列**。
 
-**✔ 方向已定（2026-09-25 作者）**：**标识共享组就放在视图声明这里 —— 视图即组**（一个视图族一个视图）。作者问「**标识共享组在视图那里可否**」，**可以，而且语料里已经这么做**：
+**✔ 方向已定（2026-09-25 作者）**：**标识共享组就放在视图声明这里 —— 视图即组**（一个视图族一个视图）。下文说的「**基础表**」= **UNION 进该视图的那几张表**（即 SQL 里 view 的 **base table**）—— 不用「成员表 / 来源表」这类自造词。作者问「**标识共享组在视图那里可否**」，**可以，而且语料里已经这么做**：
 
 | 证据 | 位置 |
 | --- | --- |
 | `view person`（人组）、`view organizationunit`（组织单元组）、`view materialnsku`（物料 Sku 组） | `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2` |
 | `view Maintainable`（工装器具组） | `data/models/mes/Maintainable.mm:2` |
-| 视图形态 = `/// VIEW` + `view <名> { 列定义 }`，**列直接写在视图里**（= 成员表的公共列） | 同上（语料 `union` / `from` **0 命中**） |
+| 视图形态 = `/// VIEW` + `view <名> { 列定义 }`，**列直接写在视图里**（= 基础表的公共列） | 同上（语料 `union` / `from` **0 命中**） |
 
 > **`Maintainable` 视图自己带段**：`@PartitionID [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` —— **视图在语料里本身是有主键、有段的第一公民**（而 `Person` 视图没有 `@PartitionID`，现状不一致，见待裁 ③）。
 
 > ⚠️ **实现侧还没有 UNION 成员概念**：`MetaView.java` = 主表 `t` + `relatives`（join 关系）+ 列别名 + `whereCondition` / `orderBy`（`D:\2026\java\mmda-core\mmda-core-metadata\...\MetaView.java:20-28`）→ 现有 `view` 是 **join 视图**；**「哪些表是同一个 UNION 组」目前无处声明**。
 
-**要「组放视图」落地，把成员表补上即可** —— 补上后这三条才能机器校验（`mmda check`）：① 同组各成员表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）；② **一张表最多属于一个组**（它只有一段）；③ 成员段落在 realId 空间内。
+**要「组放视图」落地，把基础表补上即可** —— 补上后这三条才能机器校验（`mmda check`）：① 同组各基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）；② **一张表最多属于一个组**（它只有一段）；③ 成员段落在 realId 空间内。
 
-**⏳ 待你拍三点**：① **成员表在哪声明** —— A 视图侧显式列表（`view person from Employee, Contactor, Partner { … }`，助手推荐：视图拥有成员、段仍在成员表上）／ B 成员表侧标注自己属于哪个视图；② **成员能不能是视图**（层级组）—— 你的文档里 `Party ⊃ Person ⊃ Employee / Contactor`、`Organization Unit ⊃ Department / Partner` 是**嵌套**的，若允许则 `view party from organizationunit, person, …`，段校验按**叶子表**做；③ **视图自身要不要段**（语料 `Maintainable` 有、`Person` 没有 —— 是「视图声明组的总段、成员在其内细分」，还是视图不占段？）。
+**⏳ 待你拍三点**：① **基础表在哪声明** —— A 视图侧显式列表（`view person from Employee, Contactor, Partner { … }`，助手推荐：视图拥有成员、段仍在基础表上）／ B 基础表侧标注自己属于哪个视图；② **成员能不能是视图**（层级组）—— 你的文档里 `Party ⊃ Person ⊃ Employee / Contactor`、`Organization Unit ⊃ Department / Partner` 是**嵌套**的，若允许则 `view party from organizationunit, person, …`，段校验按**叶子表**做；③ **视图自身要不要段**（语料 `Maintainable` 有、`Person` 没有 —— 是「视图声明组的总段、成员在其内细分」，还是视图不占段？）。
 
 ```sql
 view OrderItemV : OrderItem as it

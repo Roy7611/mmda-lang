@@ -160,6 +160,7 @@
 | FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitSet）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
+| 基础表（base table） | **UNION 进某个视图的那几张表**（视图的组成表）—— 「标识共享组」即一个视图的基础表集合；SQL 现成词，不用「成员表 / 来源表」 |
 | 标识共享（Identity Sharing） | **一组要 UNION 成同一个视图的表，在 realId 空间里各领一个互不重叠的段**（`@PartitionID [min,max]` 声明），使 UNION 后的主键天然不冲突（✔ 2026-09-25 作者说明；段划分与六个组见 [`records.md`](records.md) §2.3） |
 | `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@PartitionID [min,max]` + `uint64 identity`**，见 [`datatypes.md`](datatypes.md) §5 |
 | customProperties | API 中 REF/ENUM 的显示标签扩展 |
