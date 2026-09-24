@@ -321,8 +321,13 @@ view OrderItemV : OrderItem as it
 
 **✔ 视图与标识共享（2026-09-25 作者：「标识共享组在视图那里可否」→ 可以 —— 视图即组）**
 
-**基础表不用新的声明位 —— 视图定义里已经写着它由哪些表组成**：`: OrderItem as it` 是主表，`join Order as o` / `left join Partner as p` 是其余**基础表**。
-即 **join 视图的基础表 = `join` 子句里的表**；**UNION 视图的基础表 = `union` 子句里的表**（列清单 `{ … }` 两者照旧）。
+**`:` 不是 SQL 的 FROM —— 是 C# 风格的「继承 / 实现」**（✔ 2026-09-25 作者原话：「**这个 `:` 类似 C# 的继承、实现，语义上是对 `person` 进行定义**」）：
+**`:` 右端是「基」，视图 = 在这个基上「定义」出来的新东西**（**不是**查询投影）。
+
+- `view OrderItemV : OrderItem as it` —— **基 = `OrderItem`**；`as it` 是**引用该基时的别名**（于是列引用写作 `it.orderId`）；
+- `join Order as o on …` / `left join Partner as p on …` = **再挂上别的基**（横向、带关联条件）；`union Contactor as c` = **并列的基**（纵向、无关联条件）—— 两者都是「**这个定义由哪些基组成**」的写法；
+- **语料证据**：24 个 `view` 里**唯一**带 `:` 的是 **`view Product : Bom { … }`**（`data/models/mes/Product.mm:2`），而 `Bom` 在 `Bom.mm:2` 是 **`record Bom`** → **基可以是 record**；其余 23 个 view 只写 `{ 列 }`（`union` / `join` / `from` **0 命中**）；
+- 于是 **「基础表」= 这个定义里的「基」** —— 不需要新的声明位，**就在视图定义里**。
 
 - **语料证据（四个组名就在语料里）**：`view person`（人）、`view organizationunit`（组织单元）、`view materialnsku`（物料 Sku）、`view Maintainable`（工装器具）
   —— `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2`、`data/models/mes/Maintainable.mm:2`。
@@ -331,7 +336,7 @@ view OrderItemV : OrderItem as it
 - **`Maintainable` 视图自带段**：`@PartitionID [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
 - ⚠️ **实现侧只有 join、还没有 UNION**：`MetaView.java:20-28` = 主表 `t` + `relatives`（join 关系）+ 列别名 + `whereCondition` / `orderBy`（`D:\2026\java\mmda-core\mmda-core-metadata\...\MetaView.java`）。
 - **UNION 一落地，这三条就能机器校验**（`mmda check`）：① 同组基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）；② **一张表最多属于一个组**（它只有一段）；③ 基础表段落在 realId 空间内。
-- **⏳ 待裁**：① **`union` 子句的语法形态**（`view person : Employee as e union Contactor as c { … }` 还是 `view person union Employee, Contactor, Partner { … }`）—— **归语法专题**；② **基础表能不能是视图**（嵌套组：`Party ⊃ Person ⊃ Organization Unit`，若允许则段校验按叶子表做）；③ **视图自身要不要段**。
+- **⏳ 待裁（继承语义下的三条）**：① **多个基的列合并 / 冲突规则** —— `Employee` 与 `Contactor` 都有 `personName` 时，视图列清单写一次即可？同名不同类型是否 `mmda check` 报错？（= 继承的**成员合并规则**）；② **基能不能是视图**（`view party : person`）—— 语料已证 **基可以是 record**（`Product : Bom`），视图当基（继承链）是否允许；③ **视图自身要不要段**（语料 `Product` / `Maintainable` 带 `@PartitionID`、`person` 不带）。
 
 ---
 
