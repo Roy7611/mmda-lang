@@ -20,7 +20,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | --- | --- | --- | --- |
 | 开放源码 | 许可边界清晰、第三方能集成 | **open core**（§5.1）：规范 + 内核 + IDE 壳 + 三端薄适配开源；算法库 / 行业包 / SaaS 闭源 | ✔ 规范文本已公开（`github.com/Roy7611/mmda-lang`）；内核仓尚未建立 |
 | 协同 | 多角色在同一真源上协作且可评审 | 一对象一文件 + git/svn 细粒度版本控制（[`project.md`](project.md)）；五类职责写入边界与交接协议（[`workflows.md`](workflows.md)）；变更分级 L0–L3 | ✔ 已裁 |
-| 共赢 | 第三方能扩展而不被平台锁定 | 生成源码、产物不依赖 MMDA 才能跑（[`readme.md`](readme.md) §7）；**插件市场**（[`ide/plugins.md`](ide/plugins.md) §9）——第三方扩展 + **闭源行业包 / 算法库的合法分发渠道** + 伙伴体系载体；**设计阶段原生支持插件式开发**（同文 §8 五条可检判据）；插件只读产物、不侵入语言（[`api.md`](api.md) §1.1） | ✔ 已裁（2026-09-24：**做市场**，留内核侧口子） |
+| 共赢 | 第三方能扩展而不被平台锁定 | 生成源码、产物不依赖 MMDA 才能跑（[`readme.md`](readme.md) §7）；**插件市场**（[`ide/plugins.md`](ide/plugins.md) §9）——**插件 = 用户自研的业务功能模块**（主形态，真源 [`runtime.md`](runtime.md) §7：`jar`/`dll`/npm + 清单 + 冲突检测，**插件就是 module，语言层零新增**），市场同时是**闭源行业包 / 算法库的合法分发渠道**与伙伴体系载体；**设计阶段原生支持插件式开发**（[`ide/plugins.md`](ide/plugins.md) §8 五条可检判据）；**IDE 插件为次**（支持更好，不做首版承诺）；插件不改语言（[`api.md`](api.md) §1.1） | ✔ 已裁（2026-09-24：**做市场**；主形态已纠正为业务功能模块插件） |
 | 降成本 | 可测量，不停在口号 | 四个可测指标见 §6，落 [`quality.md`](quality.md) §3.1 | 🟡 指标已定，待采集 |
 
 ---
@@ -55,7 +55,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 资产 | 开源 / 闭源 | 许可 | 理由 |
 | --- | --- | --- | --- |
 | m 语言规范（本仓 `doc/`、`PLAN.md`） | **开源** | MIT（现状，见 `LICENSE`） | 契约公开是生态的前提；备选 CC-BY-4.0（要求署名）**未采用**，见 §8-1 |
-| Rust 内核 / 三端薄适配 / IDE 壳 | **开源** | Apache-2.0（含专利授权与商标条款，企业法务最容易通过） | 可审计、可替换、可被集成——这是 To CTO 的核心诉求 |
+| Rust 内核 / 三端薄适配 / IDE 壳 | **开源** | **MIT（✔ 2026-09-24：核心平台统一 MIT）**——与规范同一份许可，**全栈一个许可**，集成方零摩擦。代价要清楚：MIT **不带专利授权与商标条款**（原记 Apache-2.0），商标靠 README / 官网声明，专利风险靠防御性公开 | 可审计、可替换、可被集成——这是 To CTO 的核心诉求 |
 | 算法库（如 `logistics-scheduler`） | **闭源** | 商业许可 + 许可绑定（在线激活 / 离线授权 / 加密狗 / 调用计量） | 算法体不进交付仓，见 [`protection.md`](protection.md) §4、§7 |
 | 行业业务包 / 模板 / SaaS | **闭源** | 商业许可 | 计费形态见 [`protection.md`](protection.md) §8 |
 
@@ -117,10 +117,10 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](meta-model.md)（`partitionKey` / `@PartitionID`）、[`project.md`](project.md) §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
 | 热插拔模块化 | ✔ 见 §5.3（module 粒度） | module 边界四合一（[`api.md`](api.md) §1.1） |
 | 高性能 | ✔ 机制已定 | 生成原生代码、表达式下推到存储、`@Computed` / `@trigger` 生成库侧 `trigger` / `procedure`（[`readme.md`](readme.md) §5）；性能效率信号见 [`quality.md`](quality.md) §1.2 |
-| 安全、防黑客 | 🟡 骨架在，**缺可判定的安全验收基准** | [`quality.md`](quality.md) §1.6（安全性）、[`api.md`](api.md) §3.6（scope）、ARCH-111（[`architecture-review.md`](architecture-review.md)）；是否引入 OWASP ASVS / Top 10 见 §8-3 |
+| 安全、防黑客 | ✔ 基准已裁 | [`quality.md`](quality.md) §1.6（安全性）与 **§3.2（OWASP ASVS 门禁口径）**、[`api.md`](api.md) §3.6（scope）、ARCH-111（[`architecture-review.md`](architecture-review.md)）；**ASVS L1 自动化子集进硬门禁、Top 10 作报告项** |
 | 可靠性 | ✔ 机制已定 | [`quality.md`](quality.md) §1.5 + 事务边界与 `after*` 幂等（[`runtime.md`](runtime.md)） |
 | 跨平台 | 🟡 L2 覆盖国产 OS / CPU；桌面为独立壳（Tauri） | [`ide/specification.md`](ide/specification.md) §4.9；§5.2 L2 |
-| 多端、多语言 | 🟡 三端与三语言已裁；**移动端未裁** | [`targets.md`](targets.md)（2 后端 + 1 前端）、`locales: [zh, zh-Hant, en]`（[`project.md`](project.md)）；移动端见 §8-2 |
+| 多端、多语言 | 🟡 三端与三语言已裁；**移动端宿主已裁方向 = Flutter** | [`targets.md`](targets.md)（2 后端 + 1 前端）、`locales: [zh, zh-Hant, en]`（[`project.md`](project.md)）；移动端宿主 = **Flutter**（Dart 端，排 P8 之后），**首版不做**；`MetaUi` 第二渲染方的口径见 §8-6 |
 
 ---
 
@@ -153,15 +153,17 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 
 ---
 
-## 8. 待裁（原 5 条：④ L2 矩阵、⑤ 共赢/插件市场 **已裁**，余 3 条）
+## 8. 待裁（原 5 条**已全部裁决**；余为新开的 2 条——`MetaUi` 第二渲染方、移动端是否进首版）
 
 | # | 议题 | 我的建议 |
 | --- | --- | --- |
-| 1 | 规范文本许可最终选型：MIT（现状）还是 CC-BY-4.0（要求署名） | 保持 **MIT**（已入库、宽松利于传播）；若将来要品牌署名再换 |
-| 2 | **移动端（多端）** 是否进首版承诺；若进，宿主形态是独立壳的移动版 / 响应式 Web / 小程序 | 首版**不做**移动端，先 Web + 桌面（Tauri）；把「响应式 `MetaUi` 渲染」作为 L3 皮肤的验收项之一 |
-| 3 | 安全目标是否引入 **OWASP ASVS / Top 10** 作为附加硬门禁 | 引入 **ASVS L1 的自动化子集**（B 级可判定）作为附加门禁；Top 10 作报告项 |
+| 1 | ~~规范文本许可最终选型（MIT vs CC-BY-4.0）~~ → **✔ 已裁 2026-09-24：核心平台统一 MIT** | 余（体制侧，非技术）：MIT **不带专利授权与商标条款**——商标靠 README / 官网声明，专利靠防御性公开与自有布局，见 §5.1 |
+| 2 | ~~移动端（多端）宿主形态（独立壳移动版 / 响应式 Web / 小程序）~~ → **✔ 已裁方向 2026-09-24：Flutter**（Dart 端） | 首版不做（先 Web + 桌面 Tauri），排 P8 之后 |
+| 3 | ~~安全目标是否引入 OWASP ASVS / Top 10~~ → **✔ 已裁 2026-09-24：ASVS 进入硬门禁** | ASVS **L1 自动化子集**进 `mmda quality gate`、L2·L3 与人工渗透不进、**Top 10 作报告项**，口径见 [`quality.md`](quality.md) §3.2 |
 | 4 | ~~L2 国产化的**目标矩阵清单**~~ → **✔ 已裁 2026-09-24（`1A 2A 3A 4A 5A`），矩阵见 §5.2.1** | 余：**龙芯（LoongArch）何时纳入生产验收**、**申威是否需要**——等客户点名再开 |
-| 5 | ~~「共赢」是否落成**插件市场 / 伙伴体系**~~ → **✔ 已裁 2026-09-24：做插件市场、留口子、设计阶段原生支持插件式开发** | 落点 [`ide/plugins.md`](ide/plugins.md) §8–§9。余（⏳ 见 [`errata.md`](errata.md) §三-25）：**内核侧插件的加载形态**（sidecar / WASM / dylib）、**商业条款**（分成、伙伴分级） |
+| 5 | ~~「共赢」是否落成**插件市场 / 伙伴体系**~~ → **✔ 已裁 2026-09-24：做插件市场、留口子、设计阶段原生支持插件式开发** | 落点 [`ide/plugins.md`](ide/plugins.md) §8–§9 + **[`runtime.md`](runtime.md) §7（主形态 = 业务功能模块插件）**。余（⏳ 见 [`errata.md`](errata.md) §三-25）：**内核侧插件的加载形态**（sidecar / WASM / dylib）、**商业条款**（分成、伙伴分级） |
+| 6 | **`MetaUi` 是否接纳第二个渲染方**（移动端 Flutter）——现有口径是「UI 契约 = mmda-vue、`capability ui` 只在 `target ts`」（[`targets.md`](targets.md) §8-4） | 建议**接纳**：Flutter 作第二渲染方（新增 `target flutter`），**UI kit 仍不进后端契约、不进语言**；`targets.md` §8-4 的「只 ts」改成「ts + flutter」；一致性测试的 UI 维度**仍只测一个渲染方**（避免双份 UI 用例） |
+| 7 | **移动端是否进首版承诺**（宿主已定 Flutter） | 首版**不做**（先 Web + 桌面）；Flutter 排在 **P8 之后**作为独立 `target`，届时先补 `target flutter` 的 `MetaUi` 渲染验证 |
 
 ---
 
