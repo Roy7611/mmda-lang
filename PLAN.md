@@ -1,6 +1,6 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.13 · 2026-09-24
+> v1.14 · 2026-09-24
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
 > 已拍定决策见 §0，未决项见 §6，**2026-09-24 的九条新裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
@@ -28,7 +28,7 @@
 | — | 新定位：**m 同时是元数据真源与跨语言契约真源** | 起因：Java 与 C# 两套底座「没有统一接口方式」（见 §2.5、§3.10） |
 | — | ✔ capability 语法 / UI 契约 / 一致性测试归属 | 2026-09-24 裁决，见 §6.3-2/3/4 |
 | — | ✔ P0.5 契约盘点已完成 | 交付物 `doc/contracts-inventory.md`（60+ 概念逐行 `file:line`） |
-| — | `git init` **推迟到讨论定稿后** | 你 2026-09-24 明示；风险见 §7 |
+| ✔ 2026-09-24 | **建仓并接入远端** `github.com/Roy7611/mmda-lang`（**公开仓**，MIT）；首提交 `0679a30` 推入（57 文件 / doc 9,353 行） | 作者建远端后落定；**行尾 CRLF、许可 MIT 两项待你确认**（§7） |
 
 ---
 
@@ -57,7 +57,7 @@
 
 ## 2. 资产与现状（实测 2026-09-24）
 
-### 2.1 `D:\2026\c`（本轮起点 + 文档合并结果）
+### 2.1 `D:\2026\rust`（本轮起点 + 文档合并结果）
 
 | 内容 | 状态 |
 | --- | --- |
@@ -67,7 +67,7 @@
 | 迁入的分支文档 | `doc/ide/`（8 篇工具与 IDE 规格）、`doc/ai/`（2 篇）、`doc/legacy/`（4 篇）、`doc/guide/`、`doc/templates/`、`doc/design-notes.md`（原 36 KB 设计笔记） |
 | 留档 | `doc/archive/2026-06/`（13 篇被合并的原文，可 diff 校验未丢内容） |
 | `IDEA.md` | 一行：「MMDA 元模型驱动架构语言」 |
-| 版本控制 | 尚未 `git init`（你已明示推迟到讨论定稿） |
+| 版本控制 | ✔ **已接入 git**：远端 `github.com/Roy7611/mmda-lang`（**公开仓**，MIT），本地 `main` 与 `origin/main` 同步（首提交 `0679a30`） |
 
 ### 2.2 `D:\2026\java`（后端 A：现有运行时与服务端）
 
@@ -318,7 +318,7 @@
 
 | 阶段 | 交付 | 验收（可执行） | 规模 |
 | --- | --- | --- | --- |
-| **P0** 基线整合 | ① 决定两个仓的关系（§6.2-1）；② `git init`（讨论定稿后）；③ 选定语法基线（§2.4-1） | 可 `cargo test`；`mmda validate examples/mmda-mes` 跑通 | 小 |
+| **P0** 基线整合 | ① 决定两个仓的关系（§6.2-1）；② ~~`git init`~~ → **✔ 已完成**（2026-09-24 建仓并首推 `0679a30`）；③ 选定语法基线（§2.4-1） | 可 `cargo test`；`mmda validate examples/mmda-mes` 跑通 | 小 |
 | **P0.5** 契约盘点 | ✔ **本轮完成**：三端类/接口对照清单 + 能力矩阵 → [`doc/targets.md`](doc/targets.md)、[`doc/contracts-inventory.md`](doc/contracts-inventory.md) | 清单逐行有 `file:line` 证据（已完成）；能力矩阵已确认（§6.3-2/3/4） | 中 |
 | **P1** 反向导入 Rust 化 | `mmda import --db`：库 → 项目文件（替换 1196 行 Python） | 结果与 `examples/mmda-mes` **逐文件 diff = 0**（除时间戳） | 中 |
 | **P2** 解析器 | `mmda-syntax`：按内容首关键字判 partType；诊断 `<file>:<line>:<col>` | 381 个语料文件解析 **0 error**；错误用例能定位 | 大 |
@@ -338,7 +338,7 @@
 
 ## 5. 仓库与目录
 
-`D:\2026\c`（语言、工具与文档内核）：
+`D:\2026\rust`（语言、工具与文档内核）：
 
 ```
 PLAN.md                     落地计划（本文件）
@@ -394,7 +394,7 @@ tools/                      方言/类型映射数据表
 
 ### 6.2 工程与架构未决项
 
-1. **仓库关系**：`E:\Dev\mmda-architect`（Rust 内核 + IDE 壳 + 381 文件语料）与 `D:\2026\c`（规范 + 计划 + 已迁入的文档）是合并成一个仓，还是「`c` = 语言内核与规范，architect = IDE 壳，内核作为依赖」？
+1. **仓库关系**：`E:\Dev\mmda-architect`（Rust 内核 + IDE 壳 + 381 文件语料）与 `D:\2026\rust`（规范 + 计划 + 已迁入的文档）是合并成一个仓，还是「`rust` = 语言内核与规范，architect = IDE 壳，内核作为依赖」？
 2. ~~**`.mmda` 后缀**~~ → **✔ 已裁决，见 §6.3-1**。
 3. **`.ma` 正文形态**：见 errata 冲突 2（JSON vs 语言 DSL），以及「哪些 part 是 JSON、哪些是语言文本」的界限。
 4. **留档的处置**：`doc/archive/2026-06/` 是否需要长期保留（用于 diff 与追溯），还是在 P0 定完仓库关系后随 architect 仓一并归档。
@@ -451,7 +451,7 @@ tools/                      方言/类型映射数据表
 | 生成物伤手写代码 | KEEP 区被覆盖 | 沿袭 `~KEEP PARTS` 协议（C# 产物里已在跑） |
 | 表达式不纯 | 事件重放不可行（`doc/events.md:97-102`） | 表达式禁 IO/赋值/随机/时间依赖 |
 | 范围爆炸 | 同时做语言 + IR + 三宿主 + DDL + 代码生成 + IDE | 按 §4 串行推进，一次只开一个阶段 |
-| 无版本控制 | 规范、语料、内核都还没有 git 保护 | 讨论定稿后立刻 `git init`（§6.2-1 定完即做） |
+| ~~无版本控制~~ | ✔ **规范仓已缓解**（`0679a30` 入 git）；**但 `E:\Dev\mmda-architect`（1,699 行 Rust + 381 文件语料）仍无版本控制** | 把 architect 纳入版本控制（P0 决定仓库关系时一并做） |
 
 ---
 
@@ -479,7 +479,7 @@ dotnet test "D:/2026/cs/MMDA/Tests/Mmda.Core.Data.Test/Mmda.Core.Data.Test.cspro
 cargo run -p mmda-cli -- test --target java,csharp,ts --cases examples/mmda-mes/tests
 ```
 
-**回滚**：`D:\2026\c` 建仓后每阶段一个分支/标签；`E:\Dev\mmda-architect` 在 P0 决定仓库关系前**不动它**；`D:\2026\java` 在 P4 之前只增不改（唯一的既有改动是删除已归档的 `mmda-lang/`）；`D:\2026\cs\MMDA` **本阶段只读不写**。
+**回滚**：`D:\2026\rust` **已接入 git**（公开仓 `github.com/Roy7611/mmda-lang`，首提交 `0679a30`），每阶段一个分支/标签；`E:\Dev\mmda-architect` 在 P0 决定仓库关系前**不动它**；`D:\2026\java` 在 P4 之前只增不改（唯一的既有改动是删除已归档的 `mmda-lang/`）；`D:\2026\cs\MMDA` **本阶段只读不写**。
 
 ---
 
@@ -508,3 +508,4 @@ cargo run -p mmda-cli -- test --target java,csharp,ts --cases examples/mmda-mes/
 - v1.11（2026-09-24）：**API 边界 = module 边界（插件不侵入语言）**——[`doc/api.md`](doc/api.md) 新增 **§1.1 第一原则**（module 边界 = API 边界 = 权限边界 = 文档分组边界；权限按 module 授予 ⇒ 无归属元对象结构上不可开放）、**插件两条边界**（只许读产物/报对账；禁止写元数据、禁止工具概念进语法）与**判据**（凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍）、**无归属元对象的六类决策表**（业务对象 / 共享主数据→基础模块 `Base` / 枚举不需归属 / 从属对象 / 技术对象默认 `internal` / 平台对象，实测 `data/models/base/` 77 个 + `mes/` 138 个）；§6 补「无归属对象」实测行、§7 补第 9 条待裁（基础模块固定名与 `sops` → OpenAPI 权限映射）；[`doc/architecture-review.md`](doc/architecture-review.md) §2.1 新增 **ARCH-111**；§3.17 补第一原则、§6.2-25 补第 9 条、§6.3 第 10 条、变更记录；`doc/errata.md` §五 第 14 条 + 校勘第十七轮；`doc/index.md` 版本升 0.9。
 - v1.12（2026-09-24）：**OpenAPI 原生支持（OAS 3.1.0 基准）+ AI 造数**——[`doc/api.md`](doc/api.md) **新增 §3 与 OAS 3.1.0 的逐条对齐**（四条判据：内核一等后端 / 过官方 Schema 校验 / 契约测试双向对账 / 语言层不出现 OAS 术语；根对象与 30 个 OAS 对象逐字段来源；**Operation 12 字段**（`#operation-object-example`）；五视图 / Action → 端点与状态码（含非法转移 409）；**逻辑类型 → JSON Schema 2020-12 映射**（实测 3.1 差异：`nullable` 全文 0 次、`contentEncoding` 替代 `format: byte`、`webhooks` 原生、`info.summary`/`license.identifier`）；securityScopes 与 `x-mmda-*` 溯源指针；**覆盖度自检 23 + 5 + 2 = 30**）、**§3.9 Mock 数据两层造数**（机械层零 AI + AI 语义层；护栏：不得发明结构 / 过双校验 / 种子与 provenance / 造数不需双签而断言必须双签）；§8 待裁 9 → **16 条**（新增存量路径兼容、`decimal` JSON 表示、`operationId`、scope、`webhooks`、官方 Schema 校验进门禁、AI 造数固化）；[`doc/testing.md`](doc/testing.md) **新增 §4.3**（Mock 数据生成）+ §8 命令面 `mmda mock` + MCP `mmda_mock_gen` + §10/§11 指针；[`doc/ai/tools.md`](doc/ai/tools.md) §2.4 补 `mmda_api_export`/`mmda_api_check`、§2.5 补 `mmda_mock_gen` 与造数边界；[`doc/targets.md`](doc/targets.md) L2 与能力矩阵补 OAS 3.1.0 原生 + mock 造数；本文件 §3.17 补两条已裁、§6.2-25 补第 ⑩–⑯ 条、§6.3-10 补充；变更记录；`doc/errata.md` §五 第 15 条 + §三 第 23 条更新 + 校勘第十八轮；`doc/index.md` 版本升 0.10。
 - v1.13（2026-09-24）：**API 契约四条落定**（作者：「1. REST语义 / 2. 按你建议 / 3. 进 / 4. 要」）——① **存量路径取 A 方案**（REST 语义 + `legacyPathStyle` 兼容开关，迁移期双版本并存）；② **序列化精度优先**（`decimal`/`money` → `string` + `pattern`，超 JS 安全整数的 `int64`/`uint64` → `string`，`Timestamp` → `date-time`，三端一致）；③ **官方 Schema 校验 + 契约测试进硬门禁**；④ **AI 造数样本固化**（种子 + provenance 进版本控制）。落点：[`doc/api.md`](doc/api.md) §3.1-2 判据 2、§3.4 存量冲突改写、§3.5 类型映射三条、§3.9 护栏 3、**§8 重构成「8.1 已裁 / 8.2 待裁」**（待裁 16 → 12 条）；[`doc/testing.md`](doc/testing.md) §4.3 护栏 3；本文件 §6.2 第 25 条标已裁 4 条、§6.3 新增第 11 条、变更记录；`doc/errata.md` §五 第 16 条 + §三 第 23 条 + 校勘第十九轮；`doc/index.md` 版本升 0.11。
+- v1.14（2026-09-24）：**仓重命名 `D:\2026\c` → `D:\2026\rust` + 规范真源入 git**（作者原话：「把 D:\2026\c 重命名为 D:\2026\rust，我当时想着用 c 语言。然后也改下现在项目的路径配置」——**命名理由是最初想做 C 语言，后定为 Rust 单实现**）。落点：① **全仓与相关工程配置的路径引用同步**（本文件 4 处、[`doc/protection.md`](doc/protection.md) 算法仓路径 1 处、[`doc/errata.md`](doc/errata.md) 校勘一轮记录 1 处；仓外：技能 `mmda-lang-development` 21 处、`mmda-lang-spec-repo` 6 处、探针脚本 9 个文件 12 处，共 **46 处**）；② 台账改为已落状态——§0 `git init` 行、§2.1「版本控制」行、§4 P0 第 ② 项、§7 风险表「无版本控制」行、§8 回滚段，均改记 **远端 `github.com/Roy7611/mmda-lang`（公开仓，MIT）首提交 `0679a30`**；③ §6.2-1 散文中仓名 `c` → `rust`；④ `doc/errata.md` 校勘第二十轮；`doc/index.md` 版本升 0.12（**无规范内容变更，仅仓路径与台账**）。

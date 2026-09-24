@@ -79,7 +79,7 @@ Rust 算法仓（不进任何交付仓）
 | TS | WASM 加载器 | `logisticsSchedulerWasm.ts` | **只放可公开子集**（校验、换算、预览小算例） |
 
 - **传参用 FlatBuffers**（复用 B5）：native 边界零拷贝、跨语言、无需第二套 IDL；算法契约的输入输出直接引用 m 语言里声明的 record。
-- **算法仓独立**：`logistics-scheduler` 单独仓（或 `D:\2026\c\crates\` 下的私有子模块），**不进 Java/C#/TS 三个交付仓**；交付仓里只有薄适配与 `.dll/.so` 产物。
+- **算法仓独立**：`logistics-scheduler` 单独仓（或 `D:\2026\rust\crates\` 下的私有子模块），**不进 Java/C#/TS 三个交付仓**；交付仓里只有薄适配与 `.dll/.so` 产物。
 - **薄适配必须真薄**：一个函数一个语义，不许把半个业务流程塞进 native；否则边界失控。
 
 ---
