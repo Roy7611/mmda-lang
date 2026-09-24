@@ -68,7 +68,7 @@
 
 - **底座负责中间三层，另外两层交给外部**——这条边界不模糊，避免「什么都想自己采」；
 - **时间源必须统一**（NTP）且**所有指标同机打 `tenant` / `service`**——否则跨层关联（业务 → 应用 → 系统）做不出来；
-- **客户端层首版只做 Web**（唯一渲染方 = mmda-vue）；移动端 Flutter 排后（待裁 8）。
+- **客户端层首版只做 Web**（唯一渲染方 = mmda-vue）；移动端 Flutter 排后（✔ **已裁 2026-09-24，8A**）。
 
 ---
 
@@ -127,18 +127,18 @@
 
 | 出口 | 协议 / 形态 | 谁消费 |
 | --- | --- | --- |
-| **指标** | **OpenMetrics 文本**（Prometheus exposition 格式，拉模型）`/metrics` | Prometheus · 夜莺 · **Zabbix**（HTTP agent 主项 + Prometheus pattern 依赖项，官方支持）· VictoriaMetrics · Thanos |
-| **遥测（可选）** | **OTLP 1.11.0**（trace / metric / log 三信号均已 stable） | OpenTelemetry Collector → 任意后端 |
+| **指标** | **OpenMetrics 文本**（Prometheus exposition 格式，拉模型）`/metrics` | Prometheus · 夜莺 · **Zabbix**（HTTP agent 主项 + Prometheus pattern 依赖项，官方支持）· VictoriaMetrics · Thanos —— **✔ 已裁 1A：这是首版唯一「必需」的出口** |
+| **遥测（可选）** | **OTLP 1.11.0**（trace / metric / log 三信号均已 stable） | OpenTelemetry Collector → 任意后端（**✔ 1A：可选，不与 `/metrics` 并列**） |
 | **告警规则** | **规则文件 / 模板**（Prometheus rule、Zabbix 模板 XML） | 对方告警引擎（Alertmanager / Zabbix）加载——**我们不自己发告警** |
-| **推送（可选）** | **Zabbix trapper**（`zabbix_sender`）· Kafka · syslog | 无拉取能力的网络区的场景 |
+| **推送（可选）** | **Zabbix trapper**（`zabbix_sender`）· Kafka · syslog | 无拉取能力的网络区的场景（**✔ 已裁 3A：作为「口子」保留，不主动做内容**） |
 
 ### 4.2 三家对照（要做的 / 不做的）
 
 | 开源件 | 集成路径 | **我们要做的** | **我们不做的** |
 | --- | --- | --- | --- |
 | **Prometheus** | 拉 `/metrics`；批量作业走 Pushgateway | 内置 exporter 端点（含 `tenant` / `module` 标签）· **版本化官方 dashboard JSON** · **告警规则文件** | **不内置 Prometheus 本身**（离线交付包可选附，§9）；不自建时序库 |
-| **Zabbix** | ① **HTTP agent 主项 + Prometheus pattern 依赖项**抓 `/metrics`（官方文档支持）② **trapper 推送**（`zabbix_sender`）作补充 | 出**版本化 Zabbix 模板 XML**（含监控项 / 触发器 / 发现规则） | **不做 Zabbix agent 插件**（不绑 C / Go 写的 agent 模块）；不重复实现 Zabbix 的告警与依赖 |
-| **Open-Falcon** | 社区已转向**夜莺（n9e）**；接入路径 = ① 夜莺的 **Prometheus-Like 数据源 / Remote Write**（Categraf 即走此路）② **JSON 推送**最低成本兼容 | 保证 `/metrics` 与标准格式完备（**兼容即接入**）；如客户仍在 Open-Falcon，出**推送格式说明** | **不做 falcon-agent 协议的第一优先**（已停更一代的技术，不投入适配器） |
+| **Zabbix** | ① **HTTP agent 主项 + Prometheus pattern 依赖项**抓 `/metrics`（官方文档支持）② **trapper 推送**（`zabbix_sender`）作补充（**✔ 已裁 3A：留口子**） | 出**版本化 Zabbix 模板 XML**（含监控项 / 触发器 / 发现规则） | **不做 Zabbix agent 插件**（不绑 C / Go 写的 agent 模块）；不重复实现 Zabbix 的告警与依赖 |
+| **Open-Falcon** | 社区已转向**夜莺（n9e）**；接入路径 = ① 夜莺的 **Prometheus-Like 数据源 / Remote Write**（Categraf 即走此路）② **JSON 推送**最低成本兼容 | 保证 `/metrics` 与标准格式完备（**兼容即接入**）；如客户仍在 Open-Falcon，出**推送格式说明**——**✔ 已裁 4A：只做 Prometheus 兼容，不做 JSON 推送适配器** | **不做 falcon-agent 协议的第一优先**（已停更一代的技术，不投入适配器） |
 | Grafana | 直接消费 Prometheus / Loki / Tempo | 版本化 dashboard JSON（随内核版本发布） | 不写死面板、不内嵌 Grafana |
 | 网络 / 硬件 | SNMP exporter、IPMI / Redfish | —（交给客户运维栈） | 不做网络与硬件采集 |
 
@@ -239,8 +239,8 @@
 
 - **多租户三档**（与 [`event_bus.md`](event_bus.md) §10 一致）：**A 共享采集 + `tenant` 标签**（起步，建议）／ B 每租户独立监控实例 ／ C 每租户独立环境（按客户）；
 - **国产化**：监控栈必须**可离线部署**（镜像 tar + 离线规则 / 模板文件）；采集器架构矩阵 = **x86_64 + aarch64**（与 L2 矩阵一致），**龙芯不承诺**；验收 OS（麒麟 V10 SP3 / 统信 UOS V20）上跑通即算；
-- **离线交付包附带**（可选启用）：Prometheus / node_exporter / Zabbix agent 的镜像或二进制 + 官方 dashboard JSON + 规则文件；
-- **`mmda doctor`** 现四项（内核版本 / glibc / 架构 / JDK）→ 建议**扩为六项**：+ **时间源一致性**、+ **监控出口可达性**（待裁 7）。
+- **离线交付包附带**（✔ 已裁 2026-09-24，**2A**）：Prometheus / node_exporter / Zabbix agent 的镜像或二进制 + 官方 dashboard JSON + 规则文件——**可选启用、默认不开**（不算「内置」）；
+- **`mmda doctor`** 现四项（内核版本 / glibc / 架构 / JDK）→ **✔ 已裁 2026-09-24（7A）：扩为六项**——+ **时间源一致性**、+ **监控出口可达性**。
 
 ---
 
@@ -252,25 +252,27 @@
 | 总线采集面（入 / 流 / 出 / 可靠 / 租户） | **P8** | 到货例跑起来，五组指标都有数 |
 | CI 输出契约（JUnit / SARIF / quality-report / diff）+ 门禁 | **P9** | Jenkins 只用 CLI 即跑通全流水线 |
 | 离线交付包 + `doctor` | **L2（已裁）** | 离线环境装得上、自检能过 |
-| 运维诊断命令 `mmda ops`（只读） | **P9**（待裁 5） | 采集面 / 失败队列 / 对账差异 / 生效版本四项可查 |
+| 运维诊断命令 `mmda ops`（只读） | **P9**（✔ **已裁 5A：进首版**） | 采集面 / 失败队列 / 对账差异 / 生效版本四项可查 |
 | 运维 UI（壳里的运维域） | **P7**（[`ide/specification.md`](ide/specification.md)） | 与 [`event_bus.md`](event_bus.md) §12.2 同一面板规划 |
 
-> **建议**：把 **P9 扩为「一致性 + 验收 + 运维出口」**（不新增 P11），避免战线拉长（待裁 6）。
+> **✔ 已裁 2026-09-24（6A）**：把 **P9 扩为「一致性 + 验收 + 运维出口」**（**不新增 P11**），避免战线拉长；`mmda ops` 只读诊断随 P9 交付（5A）。
 
 ---
 
-## 11. 待裁（A / B / C + 我的建议）
+## 11. ✔ 已裁（2026-09-24，作者取 `1A 2A 3A 4A 5A 6A 7A 8A`）
 
-| # | 待裁 | 选项 | 建议 |
+> 作者原话：「**1 A, 2A, 3A, 4A, 5A, 6A,7A, 8A**」——**八条全部取建议档**。
+
+| # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
-| 1 | **首版唯一必需的监控出口** | A `/metrics`（OpenMetrics）+ 可选 OTLP ／ B 只做 OTLP ／ C 三出口并列 | **1A**（Zabbix / Prometheus / 夜莺都能消费，覆盖面最大、成本最低） |
-| 2 | 交付包是否附监控后端与采集器镜像 | A 附（可选启用，不算内置）／ B 不附（客户自备）／ C 内置默认开 | **2A**（离线交付是硬要求，但默认不开） |
-| 3 | Zabbix 侧形态 | A 只出模板 + 让 Zabbix 抓 `/metrics` ／ B 额外支持 trapper 推送 ／ C 自研 agent 插件 | **3A**，**保留 B 的口子**（无拉取能力的网络区） |
-| 4 | Open-Falcon 兼容优先级 | A 只做 Prometheus 兼容（客户经夜莺 / 兼容层消费）／ B 额外做 JSON 推送 ／ C 不做 | **4A**（已停更一代，不投适配器；B 留文档级说明） |
-| 5 | `mmda ops` 只读诊断命令是否进首版 | A 进（P9）／ B 后置 | **5A**（应急第 1–4 步全靠它，价值最高）——**⚠️ 已被 [`ux.md`](ux.md) §11 的 **1B** 引为前置**：体验度量的回流腿要靠 `mmda ops` 出数，**它不进首版则回流只能是纸面约定** |
-| 6 | P9 是否扩为「一致性 + 验收 + 运维出口」 | A 扩（不新增阶段）／ B 新增 P11 ／ C 只做出口不做诊断 | **6A** |
-| 7 | `mmda doctor` 是否加「时间源一致性 + 监控出口可达性」 | A 加／ B 不加 | **7A**（两条都是现场踩过的坑，一次自检省一轮排障） |
-| 8 | 客户端监控首版范围 | A 只做 Web（mmda-vue，Web Vitals + Action 埋点）／ B Web + Flutter ／ C 不做 | **8A**（Flutter 排 P8 之后，与移动端裁决一致） |
+| 1 | 首版唯一必需的监控出口 | **1A**：**`/metrics`（OpenMetrics 文本，拉模型）必需**；**OTLP 可选**；三出口不并列 | §4.1 |
+| 2 | 交付包是否附监控后端与采集器镜像 | **2A**：**附**（Prometheus / node_exporter / Zabbix agent 镜像或二进制 + dashboard JSON + 规则文件），**可选启用、默认不开**（离线交付是硬要求） | §9 |
+| 3 | Zabbix 侧形态 | **3A**：**只出模板 XML + 让 Zabbix 抓 `/metrics`**（HTTP agent 主项 + Prometheus pattern 依赖项）；**保留 trapper 推送的口子**（无拉取能力的网络区） | §4.2 |
+| 4 | Open-Falcon 兼容优先级 | **4A**：**只做 Prometheus 兼容**（客户经夜莺 n9e / 兼容层消费）；**不做 JSON 推送适配器**（留文档级说明即可） | §4.2 |
+| 5 | `mmda ops` 只读诊断是否进首版 | **5A**：**进首版（P9）**——**这条同时清掉了 [`ux.md`](ux.md) 1B 的前置**：体验度量的回流腿有数据来源，不再是纸面约定 | §10、[`ux.md`](ux.md) §5 |
+| 6 | P9 是否扩为「一致性 + 验收 + 运维出口」 | **6A**：**扩**（**不新增 P11**）——P9 = 一致性 + 验收 + **运维出口（模板资产）+ `mmda ops` 诊断** | §10、[`PLAN.md`](..\PLAN.md) §4 |
+| 7 | `mmda doctor` 是否加「时间源一致性 + 监控出口可达性」 | **7A**：**加**（`mmda doctor` 由四项扩为六项；两条都是现场踩过的坑） | §9 |
+| 8 | 客户端监控首版范围 | **8A**：**只做 Web**（mmda-vue：Web Vitals + Action 埋点）；Flutter 排 P8 之后（与移动端裁决一致） | §2 |
 
 ---
 

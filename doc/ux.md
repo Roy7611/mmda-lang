@@ -202,7 +202,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 ## 11. 已裁（4 条，✔ 2026-09-24 作者取 `1B 2B 3B 4A+B`）
 
-**结果**：**1B** 度量回流进 `mmda check` 出 warning（**作者未采纳助手建议的 1A**；`mmda ops` 为其前置）· **2B** 十原则的 A 类子集进 `mmda check` 出 warning · **3B** 无障碍可自动化子集出 warning · **4A+B** 旅程不进语言与元模型 + 设计器插件留只读「旅程视图」扩展点。
+**结果**：**1B** 度量回流进 `mmda check` 出 warning（**作者未采纳助手建议的 1A**；`mmda ops` 为其前置 —— **✔ 2026-09-24 该前置已满足**：[`operations.md`](operations.md) §11-5 取 **5A**，`mmda ops` 进首版）· **2B** 十原则的 A 类子集进 `mmda check` 出 warning · **3B** 无障碍可自动化子集出 warning · **4A+B** 旅程不进语言与元模型 + 设计器插件留只读「旅程视图」扩展点。
 
 下表**保留原选项与理由**，供复核（照例：已裁项的回改要另开一轮，别静默改写）。
 
