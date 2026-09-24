@@ -34,7 +34,9 @@
 | Part | 包内一个文件或逻辑单元；含 role 与 partType |
 | SSOT | Single Source of Truth：设计真相源（工作区为主，包为交换形态） |
 | enumSet | 字段上嵌入的关系/枚举 DSL（**旧实现的存储层表示**，语言里已升级为 `@One`/`@Ref`/`@State` 注解） |
-| 语料 / corpus | 从真实元数据库反向导出的项目文件（当前 381 个），用作解析器回归集 |
+| 表达式层（Expression） | **纯函数**（字段默认值 / `@Computed` / `lockIf`·`hideIf`·`requiredIf` / Validator 条件）——无副作用、无 IO、可重复求值（✔ 已裁 1A） |
+| 脚本层（Script） | **拦截点与 `canDo` 里写的受限 m 脚本**——**可读可写 Entity、可跨模块**，由 Rust 内核求值、能力=内核函数（✔ 已裁 2026-09-24 A）；**仍禁任意 IO / 反射 / 随机与时间依赖**，见 [`runtime.md`](runtime.md) §4.5 / §4.6 |
+| 能力函数（capability function） | 脚本能用的一项能力 = **内核提供的一个函数**（`script.<域>.<动作>`）；项目用 `capability` 声明后才可用，未声明即生成期报错 |
 
 ## 3. 行为与事件
 
