@@ -38,7 +38,7 @@
 | [ide/specification.md](ide/specification.md) | Architect 工具规格（定位、MVP、Codegen Profile）；**§4.8 建模域清单（11 域，逐项标现状/缺口）**、§4.9 宿主形态（独立壳 vs VS Code/IDEA 插件） |
 | [ide/workflow.md](ide/workflow.md) | 架构师六步工作流与导航树 |
 | [ide/ui-shell.md](ide/ui-shell.md) | 主界面布局框架与 Host 抽象 |
-| [ide/plugins.md](ide/plugins.md) | 插件 API 与扩展点 |
+| [ide/plugins.md](ide/plugins.md) | 插件 API、扩展点、**插件市场**与**设计阶段原生支持**（§8–§12） |
 | [ide/diagrams.md](ide/diagrams.md) | E-R / STM / DFD / 模块树与元模型映射 |
 | [ide/diagram-adapters.md](ide/diagram-adapters.md) | 图形引擎适配器接口 |
 | [ide/graph-files.md](ide/graph-files.md) | 图形投影文件 `*.g` 的格式 |
@@ -76,5 +76,5 @@
 
 ## 规范版本
 
-- m 语言规范：草案 **0.14**（2026-09-24：合并 → 补入 C# 后端实测与目标端契约 → 三条裁决落地 + P0.5 契约盘点 → 架构评估 → UI 契约收紧 → 质量定量层 → 需求工程与设计器建模域 → 宿主形态 / 组织架构是数据 / BI 元数据方向三裁 → Role 进语言（与 Module 同级） → 运行架构与拦截点上升到语言 → API 契约与 API 管理集成 → API 边界 = module 边界（插件不侵入语言） → OAS 3.1.0 原生支持 + AI 造数 → **API 契约四条落定（REST 语义 / 精度优先序列化 / 官方 Schema 门禁 / AI 造数固化）** → **仓重命名 `D:\2026\c` → `D:\2026\rust` 并接入 git（无规范内容变更，仅仓路径与台账）** → **愿景与四层目标落成 [`vision.md`](vision.md)（open core 边界 / 国产化全三级 / 部署方式只作部署方式 / 业务可测指标）** → **L2 国产化目标矩阵落定（x86_64 + aarch64 / 麒麟·统信验收 + openEuler 基线 / 毕昇 JDK 21 / 设计器不进国产 OS / 离线交付）**）
+- m 语言规范：草案 **0.15**（2026-09-24：合并 → 补入 C# 后端实测与目标端契约 → 三条裁决落地 + P0.5 契约盘点 → 架构评估 → UI 契约收紧 → 质量定量层 → 需求工程与设计器建模域 → 宿主形态 / 组织架构是数据 / BI 元数据方向三裁 → Role 进语言（与 Module 同级） → 运行架构与拦截点上升到语言 → API 契约与 API 管理集成 → API 边界 = module 边界（插件不侵入语言） → OAS 3.1.0 原生支持 + AI 造数 → **API 契约四条落定（REST 语义 / 精度优先序列化 / 官方 Schema 门禁 / AI 造数固化）** → **仓重命名 `D:\2026\c` → `D:\2026\rust` 并接入 git（无规范内容变更，仅仓路径与台账）** → **愿景与四层目标落成 [`vision.md`](vision.md)（open core 边界 / 国产化全三级 / 部署方式只作部署方式 / 业务可测指标）** → **L2 国产化目标矩阵落定（x86_64 + aarch64 / 麒麟·统信验收 + openEuler 基线 / 毕昇 JDK 21 / 设计器不进国产 OS / 离线交付）** → **共赢落成插件市场 + 设计阶段原生支持插件式开发（[`ide/plugins.md`](ide/plugins.md) §8–§12）**）
 - 上一轮规范：草案 0.1（2026-06，`archive/2026-06/`）

@@ -7,7 +7,7 @@
 | `specification.md` | Architect 工具规格（定位、用户、MVP、阶段、成功标准） | ✅ 可用；其中「`.mmda` = 项目」的口径与决策 B8 冲突，见 [`../errata.md`](../errata.md) 冲突 3 |
 | `workflow.md` | 架构师六步工作流（业务→数据→流程→交互→交付）与导航树 | ✅ 可用 |
 | `ui-shell.md` | 主界面布局、Host 抽象、技术栈（Tauri + Vue 3 + Syncfusion）、目录 | ⚠️ 技术栈待随 `..\PLAN.md` P7 复核 |
-| `plugins.md` | 插件清单、扩展点、注册与加载 | ✅ 可用 |
+| `plugins.md` | 插件清单、扩展点、注册与加载；**§8–§12 设计阶段原生支持 / 插件市场 / 权限与硬边界 / 加载形态** | ✅ 可用 |
 | `diagrams.md` | E-R / STM / DFD / 模块树 与元模型的映射 | ✅ 可用 |
 | `diagram-adapters.md` | 图形引擎适配器接口（Syncfusion 参考实现） | ✅ 可用 |
 | `graph-files.md` | 图形投影 `*.g` 的 JSON 格式（布局与语义分离） | ✅ 可用 |
