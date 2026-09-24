@@ -249,6 +249,16 @@
 [^jint]: .NET 侧：`Microsoft.CodeAnalysis.CSharp.Scripting`（Roslyn）、Jint（纯托管 JS，含 `PrepareScript` 复用与执行限额）、ClearScript（V8）；Jint 文档声明其配置复用「**不是隔离边界**」。
 
 
+### 4.7 脚本文件（`.m`）与 `import`（✔ 2026-09-25 作者）
+
+**✔ 已裁**：**模型之外的脚本程序单独成文件，扩展名 `.m`**；**与它服务的对象放在同一个目录**（例：`data/models/mes/Order.mm` 的记录，其 `beforeXxx` / `afterXxx` 拦截器放 `data/models/mes/Order.m`）；**`.m` 里的程序可以 `import` 到别的文件里使用**（脚本是可复用单元，不是只能内嵌在模型里）。
+
+- **判据**（与 [`project.md`](project.md) §1 同口径）：**模型分片文件**（`.mm` / `.me` / `.ms` / …）正文首关键字能判出 partType；**`.m` 正文是脚本**（语句序列，没有 partType）—— 因此**扩展名不承担类型判据，内容承担**；
+- **同目录 = 默认配对**：脚本文件与模型文件同目录、可通过命名与对象对应（**命名与配对的精确形态 ⏳ 待点头**：`<对象>.m` 同名配对（推荐，一眼配对）或脚本内显式声明挂到哪个对象 / 哪个事件）；
+- **`import` 语义（草案形态 ⏳ 待点头）**：文件头 `import "./common.m";`（相对路径、可多行）—— 被引文件的**顶层声明**（具名函数 / 常量）进入当前文件作用域；**只允许 import `.m` 文件**（模型不是可 import 的东西）；**重名冲突 = 报错**（不做别名机制）、**循环 import = 报错**；
+- **两种容器，一套语法**：内嵌脚本块（§4.5）与独立 `.m` 文件用的是**同一套表达式 / 语句语法**；独立文件用于**会被复用或较长的拦截器**，内嵌块用于**一次性的短逻辑**；
+- **⚠️ 同名提示**：§4.6 能力清单里的 `import` 是**业务动作名**（「导入」动作的钩子 `beforeImport`），与本节的**语言级 `import` 语句**同字不同域（一个在能力表 / 脚本上下文里，一个在文件头）—— 是否需要更名以免歧义 ⏳ 待点头。
+
 ## 5. 缓存是横切面（不是第五层）
 
 实测与图一致：`mmda-core-caching/` 提供 `CacheProvider.java`、`ReactiveCacheProvider.java`、`CachePolicy.java` + Redis 四个实现（`EntityCacheProvider`、`ReactiveEntityCacheProvider`、**`TenancyEntityCacheProvider`/`ReactiveTenancyEntityCacheProvider`**——已带租户隔离）。

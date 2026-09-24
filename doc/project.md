@@ -11,6 +11,7 @@
 | --- | --- |
 | **MMDA 项目** | 工作区目录 + 根清单 `{projectCode}.mmda` + `biz/` `data/` `flow/` `ui/` 等 |
 | **M 语言源文件** | `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mi` … 按类型分片的语言文件 |
+| **纯脚本文件（`.m`）** | 模型之外的**脚本程序**（拦截器 / 钩子体 / 可复用函数）—— **与它服务的对象同目录**（如 `data/models/mes/Order.mm` 与 `data/models/mes/Order.m`），可用 **`import`** 引到别的文件里复用；✔ 2026-09-25 作者 |
 | **项目清单** | 根目录 `{projectCode}.mmda` —— **整个项目的描述文件**（JSON，非 M 语言模型） |
 | **工作区（directory）** | 展开目录，Git/SVN 与 AI 友好，**日常 SSOT** |
 | **归档包（archive）** | `{projectCode}.mmdax` —— ZIP，内部路径与工作区 1:1 |
