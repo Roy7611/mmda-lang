@@ -103,7 +103,7 @@
 > buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
 > ```
 >
-> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源**：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](design-notes.md) §7.2。**⏳ 仍待你定**：① **类型名规范写法**（`BIGID` / `bigid`）；② **`MAX_TENANT_ID = 0x7FF_FFFF` 是 27 位值而注释写「高 28 位」** —— 若是有意保留 bit 63（ID 恒为正）就照此定死，若是笔误（应为 `0xFFFFFFF`）说一声；③ 旧 javadoc 里的「48bits 实际的 id」= 16+48 旧布局残留，**以常量为准**—— 见 [`errata.md`](errata.md) §二-6。
+> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源**：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**⏳ 仍待你定**：① **类型名规范写法**（`BIGID` / `bigid`）；② **`MAX_TENANT_ID = 0x7FF_FFFF` 是 27 位值而注释写「高 28 位」** —— 若是有意保留 bit 63（ID 恒为正）就照此定死，若是笔误（应为 `0xFFFFFFF`）说一声；③ 旧 javadoc 里的「48bits 实际的 id」= 16+48 旧布局残留，**以常量为准**—— 见 [`errata.md`](errata.md) §二-6。
 
 ---
 
