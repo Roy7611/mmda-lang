@@ -133,6 +133,8 @@
 | inbox / outbox | **Inbox（去重表）/ Outbox（发件箱）**（机构，落库） | 入 / 出方向 |
 | stream | **流**（`DataFlow` 的口语说法）；指具体中间件时写其名（Kafka / Redis Stream） | Channel（Channel 是逻辑传输，Stream 是实现） |
 
+> **标识符与生成代码怎么写**（接口 `I` 前缀、实现类**禁 `Impl`**、类与对象 Pascal、字段与属性 camel、其余尊重各端习惯）**见 [`naming.md`](naming.md)**——本节管「词」，`naming.md` 管「怎么写」。
+
 ## 4. 交付与工具
 
 | 术语 | 说明 |

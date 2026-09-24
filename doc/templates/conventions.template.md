@@ -15,6 +15,7 @@
 
 - Record / Enum：PascalCase
 - Field / Action：camelCase
+- 接口：`I` 前缀；实现类用业务名（**禁止 `Impl` 后缀**）——总口径见 [`../naming.md`](../naming.md)
 - 全名：`schema.Record`
 
 ## 3. AI / 开发者

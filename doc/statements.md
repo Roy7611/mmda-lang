@@ -223,7 +223,7 @@ flows:
 | `@Event(OrderPayed)` | 事件类 + 订阅接口 |
 | `@State` + FlowTrail | `FlowableEntity<Status>` 类能力 |
 
-规范只要求**可追踪到 Action 元数据**，接口名由 Profile 模板决定。
+规范只要求**可追踪到 Action 元数据**，接口名由 Profile 模板决定——**模板可定缀合方式，但不得违反 [`naming.md`](naming.md) §1**（接口 `I` 前缀、实现类禁 `Impl`、契约名三端一致）。
 
 ---
 

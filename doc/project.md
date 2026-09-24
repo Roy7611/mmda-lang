@@ -278,7 +278,7 @@ mmda open dist/erp.mmdax
 | **一对象一文件** | `Order.mm`、`OrderStatus.me`、`OrderStatusChanged.ms` 各一文件 → 细粒度 diff、减法冲突 |
 | 文件名 = 主符号名 | 与语言文件内 `record Order` / `enum OrderStatus` 一致 |
 | 子系统前缀（可选） | 大项目可 `data/models/mes/Bom.mm`；`syncRef` 仍为 `mes.Bom` |
-| 大小写 | 类型名 PascalCase；`biz` 文件用小写 `mes.ma` |
+| 大小写 | 类型名 PascalCase；`biz` 文件用小写 `mes.ma`；**标识符与生成代码的命名总口径见 [`naming.md`](naming.md)** |
 
 这粒度是为**细粒度版本控制**（决策 B2）服务的：对象级改动只产生对象级 diff，git/svn 合并冲突面最小。
 
