@@ -57,8 +57,8 @@
 | 位置 | 统一名 | 定义 | **禁用别名（曾混用/易误解）** |
 | --- | --- | --- | --- |
 | 流的入口 | **EventSource（事件源）** | 产生事件/数据的源头；实现按 `kind` 区分：设备源 · 定时源（Tick）· 回调源（Webhook）· 库变更源（CDC/轮询）· 文件源 · 消息源 · 进程内事件源 | ~~Source~~ · ~~Input~~ · ~~Inbound Adapter~~ · ~~Trigger（降为 EventSource 的配置项 `on`）~~ |
-| 流的出口 | **Sink（数据汇）** | 投递方式**三种（属性，不是三个概念）**：**写入 Write · 推送 Push · 调用 Call** | ~~Output~~ · ~~Target~~ · ~~Outbound Adapter~~ |
-| 连接单元 | **Endpoint（端点）** | 一条连接的**配置单元**：协议 / 地址 / 凭据引用 / 幂等键 / 重试 / 限流 / 保留期；分**入端点**与**出端点** | ~~Adapter（Channel Adapter）~~ |
+| 流的出口 | **EventSink（数据汇）**（**✔ 2026-09-24 裁：正式名由 `Sink` 改为 `EventSink`，与 `EventSource` 对称，见 [`event_bus.md`](event_bus.md) §15-8**） | 投递方式**三种（属性，不是三个概念）**：**写入 Write · 推送 Push · 调用 Call**。**用法纪律**：契约、生成物、正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字） | ~~Output~~ · ~~Target~~ · ~~Outbound Adapter~~ |
+| 连接单元 | **Endpoint（端点）** | 一条连接的**配置单元**：协议 / 地址 / 凭据引用 / 幂等键 / 重试 / 限流 / 保留期；分**入端点**与**出端点**。**✔ 2026-09-24 补定义**：**端点 = API + 集成定义**——在 API 之上再加**数据转化（Converter / DataMapper 映射）、过滤（Filter / Validator）、投递方式（Write / Push / Call）、触发与重试、对账**；**不改 API 的业务语义**（作者原话「端点是要在 API 的基础上增加定义数据的转化、过滤规则的」，[`event_bus.md`](event_bus.md) §6 / §15-9） | ~~Adapter（Channel Adapter）~~ |
 | 连接实现 | **Connector（连接器）** | 端点的**实现**（内置或插件提供：Kafka · RabbitMQ · OPC-UA · 文件 · HTTP …） | —（与 Endpoint 别混：**配置 vs 实现**） |
 | 传输 | **Channel（通道）** | 端点与处理器之间的传输；投递语义 = **点对点（队列）/ 发布订阅（主题）**；`transport` = `memory` · `redis` · `rabbitmq` · `kafka` · `db`（**跨进程/跨系统集成走消息平台**） | ~~Queue / Topic~~（只作投递语义的修饰，不作概念名） |
 | 处理（上位词） | **Processor（处理器）** | 流中间节点的统称 | ~~Transformation~~ · ~~Transform~~ · ~~Map~~ · ~~Compute（并入 Converter）~~ |
@@ -74,7 +74,7 @@
 | 代码实现 | **Handler（处理器实现）** | KEEP 区里真正写代码的地方；订阅生成的接口名沿用 `handler Xxx`（[`events.md`](events.md) §3） | ~~ProcessorImpl~~ |
 | 可靠性机制 | **Outbox（事务性发件箱）** · **幂等键 `eventId`** · **失败队列（Dead Letter）** · **重放（Replay）** | 机制名，不是节点 | ~~消息表~~ · ~~重试表~~ |
 
-> ⚠️ **两处撞车（规则待裁，见 [`event_bus.md`](event_bus.md) §15-8/9）**：① **「端点」**——[`api.md`](api.md) 里指 **HTTP 接口**（由 module 推导），本文指**集成连接点**；建议规则：**接口一律写「API / 接口」，集成连接一律写「端点」**（要强调时写「集成端点」）。② **「触发器」**——`@trigger`（记录级数据库触发器，[`records.md`](records.md)）与「事件源」同词；规则：`@trigger` 保留，**Trigger 不再作独立概念名**。
+> ⚠️ **两处撞车（✔ 2026-09-24 均已裁，见 [`event_bus.md`](event_bus.md) §15-8/9）**：① **「端点」**——[`api.md`](api.md) 里指 **HTTP 接口**（由 module 推导），本文指**集成连接点**；**已裁规则（§15-9 取 A）**：**接口一律写「API / 接口」，集成连接一律写「端点」**（要强调时写「集成端点」）。② **「触发器」**——`@trigger`（记录级数据库触发器，[`records.md`](records.md)）与「事件源」同词；规则：`@trigger` 保留，**Trigger 不再作独立概念名**。
 
 ### 3.2 易混淆概念辨析（四对 + `stream`，✔ 2026-09-24 裁）
 
@@ -108,7 +108,7 @@
 
 | **inbound / outbound（入 / 出）** | **inbox / outbox（收件箱 / 发件箱）** |
 | --- | --- |
-| 是**方向**（相对本系统边界）：**入端点**（EventSource 侧）/ **出端点**（Sink 侧） | 是**表**（机构）：**记录集**，要落库 |
+| 是**方向**（相对本系统边界）：**入端点**（EventSource 侧）/ **出端点**（EventSink 侧） | 是**表**（机构）：**记录集**，要落库 |
 | 端点的**属性** | **可靠性的落点** |
 | **不落库** | 与业务数据**同一个本地事务**（Outbox） |
 | 说「数据从哪来、到哪去」时用它 | 说「**不丢 / 不重**」时用它 |

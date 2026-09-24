@@ -48,7 +48,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 消息有如下概念（✔ 2026-09-24 术语统一，见 [`glossary.md`](glossary.md) §3.1）：
 
 - **EventSource（事件源）**——流的入口；原本这里写的「触发器 Trigger 是一个事件源」已改为：**Trigger 降为 EventSource 的配置项 `on`**（`@trigger` 那个记录级数据库触发器是另一回事，别混）
-- **Sink（数据汇）**——流的出口，三种投递方式：**写入 Write · 推送 Push · 调用 Call**（原来写成「端点（Sink / Endpoint）」把两个概念叠在一起了，已拆开：**Endpoint 是配置单元，EventSource / Sink 是它在图上的两个方向**）
+- **EventSink（数据汇）**——流的出口，三种投递方式：**写入 Write · 推送 Push · 调用 Call**（原来写成「端点（Sink / Endpoint）」把两个概念叠在一起了，已拆开：**Endpoint 是配置单元，EventSource / EventSink 是它在图上的两个方向**）
 - 处理节点统称 **Processor（处理器）**：**Validator / Converter / Filter / Aggregator**（+ Router / Splitter）——**不用 Transformer**（免得与 AI 的 Transformer 混淆）
 
 ### 事件溯源（Event Sourcing）

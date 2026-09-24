@@ -43,14 +43,14 @@
 
 1. **事件是业务语义，消息是部署语义**：同一个事件可以被多个 Channel 投递成多条消息（不同协议、不同 payload 投影）——**事件与消息是 1:N**，作者原话「事件会发送消息，消息附带数据 Payload」正是这个意思。
 2. **Payload 是数据模型的投影**，不是手写 DTO：投影字段来自 `payload { ... }` 子句（已裁：不造 DTO 概念，见 [`api.md`](api.md) §1）。
-3. **幂等键 = `eventId`**：所有汇端（Sink）的幂等都靠它，**这是 exactly-once 口径的落点**（§9.3）。
+3. **幂等键 = `eventId`**：所有汇端（`EventSink`）的幂等都靠它，**这是 exactly-once 口径的落点**（§9.3）。
 
 ### 1.1 术语统一（先读这一节，别让名字骗了你）
 
 **命名真源 = [`glossary.md`](glossary.md) §3.1**（作者 2026-09-24 裁：认同 `Validator` / `Converter` / `Filter` / `Aggregator` / `Endpoint` / `Channel` / `EventSource`；**「我不用 Transformer，免得与那个 AI 的 Transformer 架构混淆」**）。本节只讲**这些名字站在流的哪个位置**：
 
 ```
-EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Sink
+EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ EventSink
   事件源          通道       Validator                 数据汇
   (入端点)                   Converter                 (出端点)
                              Filter
@@ -66,7 +66,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 | Flink `Transformation` | **Processor（处理器）** 的四个具体类 | 一个含糊的上位词不如四个能配置的节点：**Validator / Converter / Filter / Aggregator**（+ Router / Splitter） |
 | SI `Transformer` | **Converter（转换器）** | **Transformer 与 AI 的 Transformer 冲突**；且 Converter 在 MMDA 里**本来就有**（`.mc` / `flow/converters/`） |
 | SI `Channel Adapter` | **Endpoint（端点）** | Adapter 词太泛（UI 适配器、图形适配器都叫 Adapter）；端点同时是**配置单元** |
-| Flink `Sink` / SI `Outbound Channel Adapter` | **Sink（数据汇）** | 你原话「数据沉淀、存储、再推送」→ 三种**投递方式**（Write / Push / Call），不是三个概念 |
+| Flink `Sink` / SI `Outbound Channel Adapter` | **EventSink（数据汇）**（**✔ 已裁 §15-8：正式名由 `Sink` 改为 `EventSink`，与 `EventSource` 对称**） | 你原话「数据沉淀、存储、再推送」→ 三种**投递方式**（Write / Push / Call），不是三个概念 |
 | Spring 的 `Message Channel` / Kafka Topic | **Channel（通道）** | 队列/主题只是它的**投递语义**，不另立概念 |
 | ETL 的「映射 / 转换规则」 | **DataMapper（数据映射器）** | 它是**配置面**（数据映射图），**不是节点**——配给 Converter / Validator 用 |
 
@@ -128,7 +128,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 │ 产出：OAS 3.1（请求-响应端点） + AsyncAPI 3.1（事件端点） │
 └──────────────────────────────────────────────────────────┘
 ┌── 执行层（各端底座：Java / C#）──────────────────────────┐
-│ Endpoint（Source/Sink）→ Channel → 算子（Filter/Map/     │
+│ 端点（EventSource/EventSink）→ Channel → 算子（Filter/   │
 │ Join/Aggregate/Window/Branch/Call）→ 状态与检查点 → 汇端  │
 └──────────────────────────────────────────────────────────┘
 ┌── 存储 ──────────────────────────────────────────────────┐
@@ -182,6 +182,8 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 | **B** | **Flink 集群作可选后端**：`RuntimeProfile.engine = flink`，面向 IOT / 实时大吞吐；Java 侧直连，C# 侧经 Kafka/HTTP 桥接 | 部署重、运维成本高、C# 侧只能当客户端 | **留口子，P10 之后再评估**（有真实 IOT 客户再上） |
 | **C** | C# 侧用第三方消息框架（NServiceBus / Rebus / Brighter / CAP）作执行层 | 这些是**消息总线框架**，无流式状态与时间语义；且引入第三方商业/生态依赖（NServiceBus 是商业授权） | ❌ **不取**（只作「接口集成」类的候选实现细节，不作引擎） |
 
+**✔ 已裁 2026-09-24（§15-1 取 A）**：首版执行层 = **内嵌轻量执行器**（随应用部署、语义逐条对齐 Flink）；`flink` 集群留 **P10** 口子；**第三方消息框架（选项 C：NServiceBus / CAP 等）不做**。
+
 **落法**：**引擎可替换**——内核 IR 定义语义，执行层通过 **Engine SPI** 接入（`RuntimeProfile.engine`：`embedded`｜`flink`｜…）。这样「先能跑、后能扛」不用改设计。**语义清单（必须与 Flink 一致，逐条可测）**：
 
 | 语义 | 我们的对应物 | 首版（A）怎么实现 |
@@ -198,7 +200,11 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 
 ## 6. 端点（Endpoint）
 
-作者原话「**API 是端点，可配置接入**」。端点三类来源：
+作者原话「**API 是端点，可配置接入**」；**✔ 2026-09-24 补定义（§15-9）**——作者原话「**端点是要在 API 的基础上增加定义数据的转化、过滤规则的**」：
+
+> **端点（Endpoint）= API + 集成定义**。API 是 module 边界推导出的**业务语义接口**（`expose` 决定对外与否）；**端点是在它之上再加一层集成声明**：**数据转化**（Converter + DataMapper 映射）、**过滤**（Filter / Validator）、**投递方式**（Write / Push / Call）、**触发与重试、对账**。边界：**端点不许改 API 的业务语义，也不许在端点里另立业务规则**（那是 Service 的事）。术语用法照 §15-9：**HTTP 接口一律写「API / 接口」，集成连接一律写「端点」**（强调时写「集成端点」）。
+
+端点三类来源：
 
 | 来源 | 定义 | 配置量 | 举例 |
 | --- | --- | --- | --- |
@@ -210,7 +216,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 
 **边界（已裁，别越）**：
 
-- 外部端点的**定义不进语言真源**：由**适配层配置 + OAS 3.1 描述文档 + 对账记录**承载（[`api.md`](api.md) §7：导出 ✅ / 逆向导入 ✅ / **回写 ❌** / 对账 ✅）；
+- **✔ 已裁 2026-09-24（§15-2 取 B）**：外部端点的定义**反向导入成语言声明**——走的是 [`api.md`](api.md) §6 已裁的同一条路：**先出导入报告 + 骨架、人审后入真源**。与「外部 collection 不进真源」**不冲突**：外部工具里的 collection **本身仍不是真源**，进真源的只有**人审通过的导入结果**；外部系统的变化**不自动跟随**，靠**再导入 + `mmda diff`** 跟进。对账口径不变（`api.md` §7：导出 ✅ / 逆向导入 ✅ / **回写 ❌** / 对账 ✅）；
 - 内部端点**不许**在端点配置里「再声明一遍」——它由 module 推导，配置只能调**暴露开关与限流**这类环境参数。
 
 ---
@@ -242,7 +248,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Si
 | 处理 | **Validator** · **Converter** · **Filter** · **Aggregator** | 作者认同的四类算子；**Converter 覆盖字段映射/换算/格式/计算**（配置面 = DataMapper） | Flink `Transformation` / SI `Transformer`·`Filter`·`Aggregator` |
 | 处理（编排） | **Router（路由器）** · **Splitter（拆分器）** | 条件分支/按类型路由；拆分（一条 → 多条，与 Aggregator 对称） | SI `Message Router` / `Splitter` |
 | 动作 | **Call（调内部 API/Action）** · **Await（等人或等外部回调）** · **Publish（发事件）** | 通道内的动作与人工等待；`Call` 就是调 module 推导出来的 API | SI `Service Activator` |
-| 出口 | **Sink（数据汇）** | 三种**投递方式**（属性）：**Write 写入 · Push 推送 · Call 调用** | Flink `Sink` / SI `Outbound Adapter` |
+| 出口 | **EventSink（数据汇）**（**✔ §15-8 正式名**） | 三种**投递方式**（属性）：**Write 写入 · Push 推送 · Call 调用** | Flink `Sink` / SI `Outbound Adapter` |
 
 **「到货通知 → 抓取没有的物料信息」作者例（落图后长这样）**：
 
@@ -254,11 +260,11 @@ EventSource(到货事件 WMS.GoodsArrived)
        ├─ 否 → Call(查集团 ERP / 供应商接口)
        │        → Validator(必填 / 单位 / 编码规则)
        │        → Converter(外部报文 → 本地物料字段)
-       │        → Sink(Write: 新建物料主数据 + 出入库台账)
+       │        → EventSink(Write: 新建物料主数据 + 出入库台账)
        │        → Publish(事件 MaterialMasterCreated)   ← 「借助插件体系增加扩展点，发布事件」
-       │        → Sink(Push: ERP 回执 / 车间看板)
-       └─ 是 → Call(取库存) → Router(低于安全库存?) → 是 → Call(生成请购单 Action) → Sink(Push: 主管)
-  → Sink(Write: 到货记录)
+       │        → EventSink(Push: ERP 回执 / 车间看板)
+       └─ 是 → Call(取库存) → Router(低于安全库存?) → 是 → Call(生成请购单 Action) → EventSink(Push: 主管)
+  → EventSink(Write: 到货记录)
   → Publish(事件 GoodsArrivedProcessed)
 ```
 
@@ -285,7 +291,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 **硬约束**：参与事件重放与存储下推的表达式**必须是纯函数**（无 IO、无随机、无隐式时间依赖）——已裁（[`readme.md`](readme.md) §2 原则 7、[`events.md`](events.md) 纯度要求）。
 
-**映射图 = 字段级可 diff 的资产**：一进一出两个形态（本地 Record ↔ 外部报文），中间是映射规则；对外部报文用 **JSON Schema / XSD** 描述（外部形态**不进语言真源**，作适配资产）。
+**映射图 = 字段级可 diff 的资产**：一进一出两个形态（本地 Record ↔ 外部报文），中间是映射规则；对外部报文用 **JSON Schema / XSD** 描述（**✔ 已裁 2026-09-24，§15-7 取 A：可含外部报文形态**，外部形态**不进语言真源**，作适配资产）。
 
 ---
 
@@ -294,7 +300,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 ### 9.1 时间语义（IOT 的命门）
 
 - **事件时间**（`occurredAt`，设备/业务发生时刻）与**处理时间**（底座收到时刻）**分开记录**；
-- **水位线**按 `max(occurredAt) − allowedLateness` 推进，迟到数据进**侧输出/迟到队列**（可配丢弃或补算）；
+- **水位线**按 `max(occurredAt) − allowedLateness` 推进，迟到数据进**侧输出/迟到队列**（可配丢弃或补算）——**✔ 已裁 2026-09-24（§15-6 取 A：迟到兜底是默认策略）**；
 - 首版支持的窗口：**滚动 / 滑动 / 会话**三种（够覆盖限流、聚合、超时判定）。
 
 ### 9.2 可靠发布：**Outbox（事务性发件箱）**
@@ -315,7 +321,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **通道** | 至少一次 | Outbox + 确认 + 重试 |
 | **汇端（内部库表）** | **Exactly-once**（等效） | 同库事务 + `eventId` 唯一键 |
 | **汇端（外部系统）** | **最多到「至少一次 + 幂等」** | 外部系统支持事务/幂等键时用 `TwoPhaseCommit` 语义（Flink 的 `TwoPhaseCommitSinkFunction` 是参照）；否则必须要求对方提供幂等键，**否则只能人工对账** |
-| **端到端** | **「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once** | 不承诺「任何外部系统都 exactly-once」——这是物理限制，不是实现偷懒 |
+| **端到端**（**✔ 已裁 §15-4 取 A：只写这一档，不吹全链**） | **「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once** | 不承诺「任何外部系统都 exactly-once」——这是物理限制，不是实现偷懒 |
 
 **把两个词记牢（辨析见 [`glossary.md`](glossary.md) §3.2.3）**：**Outbox 保「不丢」（发），Inbox 保「不重」（收）**。发侧的唯一正解是 §9.2 的 Outbox；**收侧对应物是 Inbox（去重表）**——按 `eventId` 落行、重复即丢。两者相加才是上表最后一行那句「业务上的 exactly-once」，**只有一个都不成立**。
 
@@ -331,7 +337,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 | 档 | 内容 | 成本 | 建议 |
 | --- | --- | --- | --- |
-| **A 共享执行 + 租户键** | 同一作业，所有流/状态/队列按 `tenant` 分区键隔离；通道名带租户前缀 | 低 | ★ **首版取 A** |
+| **A 共享执行 + 租户键** | 同一作业，所有流/状态/队列按 `tenant` 分区键隔离；通道名带租户前缀 | 低 | ★ **首版取 A（✔ 已裁 2026-09-24，§15-5）** |
 | **B 每租户独立作业** | 数据流按租户实例化，配额与限流按租户 | 中 | 大客户可选 |
 | **C 每租户独立运行环境** | 独立库/独立进程（信创私有化常见） | 高 | 私有化交付时用 |
 
@@ -409,21 +415,23 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ---
 
-## 15. 待裁（A/B/C + 我的建议）
+## 15. ✔ 已裁（2026-09-24；**仅第 3 条待定**）
 
-| # | 议题 | 选项 | 建议 |
+> 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」+「**3 待定**」。
+
+| # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
-| 1 | **执行层引擎**（本文最重） | A 内嵌轻量（语义对齐 Flink）／ B 直接上 Flink 集群／ C C# 用 NServiceBus 等第三方框架 | **1A**（§5.3；B 留 P10 口子，C 不做） |
-| 2 | **外部端点的定义存哪** | A 适配层配置 + 对账记录（不进真源）／ B 反向导入成语言声明／ C 只在外部工具里 | **2A**（B 与已裁的「外部 collection 不进真源」冲突） |
-| 3 | **数据流的图元落点** | A `*.mf.g` 新增 `mf-flow`/`mf-map` view 种类／ B 新文件类型 `*.mx`／ C 只放 Profile | **3A**（不新增扩展名与顶层概念） |
-| 4 | **端到端一致性承诺写到哪一档** | A 状态 exactly-once + 汇端幂等（诚实档）／ B 宣称全链 exactly-once／ C 只承诺至少一次 | **4A**（§9.3；B 无法兑现，C 丢业务保障） |
-| 5 | **多租户隔离档** | A 共享执行 + 租户键／ B 每租户独立作业／ C 每租户独立环境 | **5A 起步、B/C 按客户**（§10）。**与 [`runtime.md`](runtime.md) §9-8 不是同一件事**——§9-8 管**进程内 / 进程外**（**已裁：首版进程内 + 命名空间与冲突检测**），本条管**数据面租户隔离档**，**仍未裁**（建议 5A） |
-| 6 | **水位线与迟到数据默认策略** | A 迟到进侧队列 + 可配丢弃／ B 直接丢弃／ C 无限等 | **6A**（IOT 现场必须有迟到兜底） |
-| 7 | **数据映射可否含外部报文形态（JSON Schema/XSD）** | A 可含，作适配资产不进语言真源／ B 不许，一律映射到 Record | **7A**（否则外部报文无依据） |
-| 8 | **Sink 的正式名**（作者未表态，术语统一时待拍） | A **Sink（数据汇）**——沿用 Flink 词、程序员最熟／ B `DataSink`（与 EventSource 对称）／ C `EventSink` | **8A**（「Sink」已在 Flink / Kafka Connect 生态通用，加前缀反而多一个名字） |
-| 9 | **「端点」的限定规则**（撞车：`api.md` 的 HTTP 接口 vs 本文的集成连接点） | A 接口写「API / 接口」、集成连接写「端点」（**要强调时写「集成端点」**）／ B 集成侧改叫 `Connector`（但那是**实现**，会二次撞车）／ C 保持两处同名、靠上下文区分 | **9A**（B 不可行：Connector 已被「端点的实现」占用） |
+| 1 | **执行层引擎**（本文最重） | **1A**：**内嵌轻量执行器**（语义逐条对齐 Flink）——随应用部署；`flink` 集群留 **P10** 口子；**第三方消息框架（C）不做** | §5.3、§9.1 |
+| 2 | **外部端点的定义存哪** | **2B**：**反向导入成语言声明**（**与 2A 相对的取法**）。口径见 §6：外部工具里的 collection **仍不是真源**，进入真源只走**单向反向导入（报告 + 骨架 + 人审后入库）**那条已被 API 契约裁定的路；导入后的端点声明**是语言层产物**，外部系统变化靠**再导入 + diff** 跟进（**不自动跟随**） | §6、[`api.md`](api.md) §6 |
+| 3 | **数据流的图元落点** | **⏳ 待定**（A `*.mf.g` 新增 `mf-flow` / `mf-map` view 种类／B 新文件类型 `*.mx`／C 只放 Profile）——**未定不许进生成器** | §7.2 |
+| 4 | **端到端一致性承诺写到哪一档** | **4A**：**「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once**（诚实档）；不宣称全链、不止步于至少一次 | §9.3 |
+| 5 | **多租户隔离档** | **5A**：**共享执行 + 租户键**（`tenant` 进 Header、状态与幂等键带租户前缀、命名空间按租户）；**B / C 按客户**（大客户与私有化交付时用）。**本条的裁决同时收口了 [`operations.md`](operations.md) §9 的同一三档** | §10、[`operations.md`](operations.md) §9 |
+| 6 | **水位线与迟到数据默认策略** | **6A**：**迟到进侧输出 / 迟到队列**（可配丢弃或补算），水位线 = `max(occurredAt) − allowedLateness` | §9.1 |
+| 7 | **数据映射可否含外部报文形态** | **7A**：**可含**（JSON Schema / XSD），作**适配资产**、**不进语言真源** | §7.2 / §8 |
+| 8 | **Sink 的正式名** | **8C**：**`EventSink`**（与 `EventSource` 对称，作者未采纳助手建议的 8A）。**用法纪律**：契约、生成物与正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字，不是我们的概念） | [`glossary.md`](glossary.md) §3.1、§1.1 / §7.3 |
+| 9 | **「端点」的限定规则** | **9A**：**HTTP 接口写「API / 接口」、集成连接写「端点」**（强调时「集成端点」）；**并补一层实义**（作者原话）——「**端点是要在 API 的基础上增加定义数据的转化、过滤规则的**」→ **端点 = API + 集成定义**（转化 / 过滤 / 投递方式 / 触发与重试），**不改 API 的业务语义** | §6、[`glossary.md`](glossary.md) §3.1 |
 
-**与既有待裁的交叉**：`runtime.md` §9-8（**插件隔离级别**）与本文 §10 是同一件事，**合并裁决**（别再开一个口）。商业条款（分成 / 伙伴分级）不进技术契约。
+**与既有待裁的交叉**：`runtime.md` §9-8（**插件隔离级别**）**已裁**（首版进程内 + 命名空间与冲突检测），与本文 §10 的多租户隔离档**不是同一件事**（一个管进程内外、一个管数据面），**两条现已各自收口**。商业条款（分成 / 伙伴分级）不进技术契约。
 
 ---
 
