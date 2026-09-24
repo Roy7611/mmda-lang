@@ -149,7 +149,7 @@ parseTenantID(id) = id >>> 36
 
 **✔ 已裁（2026-09-25 作者）**：**标识共享组放在视图声明处 —— 视图即组**（「**标识共享组在视图那里可否**」→ 可以，且语料已如此：`view person` / `view organizationunit` / `view materialnsku` / `view Maintainable`）—— 详见 §7。
 
-**⏳ 待裁一条**：**段重叠**是否进 `mmda check` 硬门禁？（视图侧三条已裁 —— 列逐字段显式写 + `as` 对齐 / 基可以是视图 / 视图段可选 —— 见 §7）
+**✔ 全部已裁（2026-09-25）**：**段重叠进 `mmda check` 硬门禁**（作者原话：「**同意进**」）—— 视图侧三条（列逐字段显式写 + `as` 对齐 / 基可以是视图 / 视图段可选）见 §7。**标识共享这块至此无待裁。**
 
 ---
 
@@ -335,7 +335,7 @@ view OrderItemV : OrderItem as it
   即**语料的 `view` 已经是 UNION 视图的结果形态，只是没写 `union` 子句**。
 - **`Maintainable` 视图自带段**：`@PartitionID [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
 - ⚠️ **实现侧只有 join、还没有 UNION**：`MetaView.java:20-28` = 主表 `t` + `relatives`（join 关系）+ 列别名 + `whereCondition` / `orderBy`（`D:\2026\java\mmda-core\mmda-core-metadata\...\MetaView.java`）。
-- **UNION 一落地，这三条就能机器校验**（`mmda check`）：① 同组基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）；② **一张表最多属于一个组**（它只有一段）；③ 基础表段落在 realId 空间内。
+- **校验（✔ 2026-09-25 作者「同意进」）**：① 同组基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）→ **`mmda check` 硬门禁（error，生成期就拦，非 warning）**；② **一张表最多属于一个组**（它只有一段）；③ 基础表段落在 realId 空间内 —— ②③ 与 ① 是**同一批校验**，一起在 `mmda check` 里实现。
 **✔ 三条已裁（2026-09-25 作者）**：
 
 1. **列清单逐字段显式写出**：**每个基的字段都要写**（不许省略、不许自动推断）。**名字要对得上**；基之间列名不一致时**用 `as` 对齐** —— 作者原话：「**每个表的字段都要写，并且名字要对的上，用 `as`，或者你模仿 SQL**」→ **对齐规矩照 SQL**（列按**位置**对齐；视图列名由别名决定，与 SQL 的 `UNION` 一致）。
