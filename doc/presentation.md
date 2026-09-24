@@ -17,6 +17,8 @@
 
 定制视图放在 `ui/{子系统}/{Name}.mi`；未提供 `.mi` 时框架按 `data/models/*.mm` 的元数据生成标准 CRUD。
 
+**视图钩子**（前端 `UiLogic`，对应关系 ✔ 已裁 2026-09-24）：`index` → **`beforeIndex`**、`editor` → **`beforeEdit`**、`details` → **`beforeDetails`**、`search` → **`beforeSearch`**（本轮按作者要求补上）；**`report` 暂不设钩子**（未提，待有实现再裁）。参考实现见 [legacy/runtime-java.md](legacy/runtime-java.md)。
+
 ```sql
 /// BOM 列表
 ui BomList for Bom {

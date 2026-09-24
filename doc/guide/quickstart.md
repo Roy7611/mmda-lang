@@ -200,7 +200,7 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 | 层 | 定制点 | 说明 |
 | --- | --- | --- |
 | **后端** | 生命周期钩子（**封闭枚举**） | `beforeSave` / `beforeInsert` / `beforeValidate` / `validate` / `beforeDelete` … 与 `afterSaved` / `afterInserted` / `afterDeleted` …；`before*` 在事务内、`after*` 在提交后（**`after*` 必须幂等**）——见 [runtime.md](../runtime.md) §3–§4、[architecture-review.md](../architecture-review.md) ARCH-109 |
-| **前端（mmda-vue）** | `UiLogic` 视图钩子 | `beforeEdit`（编辑）/ `beforeDetails`（详情）/ `beforeIndex`（列表）；每个视图返回该视图的字段与交互逻辑 |
+| **前端（mmda-vue）** | `UiLogic` 视图钩子 | `beforeIndex`（列表）/ `beforeEdit`（编辑）/ `beforeDetails`（详情）/ `beforeSearch`（查询）；每个视图返回该视图的字段与交互逻辑。**⚑ 前端工程的目录与文件划分（`src/modules/*_logic.ts` / `*_view.ts` / `*_listview.ts` 等）不是规范内容**（✔ 2026-09-24 裁），属 mmda-vue 项目内部约定——规范只保证 `MetaUi` |
 | **前端** | 字段级 API | `lockIf`（条件锁定）、`hideIf` / `hideIfEmpty`（条件隐藏）、`onChange`（联动清值）、`onValidate`（关联校验，默认已有 required / maxLength / 类型校验）、`requiredIf`（条件必填，`onValidate` 的快捷方式） |
 | **前端** | 视图级替换 | `setCustomEditor(...)` / `setCustomRenderer(...)`（替换生成的标准编辑/呈现控件；皮肤内部的自由，见 [presentation.md](../presentation.md) §5.1） |
 

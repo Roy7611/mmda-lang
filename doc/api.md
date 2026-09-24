@@ -190,6 +190,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 默认值 | `default` | |
 | 枚举 `.me` | `enum: [...]` + `x-mmda-enum: <EnumName>` | 位标志枚举 → 待裁 |
 | 引用 `@Ref` / `REF x(...)` | `$ref: "#/components/schemas/<Record>"`（跨模块用相对 `$ref`） | **引用投影**（`REF User(userId,userName)`）→ 生成精简 schema，不返回整对象 |
+| **`@Ref` / 枚举的显示标签** | **`customProperties: { "$<字段名>": <标签> }`**（对象级附加属性；标签随 locale 变） | **✔ 已裁（2026-09-24）保留**——旧实现与新前端都已依赖该形态，**改约定动作太大**；**不另开 `xxxLabel` 投影字段**（同一事实只在契约里写一处） |
 | 数组 | `array` + `items` | |
 | **视图投影** | 每视图独立 schema（`WorkOrder_index` / `WorkOrder_editor` / …）；`details` 视图全 `readOnly: true` | **不造 DTO**（§1.2） |
 | 隐藏 / 只读字段 | 隐藏字段**根本不投影**；只读字段出 `readOnly: true` | 与 `MetaUi` 同一套可见性规则 |
