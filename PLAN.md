@@ -1,8 +1,8 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.14 · 2026-09-24
+> v1.15 · 2026-09-24
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
-> 已拍定决策见 §0，未决项见 §6，**2026-09-24 的九条新裁决见 §6.3**。
+> 已拍定决策见 §0，未决项见 §6，**2026-09-24 的十五项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
 > **目标端契约**见 [`doc/targets.md`](doc/targets.md)，**逐行对照清单**见 [`doc/contracts-inventory.md`](doc/contracts-inventory.md) —— 两者是 P6 的前置。
 
@@ -28,13 +28,25 @@
 | — | 新定位：**m 同时是元数据真源与跨语言契约真源** | 起因：Java 与 C# 两套底座「没有统一接口方式」（见 §2.5、§3.10） |
 | — | ✔ capability 语法 / UI 契约 / 一致性测试归属 | 2026-09-24 裁决，见 §6.3-2/3/4 |
 | — | ✔ P0.5 契约盘点已完成 | 交付物 `doc/contracts-inventory.md`（60+ 概念逐行 `file:line`） |
-| ✔ 2026-09-24 | **建仓并接入远端** `github.com/Roy7611/mmda-lang`（**公开仓**，MIT）；首提交 `0679a30` 推入（57 文件 / doc 9,353 行） | 作者建远端后落定；**行尾 CRLF、许可 MIT 两项待你确认**（§7） |
+| ✔ 2026-09-24 | **建仓并接入远端** `github.com/Roy7611/mmda-lang`（**公开仓**，MIT）；首提交 `0679a30` 推入（57 文件 / doc 9,353 行） | 作者建远端后落定；**行尾 CRLF 一项待你确认**（§7）；许可已随愿景裁为 MIT（`doc/vision.md` §5.1） |
+| ✔ 2026-09-24 | **愿景与四层目标落成** [`doc/vision.md`](doc/vision.md)（商业 / 技术 / 用户 / 架构）＋ `PLAN.md` §1 拆为「商业目标 / 工程目标 / 非目标」＋ `doc/quality.md` §3.1 业务可测指标 | 作者给出四层目标并逐条拍板（1A 2C 3部署方式 4同意）；**5 条仍待裁**见 `vision.md` §8 |
 
 ---
 
 ## 1. 目标与非目标
 
-### 1.1 目标
+### 1.1 商业目标（✔ 2026-09-24，作者给出四层目标；真源 [`doc/vision.md`](doc/vision.md)）
+
+**To Boss**：开放源码 · 协同 · 共赢 · 降成本。
+**To CTO**：开放源码 · 易定制 · 易运维 · **支持国产化**（已裁为**全三级承诺**：L1 数据层方言 / L2 国产 OS 与 CPU / L3 无商业控件皮肤）。
+**To User**：易用 · 轻松 · AI 赋能 · 容易二开。
+**架构**：分层 · 多租户 · 热插拔模块化 · 微服务 · 容器化 · 高性能 · 安全防黑客 · 可靠性 · 跨平台 · 多端多语言。
+
+三条随之落定的口径（详见 `vision.md`）：① **open core**——规范 + 内核 + IDE 壳 + 三端薄适配开源（规范 MIT / 内核 Apache-2.0），算法库与行业包闭源，**既有 Java/C# 实现不随本体开源**（版权头是 PROPRIETARY）；② **国产化全三级**，其中 **Syncfusion 只是可选皮肤**，自研国产皮肤（naive-ui + 表格插件）为一等选项；③ **微服务 / 容器化 / 热插拔 / 高可用只是部署方式**——语言层零新增，P5 只出单体拓扑 + `Dockerfile`，微服务拓扑留 P8。
+
+**降成本的四个可测指标**（真源 `vision.md` §6、落点 [`doc/quality.md`](doc/quality.md) §3.1）：生成覆盖率 / 变更成本 / 上手时间 / 模板复用率——**只进报告，不进硬门禁**。
+
+### 1.2 工程目标
 
 1. 一门声明式语言：描述存储架构、数据流设计、事件与行为，产出**语言无关的元模型 AST/IR**。
 2. `.mmda` 项目（展开目录）是**唯一真源**：进 git/svn、可 review、可合并、可细粒度回溯。
@@ -43,7 +55,7 @@
 5. IR 可被 **Java / C# / TS** 宿主加载：元数据在宿主内可加载、校验、求值。
 6. 一个 IDE（Tauri + Vue，前一轮已有壳）：**图形与脚本两条等价编辑通道**、多语言映射编辑、AI 可调用（MCP/CLI）。
 
-### 1.2 非目标（明确不做）
+### 1.3 非目标（明确不做）
 
 - ❌ 不做通用编程语言（无标准库/GC/IO 运行时）；业务逻辑写在 Java / C# / TS。
 - ❌ **不用 Rust 统一业务实现**：事务、ORM、DI、HTTP、序列化、事件投递都是语言本地的；Rust 统一的是元数据与契约描述（L1）与一致性验证的输入（L3），不是 L2 的实现（`doc/targets.md` §2）。
@@ -52,6 +64,8 @@
 - ❌ 不做「文件与库互为真源」：库是产物/缓存，库侧编辑必须经 §3.2 的回写通道回到文件。
 - ❌ 事件总线、重放、Exactly Once 由 Java/C# 底座实现（`doc/events.md:97-102` 的机制不在 Rust 内核里重造）。
 - ❌ 不做后端 UI（§6.3-3 → **同日收紧为 §6.2-19**）：**UI 契约 = 现有 mmda-vue 前端项目**，不考虑 C# MVC 与 Java 的 UI，**后端只产出 `MetaUi` 元数据**。
+- ❌ **不在语言层新增部署概念**：微服务 / 容器化 / 热插拔 / 高可用都是**部署方式**（Profile 的部署拓扑视图 + 生成物），不是设计概念——判据「凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍」（[`doc/vision.md`](doc/vision.md) §5.3）。
+- ❌ **不把既有实现当开源资产**：`D:\2026\java` 与 `D:\2026\cs\MMDA` 是 PROPRIETARY/CONFIDENTIAL 版权头，只作对照与回填来源（[`doc/vision.md`](doc/vision.md) §5.1）。
 
 ---
 
@@ -435,6 +449,10 @@ tools/                      方言/类型映射数据表
 | 9 | **运行架构口径 + 拦截点上升到语言**：**`Controller` = API 开放 / `Service` = 商业逻辑 / `Repository` = 数据读写 / 缓存 = 横切面**（概念设计已确认）；**事务夹在 Before / After 拦截点中间**（`before*` 事务内、`after*` 提交后必须幂等）；**拦截点进语言**——`before`/`after` × **封闭生命周期点**，**设计师配置 + 程序员定制**（KEEP 区）为固定模式；进入路径三件事（认证授权/校验/默认值）是**声明**、Controller 是执行点；**装配与聚合是生成物**。余：声明形态（挂 Action / 视图 / 独立段）与是否封闭枚举待语法专题（§6.2-24、[`doc/runtime.md`](doc/runtime.md) §8） | §3.16、[`doc/runtime.md`](doc/runtime.md)、[`doc/architecture-review.md`](doc/architecture-review.md) §2.1b、[`doc/errata.md`](doc/errata.md) §五-13 |
 | 10 | **API 边界 = module 边界（插件不侵入语言）**：**module 边界 = API 边界 = 权限边界 = 文档分组边界**（四者一个来源——权限按 module 授予，故无归属元对象结构上不可开放）；**插件只许读产物 + 报对账，禁止写元数据、禁止把工具概念写进语法**；判据「凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍」；**无归属的元对象默认不开放**（枚举不需要归属、从属/技术对象默认 `internal`、共享基础数据归属基础模块 `Base`——语料实测 `data/models/base/` 77 个对象由 `biz/base.ma` 绑定） | §3.17、[`doc/api.md`](doc/api.md) §1.1、[`doc/architecture-review.md`](doc/architecture-review.md) §2.1（**ARCH-111**）、[`doc/errata.md`](doc/errata.md) §五-14 |
 | 11 | **API 契约四条落定**（作者回「1. REST语义 / 2. 按你建议 / 3. 进 / 4. 要」）：① **存量路径取 A 方案**——生成物用 **REST 语义**（POST 创建 / PUT 更新 / DELETE 删除 + `/{模块路径}/{资源}` 前缀），**同时给 `legacyPathStyle: true` 保留 `POST /save` 等老路径**，迁移期双版本并存、老路径标 `deprecated` + `sunset`；② **序列化取「精度优先」**——`decimal(p,s)` / `numeric` / `money` → **`string` + `pattern`**（TS 端也生成 `string`，不是 `number`），`int64` / `uint64` 超 JS 安全整数范围时用 `string`，`Timestamp` → `string` + `format: date-time`；**三端序列化必须一致**（进 capability 一致性用例）；③ **官方 Schema 校验与契约测试进硬门禁**（B 级，`mmda api check` 失败即阻断 CI）；④ **AI 造数的样本要固化**——种子 + provenance 进版本控制、过 schema + 约束双校验，**默认只进 mock 与开发期**，断言不由 AI 造数产生 | §3.17、[`doc/api.md`](doc/api.md) §3.1-2 / §3.4 / §3.5 / §3.9 / §8.1、[`doc/targets.md`](doc/targets.md) L2、[`doc/errata.md`](doc/errata.md) §五-16 |
+| 12 | **愿景与四层目标**：作者给出「To Boss（开放源码/协同/共赢/降成本）+ To CTO（开放源码/易定制/易运维/支持国产化）+ To User（易用/轻松/AI赋能/容易二开）+ 架构（分层、多租户、热插拔模块化、微服务、容器化、高性能、安全防黑客、可靠性、跨平台、多端多语言）」四层目标，作为 m 语言与 MMDA 框架的**本意与初衷**；落成新文档 [`doc/vision.md`](doc/vision.md)（愿景真源），`PLAN.md` §1 拆为商业目标 / 工程目标 / 非目标，`doc/quality.md` 新增 §3.1 业务可测指标 | [`doc/vision.md`](doc/vision.md)、[`doc/index.md`](doc/index.md)（阅读顺序第 0 篇）、[`doc/readme.md`](doc/readme.md) 抬头指针 |
+| 13 | **开放源码的边界（open core，取 A）**：**开源** = m 语言规范（MIT）+ Rust 内核 / 三端薄适配 / IDE 壳（Apache-2.0，含专利授权与商标条款）；**闭源** = 算法库（商业许可 + 绑定）+ 行业业务包 / 模板 / SaaS；**既有 Java/C# 实现不随本体开源**（PROPRIETARY/CONFIDENTIAL 版权头，只作对照与回填来源）。理由：契约与内核公开换生态与可审计，算法与行业知识仍受保护 | [`doc/vision.md`](doc/vision.md) §5.1、[`doc/protection.md`](doc/protection.md) §7.1、§1.3 非目标 |
+| 14 | **国产化 = 全三级承诺（取 C）**：**L1 数据层**（达梦 / 人大金仓 / OceanBase / openGauss——Java 侧已有 `DmDialect`、`KingbaseDialect` 与国产生类型字段）、**L2 运行层**（国产 OS + 国产 CPU + JDK 国产发行版，含 Rust 交叉编译目标矩阵）、**L3 界面层**（至少一套**无商业控件**皮肤）。作者口径：「国产化，我会实现一个，例如 naive + 别的表格插件，**syncfusion 只是一个选项**」→ Syncfusion 降为可选皮肤，自研国产皮肤与 `vui` / `rui` 并列（换皮肤**不构成第二套 UI 契约**） | [`doc/vision.md`](doc/vision.md) §5.2、[`doc/targets.md`](doc/targets.md) §8-5、[`doc/presentation.md`](doc/presentation.md) §5.1 |
+| 15 | **部署方式不进语言层**：微服务 / 容器化 / 热插拔 / 高可用**只是部署方式**——`module` 已是一等边界（API = 权限 = 文档 = 模块），故「哪个 module 独立部署」是**部署期决策**：微服务 = Profile 的**部署拓扑视图**、容器化 = P5 生成物（`Dockerfile` + `compose`/`k8s` 骨架，内核不做编排）、热插拔 = module 粒度、高可用 = 拓扑 + 运行时。**P5 只出单体拓扑**，微服务拓扑留 **P8**（跨进程后「事务夹在 before/after 之间」语义会变，须先裁事务传播规则） | [`doc/vision.md`](doc/vision.md) §5.3、§1.3 非目标、§6.2-21（`runtime.md` §8-7） |
 
 ---
 
@@ -509,3 +527,4 @@ cargo run -p mmda-cli -- test --target java,csharp,ts --cases examples/mmda-mes/
 - v1.12（2026-09-24）：**OpenAPI 原生支持（OAS 3.1.0 基准）+ AI 造数**——[`doc/api.md`](doc/api.md) **新增 §3 与 OAS 3.1.0 的逐条对齐**（四条判据：内核一等后端 / 过官方 Schema 校验 / 契约测试双向对账 / 语言层不出现 OAS 术语；根对象与 30 个 OAS 对象逐字段来源；**Operation 12 字段**（`#operation-object-example`）；五视图 / Action → 端点与状态码（含非法转移 409）；**逻辑类型 → JSON Schema 2020-12 映射**（实测 3.1 差异：`nullable` 全文 0 次、`contentEncoding` 替代 `format: byte`、`webhooks` 原生、`info.summary`/`license.identifier`）；securityScopes 与 `x-mmda-*` 溯源指针；**覆盖度自检 23 + 5 + 2 = 30**）、**§3.9 Mock 数据两层造数**（机械层零 AI + AI 语义层；护栏：不得发明结构 / 过双校验 / 种子与 provenance / 造数不需双签而断言必须双签）；§8 待裁 9 → **16 条**（新增存量路径兼容、`decimal` JSON 表示、`operationId`、scope、`webhooks`、官方 Schema 校验进门禁、AI 造数固化）；[`doc/testing.md`](doc/testing.md) **新增 §4.3**（Mock 数据生成）+ §8 命令面 `mmda mock` + MCP `mmda_mock_gen` + §10/§11 指针；[`doc/ai/tools.md`](doc/ai/tools.md) §2.4 补 `mmda_api_export`/`mmda_api_check`、§2.5 补 `mmda_mock_gen` 与造数边界；[`doc/targets.md`](doc/targets.md) L2 与能力矩阵补 OAS 3.1.0 原生 + mock 造数；本文件 §3.17 补两条已裁、§6.2-25 补第 ⑩–⑯ 条、§6.3-10 补充；变更记录；`doc/errata.md` §五 第 15 条 + §三 第 23 条更新 + 校勘第十八轮；`doc/index.md` 版本升 0.10。
 - v1.13（2026-09-24）：**API 契约四条落定**（作者：「1. REST语义 / 2. 按你建议 / 3. 进 / 4. 要」）——① **存量路径取 A 方案**（REST 语义 + `legacyPathStyle` 兼容开关，迁移期双版本并存）；② **序列化精度优先**（`decimal`/`money` → `string` + `pattern`，超 JS 安全整数的 `int64`/`uint64` → `string`，`Timestamp` → `date-time`，三端一致）；③ **官方 Schema 校验 + 契约测试进硬门禁**；④ **AI 造数样本固化**（种子 + provenance 进版本控制）。落点：[`doc/api.md`](doc/api.md) §3.1-2 判据 2、§3.4 存量冲突改写、§3.5 类型映射三条、§3.9 护栏 3、**§8 重构成「8.1 已裁 / 8.2 待裁」**（待裁 16 → 12 条）；[`doc/testing.md`](doc/testing.md) §4.3 护栏 3；本文件 §6.2 第 25 条标已裁 4 条、§6.3 新增第 11 条、变更记录；`doc/errata.md` §五 第 16 条 + §三 第 23 条 + 校勘第十九轮；`doc/index.md` 版本升 0.11。
 - v1.14（2026-09-24）：**仓重命名 `D:\2026\c` → `D:\2026\rust` + 规范真源入 git**（作者原话：「把 D:\2026\c 重命名为 D:\2026\rust，我当时想着用 c 语言。然后也改下现在项目的路径配置」——**命名理由是最初想做 C 语言，后定为 Rust 单实现**）。落点：① **全仓与相关工程配置的路径引用同步**（本文件 4 处、[`doc/protection.md`](doc/protection.md) 算法仓路径 1 处、[`doc/errata.md`](doc/errata.md) 校勘一轮记录 1 处；仓外：技能 `mmda-lang-development` 21 处、`mmda-lang-spec-repo` 6 处、探针脚本 9 个文件 12 处，共 **46 处**）；② 台账改为已落状态——§0 `git init` 行、§2.1「版本控制」行、§4 P0 第 ② 项、§7 风险表「无版本控制」行、§8 回滚段，均改记 **远端 `github.com/Roy7611/mmda-lang`（公开仓，MIT）首提交 `0679a30`**；③ §6.2-1 散文中仓名 `c` → `rust`；④ `doc/errata.md` 校勘第二十轮；`doc/index.md` 版本升 0.12（**无规范内容变更，仅仓路径与台账**）。
+- v1.15（2026-09-24）：**愿景与四层目标落成 + 三条口径落定**（作者给出「To Boss / To CTO / To User / 架构」四层目标，并逐条拍板「1A 2C 3只是部署方式支持 4同意你的建议」）。落点：① **新增 [`doc/vision.md`](doc/vision.md)**（愿景真源：四层目标逐条给机制与现状、open core 边界与许可、国产化三级承诺、部署方式口径、业务可测指标、`MetaUi` 皮肤自由、**5 条待裁**）；② 本文件 **§1 拆为 §1.1 商业目标 / §1.2 工程目标 / §1.3 非目标**（非目标新增「不在语言层新增部署概念」「不把既有实现当开源资产」两条）；③ [`doc/quality.md`](doc/quality.md) **新增 §3.1 业务目标的可测指标**（生成覆盖率 / 变更成本 / 上手时间 / 模板复用率，**只进报告不进硬门禁**）；④ [`doc/protection.md`](doc/protection.md) §7 拆为 **§7.1 open core 的边界**（规范 MIT + 内核 Apache-2.0 开源；算法库与行业包闭源；**既有 Java/C# 实现是 PROPRIETARY 版权头，不随本体开源**）+ §7.2 授权形态；⑤ [`doc/targets.md`](doc/targets.md) §8 新增第 5 条（国产化与 `capability` **正交**）；⑥ [`doc/index.md`](doc/index.md) 阅读顺序新增第 0 篇 + 版本升 0.13；⑦ [`doc/readme.md`](doc/readme.md) 抬头加愿景指针；本文件 §0 台账新增一行、§6.3 新增第 12–15 条；`doc/errata.md` §五 第 17 条 + 校勘第二十一轮。

@@ -1,0 +1,153 @@
+# 愿景与目标（Vision）—— 为什么要做 m 语言与 MMDA
+
+> **状态**：✔ 已裁（2026-09-24）。作者给出四层目标（商业 / 技术 / 用户 / 架构）并逐条拍板，本文是其**真源**。
+> 本文回答「**为什么做**」；**工程目标与非目标**在 [`..\PLAN.md`](..\PLAN.md) §1；**语言定位与设计原则**在 [`readme.md`](readme.md) §1–§2；**质量口径**在 [`quality.md`](quality.md)。
+> 四层目标里，凡已落到具体机制的都给出文档指针；**仍未裁决的 5 条集中在 §8**。
+
+---
+
+## 1. 一句话
+
+数字化交付的现实是：**架构画在图上、契约写在文档里、实现在代码中**，三份东西靠人同步——一变就散。
+
+MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读、可执行、可校验、可回滚的唯一真源**（[`readme.md`](readme.md) §7）。m 语言是写这份契约的语言，MMDA 是跑这份契约的框架：**契约写一遍，Java / C# / TS 三端各自成立**。
+
+---
+
+## 2. 商业层面（To Boss）
+
+| 目标 | 对 MMDA 的要求 | 落地机制 | 现状 |
+| --- | --- | --- | --- |
+| 开放源码 | 许可边界清晰、第三方能集成 | **open core**（§5.1）：规范 + 内核 + IDE 壳 + 三端薄适配开源；算法库 / 行业包 / SaaS 闭源 | ✔ 规范文本已公开（`github.com/Roy7611/mmda-lang`）；内核仓尚未建立 |
+| 协同 | 多角色在同一真源上协作且可评审 | 一对象一文件 + git/svn 细粒度版本控制（[`project.md`](project.md)）；五类职责写入边界与交接协议（[`workflows.md`](workflows.md)）；变更分级 L0–L3 | ✔ 已裁 |
+| 共赢 | 第三方能扩展而不被平台锁定 | 生成源码、产物不依赖 MMDA 才能跑（[`readme.md`](readme.md) §7）；插件只读产物、不侵入语言（[`api.md`](api.md) §1.1） | ✔ 已裁 |
+| 降成本 | 可测量，不停在口号 | 四个可测指标见 §6，落 [`quality.md`](quality.md) §3.1 | 🟡 指标已定，待采集 |
+
+---
+
+## 3. 技术层面（To CTO）
+
+| 目标 | 对 MMDA 的要求 | 落地机制 | 现状 |
+| --- | --- | --- | --- |
+| 开放源码 | 内核可审计、可替换，无黑盒 | 同 §5.1；**内核与宿主分离**（Rust 内核 + 三端薄适配），规范公开使第三方可自行实现宿主 | ✔ 已裁 |
+| 易定制 | 定制走声明，不改生成器 | Codegen Profile + capability 分档（[`targets.md`](targets.md) §3）；模式与权限在 IDE 项目管理里配置（默认单人模式） | ✔ 已裁 |
+| 易运维 | 运行期行为可声明、可观测 | 拦截点上升到语言层、事务边界明确（[`runtime.md`](runtime.md)）；缓存是横切面；运行期 14 项指标（[`quality.md`](quality.md) §2.3） | ✔ 已裁 |
+| 支持国产化 | 数据层 / 运行层 / 界面层三级都要能落地 | 见 §5.2（✔ 已裁为**全三级承诺**） | 🟡 L1 已有底座；L2 此前零口径；L3 靠自研皮肤 |
+| 微服务 / 容器化 / 热插拔 / 高可用 | **只是部署方式，语言层零新增** | 见 §5.3（✔ 2026-09-24 拍定） | 🟡 待落 P5 / P8 |
+
+---
+
+## 4. 用户层面（To User）
+
+| 目标 | 对 MMDA 的要求 | 落地机制 | 现状 |
+| --- | --- | --- | --- |
+| 易用 | 默认零配置可用，定制全部显式 | 默认单人模式（模式与权限在 IDE 项目管理里配）；capability 默认关；Profile 只做覆盖，不改默认值 | ✔ 已裁 |
+| 轻松 | 重复劳动交给机器 | 用例从声明**机械生成**（[`testing.md`](testing.md)）；DDL / 代码 / OpenAPI / 文档 / mock 都是**产物** | ✔ 已裁 |
+| AI 赋能 | AI 有稳定接口，也有明确边界 | MCP 与 CLI 工具面（[`ai/tools.md`](ai/tools.md)）；AI 造数两层 + 四条护栏（[`testing.md`](testing.md) §4.3）；**AI 只提议，不签字**（[`workflows.md`](workflows.md)） | ✔ 已裁 |
+| 容易二开 | 扩展点在元数据与插件，不在源码分叉 | 插件体系（[`ide/plugins.md`](ide/plugins.md)）、前端 `vuix-*` 插件、语言层的 `expose` 与 Action | ✔ 已裁 |
+
+---
+
+## 5. 架构层面
+
+### 5.1 开放源码的边界与许可（✔ 2026-09-24，取 A）
+
+| 资产 | 开源 / 闭源 | 许可 | 理由 |
+| --- | --- | --- | --- |
+| m 语言规范（本仓 `doc/`、`PLAN.md`） | **开源** | MIT（现状，见 `LICENSE`） | 契约公开是生态的前提；备选 CC-BY-4.0（要求署名）**未采用**，见 §8-1 |
+| Rust 内核 / 三端薄适配 / IDE 壳 | **开源** | Apache-2.0（含专利授权与商标条款，企业法务最容易通过） | 可审计、可替换、可被集成——这是 To CTO 的核心诉求 |
+| 算法库（如 `logistics-scheduler`） | **闭源** | 商业许可 + 许可绑定（在线激活 / 离线授权 / 加密狗 / 调用计量） | 算法体不进交付仓，见 [`protection.md`](protection.md) §4、§7 |
+| 行业业务包 / 模板 / SaaS | **闭源** | 商业许可 | 计费形态见 [`protection.md`](protection.md) §8 |
+
+**与现有资产的冲突（必须记住）**：`D:\2026\java` 与 `D:\2026\cs\MMDA` 的现有代码是 **PROPRIETARY / CONFIDENTIAL** 版权头（证据：`mmda-core/mmda-core-metadata/src/main/java/cloud/mmda/core/metadata/MetaDb.java:3`「MMDA.CLOUD PROPRIETARY/CONFIDENTIAL」）。
+
+→ 结论：**开源的是规范与新内核，不是这两套既有实现**。既有实现只作**对照与回填来源**（[`contracts-inventory.md`](contracts-inventory.md)），不随本体开源；若未来要把某段既有代码开源，必须逐文件确认权属与版权头。
+
+### 5.2 国产化三级承诺（✔ 2026-09-24，取 C：**全三级**）
+
+| 级 | 范围 | 现状与缺口 | 验收口径 |
+| --- | --- | --- | --- |
+| **L1 数据层** | 国产数据库：达梦 / 人大金仓 / OceanBase / openGauss | 🟡 **Java 侧已有底座**：`mmda-core-sql/.../sql/dialects/` 8 个方言类含 `DmDialect`（达梦）与 `KingbaseDialect`（人大金仓，继承 PG）；`MetaDataType.java:209/213/220/224` 有 `kingbaseType`/`kingbaseName` 与达梦原生类型字段。**C# / TS 侧未核**；m 语言的方言表待建（[`PLAN.md`](..\PLAN.md) §3.6） | 同一份模型在三端生成的 DDL 规范化文本一致（[`targets.md`](targets.md) §5） |
+| **L2 运行层** | 国产 OS（麒麟 / 统信）+ 国产 CPU（鲲鹏 / 飞腾 / 龙芯 LoongArch）+ JDK 国产发行版 | ❌ **此前零口径**（全仓检索「国产 / 信创 / 麒麟 / 鲲鹏 / LoongArch」= 0 命中）：需定 **Rust 交叉编译目标矩阵**、容器基础镜像、JDK 发行版清单 | 在目标 OS + CPU 上跑通内核与三端一致性套件；目标矩阵清单见 §8-4 |
+| **L3 界面层** | 至少一套**无商业控件**的皮肤 | 🟡 现皮肤 `vui-syncfusion` 依赖 30 个 `@syncfusion/ej2-*@34.2.2`（`packages/vui-syncfusion/package.json:84-109`，海外商业授权） | 自研国产皮肤在无商业控件下跑通主要场景（列表 / 表单 / 树 / 图表） |
+
+**作者口径（原话，2026-09-24）**：「国产化，我会实现一个，例如 naive + 别的表格插件，syncfusion 只是一个选项」。
+
+→ 落法：UI kit 是前端自己的事（[`presentation.md`](presentation.md) §5.1），**换皮肤不构成第二套 UI 契约**（契约边界只到 `MetaUi`）；Syncfusion 从「唯一皮肤」降为**可选皮肤之一**，与 `vui` / `rui` / `vui-agnaive` 等并列。
+
+### 5.3 部署方式（微服务 · 容器化 · 热插拔 · 高可用）——语言层零新增（✔ 2026-09-24）
+
+判据沿用 [`api.md`](api.md) §1.1：**「凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍」**。
+`module` 已是一等边界（API = 权限 = 文档 = 模块同一来源），因此「哪个 module 独立部署」是**部署期决策，不是设计概念**——语言层一个概念都不加。
+
+| 目标 | 机制 |
+| --- | --- |
+| 微服务 | **Profile 的部署拓扑视图**：同一份元数据既可出单体拓扑，也可出微服务拓扑；服务边界 = module 边界 |
+| 容器化 | P5 代码生成的一个后端：产出 `Dockerfile` + `compose` / `k8s` 骨架；**内核不做编排引擎**（只产出，不管运行） |
+| 热插拔 | module 粒度：元数据热加载，或重新生成 + 滚动重启 |
+| 高可用 | 交给部署拓扑 + 三端运行时：API 无状态、会话外置、`after*` 钩子必须幂等（[`runtime.md`](runtime.md)） |
+
+**阶段安排**：**P5 只出「单体拓扑 + Dockerfile」**；微服务拓扑留 **P8** 单独裁——因为「事务夹在 before / after 拦截点中间」是已裁语义（[`runtime.md`](runtime.md)），**跨进程后该语义会变**，必须先裁事务传播规则再落拓扑。
+
+### 5.4 其余架构目标（已有落点）
+
+| 目标 | 现状 | 落点 |
+| --- | --- | --- |
+| 分层 | ✔ 已裁 | [`runtime.md`](runtime.md)：Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面 |
+| 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](meta-model.md)（`partitionKey` / `@PartitionID`）、[`project.md`](project.md) §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
+| 热插拔模块化 | ✔ 见 §5.3（module 粒度） | module 边界四合一（[`api.md`](api.md) §1.1） |
+| 高性能 | ✔ 机制已定 | 生成原生代码、表达式下推到存储、`@Computed` / `@trigger` 生成库侧 `trigger` / `procedure`（[`readme.md`](readme.md) §5）；性能效率信号见 [`quality.md`](quality.md) §1.2 |
+| 安全、防黑客 | 🟡 骨架在，**缺可判定的安全验收基准** | [`quality.md`](quality.md) §1.6（安全性）、[`api.md`](api.md) §3.6（scope）、ARCH-111（[`architecture-review.md`](architecture-review.md)）；是否引入 OWASP ASVS / Top 10 见 §8-3 |
+| 可靠性 | ✔ 机制已定 | [`quality.md`](quality.md) §1.5 + 事务边界与 `after*` 幂等（[`runtime.md`](runtime.md)） |
+| 跨平台 | 🟡 L2 覆盖国产 OS / CPU；桌面为独立壳（Tauri） | [`ide/specification.md`](ide/specification.md) §4.9；§5.2 L2 |
+| 多端、多语言 | 🟡 三端与三语言已裁；**移动端未裁** | [`targets.md`](targets.md)（2 后端 + 1 前端）、`locales: [zh, zh-Hant, en]`（[`project.md`](project.md)）；移动端见 §8-2 |
+
+---
+
+## 6. 商业目标的可测指标（✔ 2026-09-24 同意，落 [`quality.md`](quality.md) §3.1）
+
+「降成本 / 轻松 / 易用」必须有数字，否则对管理层无法举证。
+
+| 指标 | 定义 | 采集方式 |
+| --- | --- | --- |
+| **生成覆盖率** | 产出物里可从模型生成、无需手写的行数占比 | 生成物中 `GENERATED` 区行数 / 总行数 |
+| **变更成本** | 改一处模型 → 三端同步所需的**手工改动行数**与耗时 | 变更前后 diff 统计（越接近 0 越好） |
+| **上手时间** | 业务人员经 AI 到「首个可用原型」的耗时 | 试点记录（[`workflows.md`](workflows.md) 业务人员路径） |
+| **模板复用率** | 跨项目复用的 module / 模板数占比 | 仓内统计（[`templates/`](templates/conventions.template.md)） |
+
+**不进硬门禁**：这四项是管理面指标（对应 [`quality.md`](quality.md) 的 C / D 类），只进报告与趋势，不阻塞发布。
+
+---
+
+## 7. 与现有文档的关系
+
+| 文档 | 管什么 |
+| --- | --- |
+| 本文 `vision.md` | **为什么做**（四层目标与裁决） |
+| [`..\PLAN.md`](..\PLAN.md) §1 | 工程目标、非目标、阶段与验收 |
+| [`readme.md`](readme.md) | 语言是什么、设计原则、与低代码的区别 |
+| [`quality.md`](quality.md) | 质量特性、可判定性分级、报告与门禁（含 §3.1 业务指标） |
+| [`architecture-review.md`](architecture-review.md) | 架构规则与打分（ARCH-1xx…5xx） |
+| [`protection.md`](protection.md) | 算法保护与许可（open core 的闭源那一半） |
+| [`workflows.md`](workflows.md) | 谁在什么阶段做什么、谁能改什么 |
+
+---
+
+## 8. 待裁（5 条）
+
+| # | 议题 | 我的建议 |
+| --- | --- | --- |
+| 1 | 规范文本许可最终选型：MIT（现状）还是 CC-BY-4.0（要求署名） | 保持 **MIT**（已入库、宽松利于传播）；若将来要品牌署名再换 |
+| 2 | **移动端（多端）** 是否进首版承诺；若进，宿主形态是独立壳的移动版 / 响应式 Web / 小程序 | 首版**不做**移动端，先 Web + 桌面（Tauri）；把「响应式 `MetaUi` 渲染」作为 L3 皮肤的验收项之一 |
+| 3 | 安全目标是否引入 **OWASP ASVS / Top 10** 作为附加硬门禁 | 引入 **ASVS L1 的自动化子集**（B 级可判定）作为附加门禁；Top 10 作报告项 |
+| 4 | L2 国产化的**目标矩阵清单**（哪些 OS 版本 / CPU 架构 / JDK 发行版进首版验收） | 首版：麒麟 V10 + 统信 UOS（x86_64 与 aarch64）、LoongArch 只保证内核交叉编译通过；JDK 用 OpenJDK 国产发行版之一 |
+| 5 | 「共赢」是否落成**插件市场 / 伙伴体系**的机制（当前只有插件 API） | 先只做**插件 API + 签名与兼容性约定**；市场留到有第三方插件之后 |
+
+---
+
+## 9. 相关
+
+- [`..\PLAN.md`](..\PLAN.md) — 落地计划（决策台账 §0、目标 §1、阶段 §4、待裁 §6）
+- [`readme.md`](readme.md) — 语言规范总览
+- [`index.md`](index.md) — 全部文档索引
+- [`errata.md`](errata.md) — 待裁决口径与校勘（§五 是**已裁**记录）

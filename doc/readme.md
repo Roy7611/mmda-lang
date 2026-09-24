@@ -3,6 +3,7 @@
 > 本文是语言规范的**入口与设计原则**；语法细则在分篇文档里，不要在这里堆细则。
 > 分篇：[datatypes.md](datatypes.md)（类型）、[records.md](records.md)（对象）、[statements.md](statements.md)（表达式与行为）、[events.md](events.md)（事件）、[presentation.md](presentation.md)（呈现）、[meta-model.md](meta-model.md)（元模型）、[project.md](project.md)（项目格式）。
 > 未裁决的口径见 [errata.md](errata.md)；工具与 IDE 见 [index.md](index.md#工具与-ide)。
+> **愿景与四层目标（为什么做 m 与 MMDA：商业 / 技术 / 用户 / 架构）见 [vision.md](vision.md)**；本文只管**语言本身**。
 
 ---
 
