@@ -56,12 +56,14 @@
 
 **三条结论**：① **枚举"无归属"根本不是问题**（它本来就不该有独立端点）；② 真正需要 `internal` 默认值的只有「从属对象」与「技术对象」两类；③ **默认不开放**：没有 owner module 的 Record 不出 API——规则化为 **ARCH-111**（[`architecture-review.md`](architecture-review.md) §2.1）。
 
+**基础模块与 `sops` 的映射（✔ 已裁 2026-09-24，§8.2-9）**：基础模块**沿用语料名 `Base`**（不改成 `base`/`platform`）；`sops` → OpenAPI 权限：**`READ` → 只出读端点**（GET 类）**、`CRUD` → 全出**（读 + 写 + Action）。**作者此前记在此条上的「还没想清楚」随之清掉。**
+
 ### 1.2 语言层只需补两样（最小新增）
 
 | 声明 | 作用 | 形态（草案，待语法专题） |
 | --- | --- | --- |
-| **暴露边界** `expose` | 哪些 Feature / Action **对外**成为 API：`public` / `internal` / `none` | 声明在 Feature 或 Action 上；**建议默认 `internal`**（内部模块不会因为存在就变成公开 API，与「跨模块只走声明接口」同源） |
-| **稳定度与版本** | `stable` / `beta` / `deprecated` + `since` / `sunset` | 驱动 OpenAPI 的 `deprecated` 标记、网关告警与退役倒计时 |
+| **暴露边界** `expose` | 哪些 Feature / Action **对外**成为 API：`public` / `internal` / `none` | 声明在 Feature 或 Action 上；**✔ 已裁 2026-09-24：默认 `internal`**，显式 `expose` 才对外（内部模块不会因为存在就变成公开 API，与「跨模块只走声明接口」同源；见 §8.2-1） |
+| **稳定度与版本** | `stable` / `beta` / `deprecated` + `since` / `sunset` | 驱动 OpenAPI 的 `deprecated` 标记、网关告警与退役倒计时。**✔ 已裁 2026-09-24：进语言**（三端与网关都要读；见 §8.2-3） |
 | （可选）**路径覆盖** | 少数需要自定义 `path` 的场景 | 默认由模块树推导；覆盖属于例外，要写理由 |
 | （可选）**对外契约名** | 不把内部命名暴露给外部 | 复用 `Terminology`（[`architecture-review.md`](architecture-review.md) ARCH-401）的术语表 |
 
@@ -77,7 +79,7 @@
 | 产物位置 | `generated/<target>/openapi/`（generated 区，KEEP 边界规则不变——[`project.md`](project.md)） |
 | **契约测试** | 三端生成的 Controller **实际行为 vs 生成的 OpenAPI schema** → 一致性测试的 **API 维度**（现有 L3 一致性 + UI 维度只测 TS，这里补第三维） |
 | **IDE（设计期）** | 模块树旁挂 **API 面板**：按模块看端点清单、看某个声明影响哪些 API、与基线 diff（API 变更影响面） |
-| 命令面（草案） | `mmda api export --format openapi3`、`mmda api diff --baseline`、`mmda api check`（契约测试）；是否与 `mmda generate` 合并 → 待裁 |
+| 命令面（草案） | `mmda api export --format openapi3`、`mmda api diff --baseline`、`mmda api check`（契约测试）；**✔ 已裁 2026-09-24：独立子命令**，不与 `mmda generate` 合并（导出与生成是两个动作，CI 可分开跑；见 §8.2-5） |
 | 与「契约先行」的关系 | MMDA 比 contract-first **更前一层**：先有元数据（模块/对象/视图/角色），OpenAPI 是它的投影；**手改 OpenAPI 不回写**（§7） |
 
 ---
@@ -128,7 +130,7 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 | `summary` | Feature / Record 的 `label` | 工单 | 推导（中文 label 直接出） |
 | `description` | `doc` 字段原文（CommonMark） | … | 推导 |
 | `externalDocs` | 可选 | 模块文档 URL | 可选 |
-| `operationId` | **`<moduleId>_<feature>_<op>`** | `M03001_WorkOrder_create` | **待裁 12**：命名规则（SDK 与客户端代码都依赖它，必须稳定、**不用中文**） |
+| `operationId` | **`<moduleName>_<featureName>_<op>`**（✔ 已裁 2026-09-24，作者原话「我希望是 `moduleName_featureName_op`」） | `M03001_WorkOrder_create` | **✔ 已裁**：ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定**；**字形的具体大小写随 §8.2-2b 一起定** |
 | `parameters` | 路径参数 `{id}` + 查询（`SearchParam`：`pageNo`/`pageSize`/`sorts`/filters）+ 头部（`X-Tenant`、`traceparent`） | | 推导 + 待裁（filters 编码） |
 | `requestBody` | `editor` 视图的字段投影 → `application/json`（`content` 必需；`required` 由表单必填推导，默认 `false`） | | 推导 |
 | `responses` | 统一响应封装（Profile 决定 `raw` 还是 `{code,data,msg}`）+ 各状态码（§3.4） | | 需 Profile 声明 |
@@ -156,6 +158,7 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 **与存量手写代码的冲突（✔ 已裁 2026-09-24：取 A 方案）**：现有三端模板一律 `POST /save`、`GET ""` 取列表、`POST /{id}/delete`，**既不符合 REST 语义也没有模块前缀**。裁决：
 
 - **生成物用 REST 语义**（POST 创建 / PUT 更新 / DELETE 删除 + `/{模块路径}/{资源}` 前缀）——上表即最终形态；
+- **路径两段是哪两段（✔ 已裁 2026-09-24，§8.2-2）**：第一段 = **模块（service）**、第二段 = **资源（repository / Record）**——**作者原话：「我们是 `/service/repository`」**。**⚠️ 残留待裁 2b：路径段的大小写与复数规则**（正文示例是 `mes.workorder` 式小写；**没定下来不许进生成器**）；
 - **同时提供 Profile 开关 `legacyPathStyle: true`**，保留 `POST /save`、`GET ""`、`POST /{id}/delete` 老路径，**迁移期双版本并存**（复用 §6 的稳定度机制：老路径标 `deprecated` + `sunset`，调用量归零后移除）；
 - 存量为 B/C 两案（照抄历史包袱 / 只出新路径破坏现有集成）**不采用**。
 
@@ -204,7 +207,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 事项 | 口径 |
 | --- | --- |
 | 认证方式 ← Profile | `type: http` + `scheme: bearer` + `bearerFormat: JWT`（首选，贴合三端现状）；或 `type: oauth2` + `flows`（`authorizationUrl` / `tokenUrl` / `refreshUrl` + `scopes`）；或 `type: openIdConnect` + `openIdConnectUrl` |
-| **scope 命名** | **`<模块路径>:<操作>`**（`mes.workorder:read`、`mes.workorder:approve`）——由 module 树 + `sops` **机械生成**，与 `tags` 同理，**不由作者起名** |
+| **scope 命名** | **`<模块路径>:<操作>`**（`mes.workorder:read`、`mes.workorder:approve`）——由 module 树 + `sops` **机械生成**，与 `tags` 同理，**不由作者起名**。**✔ 已裁 2026-09-24（粒度）：按现状 = 模块权限 + Action 权限**——**module 出读 / 写 scope，Action 出专属 scope，Feature 级不出 scope**（见 §8.2-13） |
 | 端点级 `security` | `[{<scheme>: ["<scope>", …]}]` ← Role 的 `auth module` + `actions` + `scope` |
 | Security Requirement 语义 | `Map<方案名, [scope]>`：**同一 map 内多方案 = AND，数组内多对象 = OR** → 我们**只用单方案 + 多 scope**，避免歧义 |
 | OAS 表达不了的两件事 | ① **行级数据范围**（"只能看本部门工单"）→ `x-mmda-scope`；② **状态转移权限**（"只有 X 状态能审批"）→ `x-mmda-transition`；**两者都必须进契约测试**（越权用例，[`testing.md`](testing.md) §2） |
@@ -229,7 +232,9 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 
 ### 3.9 Mock 数据：机械打底 + **AI 填语义**（撰写用例与联调的提速手段）
 
-> **裁决（2026-09-24，作者）**："API 测试要能借助 AI 的能力自动生成 mock 数据，这是撰写测试用例的提速手段。"
+> **裁决（2026-09-24，作者）**："API 测试要能借助 AI 的能力自动生成 mock 数据，这是撰写用例与联调的提速手段。"
+
+**Mock 的归属（✔ 已裁 2026-09-24，§8.2-6）**：**IDE 内置**（开发期即时可用，不依赖外部服务）；**外部工具只做展示与协作**（导出 ✅ / 回写 ❌，见 §6）。
 
 **关键切分：结构由 schema 定，数据分两层造**——
 
@@ -269,7 +274,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 
 | 事项 | 口径 |
 | --- | --- |
-| **网关 vs Controller 边界** | **网关做粗粒度**（TLS、限流、IP/黑名单、统一凭证校验、流量镜像）；**Controller 做细粒度**（Role × module × action × scope 的数据范围）——**两边不重复实现**（与 [`runtime.md`](runtime.md) §1 的进入路径对齐） |
+| **网关 vs Controller 边界** | **网关做粗粒度**（TLS、限流、IP/黑名单、统一凭证校验、流量镜像）；**Controller 做细粒度**（Role × module × action × scope 的数据范围）——**两边不重复实现**（与 [`runtime.md`](runtime.md) §1 的进入路径对齐）。**✔ 已裁 2026-09-24（§8.2-7）** |
 | **可观测** | 每端点的延迟 / 错误率 / 调用量进质量看板（[`quality.md`](quality.md) §2.3）；**`deprecated` 端点的调用量 = 退役倒计时依据** |
 | **变更审计** | API diff 进 `changelog/` + 影响面（[`workflows.md`](workflows.md) §8 的 L0–L3）；**破坏性变更必须有双版本并存期** |
 | **退役** | `stable → deprecated → sunset` 三段，与 IDE 全生命周期的「退役」阶段对齐（[`quality.md`](quality.md) §5） |
@@ -282,7 +287,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 方向 | 允许？ | 说明 |
 | --- | --- | --- |
 | **导出** | ✅ | MMDA → OpenAPI → **YApi / Apifox / Swagger UI / Postman / 网关配置**（它们都是消费者） |
-| **导入（逆向）** | ✅ 作为「接入」能力 | 从既有 OpenAPI **生成初始模块骨架**（遗留系统接入场景）——与 P4 的 DB→`.mmda` 反向导出同族，**一次性**且结果进真源后由人审 |
+| **导入（逆向）** | ✅ 作为「接入」能力 | 从既有 OpenAPI **生成初始模块骨架**（遗留系统接入场景）——与 P4 的 DB→`.mmda` 反向导出同族，**一次性**且结果进真源后由人审。**✔ 已裁 2026-09-24（§8.2-8）：产出 = 先出「导入报告 + 骨架」，人审后入真源**，不直接写 `biz/*.ma` |
 | **回写** | ❌ | 在 YApi / Apifox 里改的接口**不能自动回流**——否则出现**第二真源**（与「DB 降级为产物/缓存」同一原则，[`PLAN.md`](../PLAN.md) §3.2） |
 | **对账** | ✅ | 把外部改动 **diff 出来**，转成「待回收的需求」走正常流程（`REQ-x` → 声明 → 用例），不直接改模型 |
 | 工具扩展字段 | ⚠️ 只出 | `x-yapi-*` / `x-apifox-*` 只允许出现在 **generated 区**的输出里，不回写模型 |
@@ -316,19 +321,21 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 15 | **官方 Schema 校验与契约测试是否进硬门禁** | **进**（B 级：生成后可判定）；`mmda api check` 失败即阻断 CI | §3.1-2、§4 |
 | 16 | **AI 造数的样本固化范围** | **要固化**：进基线的 AI 样本必须把**种子 + provenance 一并进版本控制**（能重建同一次造数）且过 schema + 约束双校验；**默认 AI 数据只进 mock 与开发期**，断言始终不由 AI 造数产生 | §3.9、[`testing.md`](testing.md) §4.3 |
 
-### 8.2 待裁
+### 8.2 ✔ 已裁（2026-09-24，作者逐条取定）
 
-| # | 议题 | 建议 |
-| --- | --- | --- |
-| 1 | **暴露边界的默认值**：默认对外还是默认内部 | **默认 `internal`**，显式 `expose` 才对外（内部实现不会因为存在就变成契约） |
-| 2 | **路径推导规则**：`/模块路径/资源` 还是 `/资源`；命名大小写与复数规则 | `/模块路径/资源`（模块边界即 API 边界，便于网关按前缀限流与权限）；命名复用 `Terminology` |
-| 3 | **稳定度标记语法**与 `since` / `sunset` 字段 | 进语言（三端与网关都要读） |
-| 4 | **OpenAPI 版本**（3.1 vs 3.0）与扩展字段白名单 | **3.1**（JSON Schema 对齐更好）；扩展字段只允许 `x-mmda-*` 出、`x-yapi-*`/`x-apifox-*` 由外部工具在导入时自加 |
-| 5 | **命令面**：`mmda api export/diff/check` 是否与 `mmda generate` 合并 | 独立子命令（导出与生成是两个动作，便于 CI 分开跑） |
-| 6 | **Mock 归属**：IDE 内置还是走外部工具 | IDE 内置（开发期即时用）；外部工具做展示与协作 |
-| 7 | **网关边界**：认证在网关还是 Controller | **分工**：网关做粗粒度凭证校验，Controller 做细粒度 Role/scope（§4） |
-| 8 | **导入（逆向）的产出**：直接生成 `biz/*.ma` 还是先出「导入报告」再人工确认 | 先出报告 + 骨架，人审后入真源（与 P4 反向导出同一工作方式） |
-| 9 | **基础模块的固定名与 `sops` → OpenAPI 权限的映射**：基础模块叫 `base` 还是 `platform`（语料用 `Base`/`B`）；`sops = READ/CRUD` 如何映射成 OpenAPI 的 security/scopes（读端点/写端点分档） | 沿用语料的 `Base`；`READ` → 只出读端点、`CRUD` → 全出（**作者的"还没想清楚"留在此条**） |
-| 12 | **`operationId` 命名规则**（SDK 与客户端代码依赖，必须稳定） | `<moduleId>_<feature>_<op>`（ASCII、不含中文），同项目内唯一（`validate` 检查） |
-| 13 | **scope 命名与授权粒度**：Feature 级还是 Action 级 | `<模块路径>:<操作>`；Feature 出读 / 写 scope，Action 出专属 scope（§3.6） |
-| 14 | **`webhooks` 首版做不做** + 事件 → 回调的映射规则（事件名、订阅方式、重试） | 首版只出 `webhooks` 骨架（事件名 + 载荷 schema）；订阅与重试随 [`events.md`](events.md) 一起裁 |
+> 作者原话：「**1. 同意你的建议 / 2. 同意你的建议，/模块路径/资源，我们是 /service/repository / 3.–9. 同意 / 12. 我希望是 moduleName_featureName_op / 13. 这个我们已经实现，按照现状来，模块权限，Action 权限 / 14. 不明白**」
+
+| # | 议题 | 裁决（2026-09-24） | 落点 |
+| --- | --- | --- | --- |
+| 1 | 暴露边界的默认值 | **默认 `internal`**，显式 `expose` 才对外（内部实现不会因为存在就变成契约） | §1.2、§1.1 |
+| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**⚠️ 残留待裁 2b：路径段的大小写与复数规则**（正文示例是 `mes.workorder` 式小写；**没定下来就不许进生成器**） | §3.4 |
+| 3 | 稳定度标记语法与 `since` / `sunset` | **进语言**（`stable` / `beta` / `deprecated` + `since` / `sunset`；三端与网关都要读） | §1.2、§5 |
+| 4 | OpenAPI 版本与扩展字段白名单 | **3.1**；扩展字段**只允许 `x-mmda-*` 出**，`x-yapi-*` / `x-apifox-*` 由外部工具在导入时自加 | §3、§7 |
+| 5 | 命令面 | **独立子命令**（`mmda api export/diff/check` 不并入 `mmda generate`，便于 CI 分开跑） | §2、§4 |
+| 6 | Mock 归属 | **IDE 内置**（开发期即时用）；外部工具做展示与协作 | §3.9、§6 |
+| 7 | 网关边界 | **分工**：网关做粗粒度凭证校验，Controller 做细粒度 Role/scope | §5、§4 |
+| 8 | 导入（逆向）的产出 | **先出报告 + 骨架，人审后入真源**（与 P4 反向导出同一工作方式） | §6 |
+| 9 | 基础模块固定名与 `sops` → 权限映射 | **沿用 `Base`**（语料名）；`READ` → **只出读端点**、`CRUD` → **全出** —— **作者此前「还没想清楚」的那部分随本条清掉** | §1.1、§3.6 |
+| 12 | `operationId` 命名规则 | **`moduleName_featureName_op`**（作者原话「我希望是 `moduleName_featureName_op`」）——ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定** | §3.3 |
+| 13 | scope 命名与授权粒度 | **按现状 = 模块权限 + Action 权限**（作者原话「这个我们已经实现，按照现状来，模块权限，Action 权限」）：**module 出读 / 写 scope，Action 出专属 scope，Feature 级不出 scope** | §3.6 |
+| 14 | `webhooks` 首版做不做 | ⏳ **仍待裁** —— 作者回「**不明白**」，需先用具体例子说明再重问（「生成的 OpenAPI 里要不要写『平台会主动回调你』的 `webhooks` 段」；订阅与重试语义属 [`event_bus.md`](event_bus.md) §15） | §3.8、[`event_bus.md`](event_bus.md) |
