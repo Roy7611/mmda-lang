@@ -162,3 +162,19 @@ Please don't modify any code between GENERATED PARTS BEGIN and END
 | 6 | **移动端 = Flutter（✔ 2026-09-24 方向已裁）** | 移动端宿主走 **Flutter**（Dart 生成物，与 P6 的「+Dart/JS」一致；不做响应式 Web 与小程序路线）。**对本文件的冲击**：`MetaUi` 将出现**第二个渲染方**（Flutter），本文第 4 条「`capability ui` 只在 `target ts` 声明」需重开——见 [`vision.md`](vision.md) §8-6、[`errata.md`](errata.md) §三-26。**首版仍不做移动端**，排 P8 之后。 |
 
 已随之落到各处的连带改动：§6 的统一顺序里第 6 项（UI 渲染契约）两次收紧后**不再是"要不要统一"也不是"渲染描述里放什么字段"，而是「`MetaUi` 里放什么字段」**——因为渲染方只剩一个（mmda-vue）。**注：本条已因移动端 Flutter 方向（本表第 6 条）待重开——将来 `MetaUi` 会有第二个渲染方。**
+
+---
+
+## 9. 文档与图形出口（目标端之外的第二类出口）
+
+> ✔ **方向已裁（2026-09-25）**：**代码与图要能生成 Markdown 文档，并能输出 Mermaid / PlantUML 这类标准图格式源码、嵌进 md**（作者原话见 [`ide/diagrams.md`](ide/diagrams.md) §10）。
+
+| 出口 | 产物 | 判据 |
+| --- | --- | --- |
+| **模型文档** | Markdown（对象 / 字段 / 约束 / 关系 / 状态机 / 视图 / 用例） | **从元数据投影**，不另写一份；一改模型就重生成 |
+| **图的文本源码** | Mermaid / PlantUML / D2 / dot | **只出不进**（BPMN 2.0 XML 例外），嵌 md 即可渲染 |
+| **文档产物** | 含 Mermaid 代码块的整篇 md | GitHub / GitLab / VS Code / Obsidian 原生渲染 |
+
+- **命令面（草案）**：`mmda doc` + `mmda diagram`（或统一 `mmda export --doc/--diagram`）—— ⏳ 待裁，见 [`ide/diagrams.md`](ide/diagrams.md) §10.4。
+- **不属于三端契约**：这是**内核侧出口**（与 `mmda test --target …` 同一驱动方式），不新增 `target` 成员，三端骨架不重复实现。
+- **验收**：产物落生成区、**diff = 0** 进 P9；图种映射见 [`ide/diagrams.md`](ide/diagrams.md) §10.1。
