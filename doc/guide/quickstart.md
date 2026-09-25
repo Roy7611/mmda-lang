@@ -5,22 +5,20 @@
 
 ---
 
-## 0. 五阶段全貌（谁做什么）
+## 0. 四阶段全貌（谁做什么）
 
 ![MMDA 开发流程](../assets/mmda-dev-workflow.png)
 
-`需求 → 设计 → 系统原型自动生成 → 逻辑代码实现 → 测试 → 交付`，其中**设计 ↔ 原型 ↔ 实现 ↔ 测试**之间有回环（改模型即回到设计，重新生成后跑起来看）。
+> **阶段口径（✔ 2026-09-25 作者裁定）**：**S1 意图 → S2 建模 → S3 验收 → S4 交付**（[`workflows-phase.md`](../workflows-phase.md) §3）。下图为作者原图，**阶段名以本表为准**；图中**设计 ↔ 原型 ↔ 实现**之间的回环就是 **S2 建模的内部环**（改模型即回到设计，重新生成后跑起来看）。
 
 | 阶段 | 谁做 | 做什么 | 产物 | 真源 |
 | --- | --- | --- | --- | --- |
-| **需求** | 业务 + 架构师（AI 辅助） | 三层需求 → SERU 四要素；**在需求阶段识别关键用户（Role）** | SRS / 用例、**Role 清单** | [requirements.md](../requirements.md)、[workflows.md](../workflows.md) |
-| **设计** | **架构师**（图形化工具） | ① 功能模块分解 ② 数据结构设计（类 / E-R） ③ 元数据生成与修改（五视图、字段呈现、Flow/STM） | `.mmda` 项目（`biz/*.ma`、`data/models/*.mm`、`data/stms/*.ms`、`flow/roles/*.mr`、`ui/**/*.mi`） | [meta-model.md](../meta-model.md)、[presentation.md](../presentation.md) |
-| **原型自动生成** | 框架（`mmda generate`） | 一次生成三端产物 + DDL + 接口骨架 + TS 类型；**「跑起来看看」** | `generated/` | [targets.md](../targets.md)、[`..\..\PLAN.md`](../../PLAN.md) P5–P6 |
-| **逻辑代码实现** | **程序员** | 只写业务逻辑与交互逻辑（GENERATED 区外的 KEEP 区 / `handlers/`） | `handlers/`、KEEP 区 | [runtime.md](../runtime.md)、§9 |
-| **测试** | 框架 + 人 | 用例从声明**机械生成**、AI 造数（人审）、三端一致性 | 用例套件 | [testing.md](../testing.md)、[targets.md](../targets.md) §5 |
-| **交付** | 框架 + 运维 | 离线交付包 + `mmda doctor` 自检 | 生成物 / 镜像 / `SHA256SUMS` | [operations.md](../operations.md)、[vision.md](../vision.md) §5.2.1 |
+| **S1 意图** | 业务 + 架构师（AI 辅助；**人类参与最多**） | 解决 **why / what**：三层需求 → SERU 四要素；**在需求阶段识别关键用户（Role）**；**定 UAT（验收准则，可执行）** | SRS / 用例、**Role 清单**、**可执行 UAT** | [requirements.md](../requirements.md)、[workflows.md](../workflows.md) |
+| **S2 建模** | **架构师 + 设计师**（图形化工具；AI 起草）+ **程序员**（KEEP 区） | 解决 **how**：① 功能模块分解 + Action ② 数据结构设计（类 / E-R / 枚举 / STM）③ 元数据生成与修改（五视图、字段呈现、Flow / DataFlow / BPMN）④ **原型自动生成**（`mmda generate`：三端产物 + DDL + 接口骨架 + TS 类型，「跑起来看看」）⑤ 逻辑代码实现（GENERATED 区外的 KEEP 区 / `handlers/`） | `.mmda` 项目 + 声明（`intents/**`、`models/**`）+ `generated/` + `handlers/` | [meta-model.md](../meta-model.md)、[presentation.md](../presentation.md)、[runtime.md](../runtime.md) §9、[targets.md](../targets.md)（P5–P6） |
+| **S3 验收** | **人定标准 + 审核；AI 跑与诊断** | 测试与验证：用例从声明**机械生成**、AI 造数（人审）、三端一致性、覆盖率与变异、**UAT 全绿 + 验收单签字** | 用例 + 基线 + 覆盖率 + 验收单 + 质量报告 | [testing.md](../testing.md)、[quality.md](../quality.md) §5、[targets.md](../targets.md) §5 |
+| **S4 交付** | 框架 + 运维 | 部署与运维：离线交付包 + `mmda doctor` 自检 + 监控出口 + 运行期回写对账与度量回流 | 生成物 / 镜像 / `SHA256SUMS` / 对账与运行指标 | [operations.md](../operations.md)、[vision.md](../vision.md) §5.2.1 |
 
-> **一句话记法**：**设计在元数据里、逻辑在 KEEP 区、验收在一致性套件**——这就是「**设计师配置 + 程序员定制**」的固定模式（[runtime.md](../runtime.md) §4）。
+> **一句话记法**：**设计在元数据里、逻辑在 KEEP 区、验收在一致性套件 + UAT**——这就是「**设计师配置 + 程序员定制**」的固定模式（[runtime.md](../runtime.md) §4）。
 
 ---
 

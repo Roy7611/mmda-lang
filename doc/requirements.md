@@ -2,7 +2,7 @@
 
 > **为什么有这篇**：m 语言的用户里有架构师、设计师、AI Agent、程序员，也有「通过 AI 开发可落地系统」的业务人员——**入口都是需求**。本文固定 MMDA 对需求过程的口径：**不替代需求工程方法论，但把需求产物变成一等对象（`REQ-x`）并接进同一份真源**，让"需求偏差"从靠人盯变成**可机检的追溯链**。
 > **来源**：作者 2026-09 随想录（原文留档 [`archive/2026-09/随想录.md`](archive/2026-09/随想录.md)）+ SERU 需求方法论（徐峰《软件需求最佳实践》笔记）+ **Anthropic《The AI-Native SDLC Playbook》**（Claude Academy 课程，14 课；本节引文取自该课程，逐字整理见 <https://github.com/yibie/ai-native-sdlc-playbook>）——它的 intent / spec 与本篇需求阶段的关系见 §4.2。
-> 状态：草案（2026-09-24 立；**2026-09-25 作者补充**：三层需求 ↔ 模块三级、需求即元对象（进语言 / 进库 / 进 IDE）、需求调研清单、why 与 what 不拆两个阶段、与 AI 原生 SDLC 的分界）。联动：[`workflows.md`](workflows.md)（谁写、怎么签）、[`testing.md`](testing.md)（用例与追溯）、[`quality.md`](quality.md)（需求覆盖门禁、追溯链）、[`ide/specification.md`](ide/specification.md) §4.2（用例与需求条目）、[`readme.md`](readme.md) §8（与低代码的区别）。
+> 状态：草案（2026-09-24 立；**2026-09-25 作者补充**：三层需求 ↔ 模块三级、需求即元对象（进语言 / 进库 / 进 IDE）、需求调研清单、why 与 what 不拆两个阶段、与 AI 原生 SDLC 的分界；**同日后半：语言文件后缀统一 `.m`、需求住阶段根 `intents/`**——见 [`project.md`](project.md) §1 / §11 与 [`workflows-phase.md`](workflows-phase.md) §3）。联动：[`workflows.md`](workflows.md)（谁写、怎么签）、[`testing.md`](testing.md)（用例与追溯）、[`quality.md`](quality.md)（需求覆盖门禁、追溯链）、[`ide/specification.md`](ide/specification.md) §4.2（用例与需求条目）、[`readme.md`](readme.md) §8（与低代码的区别）。
 
 ---
 
@@ -62,7 +62,7 @@
 
 | 面 | 口径 | 依据 / 落点 |
 | --- | --- | --- |
-| **进语言** | 需求（与用例）是**一等声明**，与 `record` / `enum` / `stm` / `role` 同级；独立文件族，首关键字 `requirement` / `usecase` 判 partType | 与「Role 进语言」（[`meta-model.md`](meta-model.md) §8.1）同一层级逻辑；后缀与粒度待裁（§7-7） |
+| **进语言** | 需求（与用例）是**一等声明**，与 `record` / `enum` / `stm` / `role` 同级；**就是普通 `.m` 文件**（语言文件后缀统一，2026-09-25），首关键字 `requirement` / `usecase` 判 partType，住**阶段根 `intents/`** | 与「Role 进语言」（[`meta-model.md`](meta-model.md) §8.1）同一层级逻辑；目录见 [`project.md`](project.md) §1；**粒度仍待裁**（一条需求一文件 vs 一 Feature 一文件，§7-7） |
 | **进库** | **像元对象一样落 `meta_*` 表**（拟 `meta_requirement` + 关联表），供运行时与 IDE 直读 | ⚠️ **单向流不变**：文件（git）是真源，库里的需求是**产物 / 缓存**（[`PLAN.md`](../PLAN.md) §3.2、[`project.md`](project.md) §0）。运行期在库里改了需求 → **必须回写文件并进版本控制**（[`workflows.md`](workflows.md) §2 第三个时间面） |
 | **进 IDE** | 图形化（需求树 / 追溯矩阵 / 用例图）+ **表格化**（需求清单：层 / 优先级 / 状态 / 归属 / 覆盖 / 验收）+ CRUD + 变更管理（走变更分级 L0–L3）+ 进度状态跟踪 | [`quality.md`](quality.md) §5 的「需求矩阵」面板、[`ide/specification.md`](ide/specification.md) §4.2 |
 | **双格式** | **人写人审走文本声明，AI 与工具走 IR / JSON**——同一份内容两条通道，做法同 `MetaEnum` 的 `toString` / `toJson`（[`meta-model.md`](meta-model.md) §6.1） | 作者要求「**AI 和人类都能理解的格式都要**」 |
@@ -168,7 +168,7 @@ SERU 是需求方法论（S / E / R / U 四要素），**遗留系统项目同�
 | 4 | SRS 导出形态（§6） | 建议默认 Markdown、Word 由模板生成；图表按 `*.g` 布局渲染 |
 | 5 | 需求覆盖门禁是否分层次 | 建议**按层分档**（配合 §2.1）：业务需求 100% 有归属 System / Module；用户需求 100% 有 Role 与 Feature；功能需求用例覆盖 ≥ 90%（[`testing.md`](testing.md) §6） |
 | 6 | 需求条目与「业务人员通过 AI 提需求」路径怎么衔接 | 建议：业务人员的话经 AI 转成**候选需求条目 + 候选模型差异**，由设计师落盘（[`workflows.md`](workflows.md) §7 三条红线不变） |
-| 7 | 需求文件的后缀与粒度：`.mr` 是否从 Role 手里收回（Role 换后缀）／ 一条需求一文件还是「一个 Feature 一文件」 | 建议**需求取 `.mr`**（Role 与需求在语料里都是零文件，改判成本 ≈ 0）；粒度建议**一条需求一文件**（与 `record` 的一对象一文件同构、diff 最干净，且每条需求的评审 / 验收 / 废弃时点本就独立） |
+| 7 | ~~需求文件的后缀~~ → **✔ 已裁（2026-09-25）：就是 `.m`**（语言文件统一后缀，不需要再从 Role 手里「收回」——`.mr` 连同整个分片族一起作废）；**仍待裁的只剩粒度**：一条需求一文件还是「一个 Feature 一文件」 | 粒度建议**一条需求一文件**（与 `record` 的一对象一文件同构、diff 最干净，且每条需求的评审 / 验收 / 废弃时点本就独立）；见 [`project.md`](project.md) §11-④ |
 | 8 | `REQ` 编号是否含模块编码段 | 建议**含**（`REQ-M.01.001-007`，签发即固定、永不改，模块段读作「签发地」）；若更看重「一个概念一个主人」，改用纯序号 `REQ-000123`（归属只由 `@Feature` 决定）——**不做「迁模块即换号」**（会断追溯链） |
 | 9 | 三层需求 ↔ System / Module / Feature 的对应形态（§2.1） | 建议按 §2.1 的「逐层细化 + 归属」判据（**层号 = 归属节点层级**），并进 `mmda check` 出 error；**不做 1:1 映射** |
 | 10 | 模块三级的命名统一：元模型现为一个 `Module` + `moduleType` 0/1/2（[`glossary.md`](glossary.md) §4、[`meta-model.md`](meta-model.md) §8）／ 作者口径为 **System / Module / Feature** | 建议**三级各给一个名字**（System / Module / Feature），`moduleType` 保留为内部编码；`ide/workflow.md` 的「系统（App）」与 `readme.md` 的 `Subsystem` 一并对齐 |
