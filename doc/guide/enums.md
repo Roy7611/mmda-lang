@@ -280,9 +280,9 @@ stm BomApproval on Bom.status {
 
 ```json
 {
-  "enumClass": "BomStatus",
+  "name": "BomStatus",
   "displayLabel": "BOM状态",
-  "dataType": "int",
+  "baseType": "int",
   "bitwise": false,
   "colorized": true,
   "color": "gray-500",

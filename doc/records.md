@@ -474,7 +474,7 @@ union all Contactor as c
 | 字段 | Field | `MetaCol` |
 | `@One` / `@Ref` / 旧 `HAS_ONE` / `REF` | Relation | `MetaRelation` / `MetaCol.enumSet` |
 | `@Many` | Relation | `MetaRelation`（`relationType=2`） |
-| `enum` | Enum（`baseType`、`bitwise`、`values`） | `MetaEnum` / `MetaEnumMember` |
+| `enum` | Enum（`name`、`baseType`、`bitwise`、`members`） | `MetaEnum` / `MetaEnumMember` |
 | `view` | View | `MetaView`（`whereCondition`、`orderBy`、`relatives`） |
 | 对象级 `@Id/@Index/@ForeignKey/@Check` | 约束 | `MetaIndex`/`MetaForeignKey`/`MetaCheck` |
 

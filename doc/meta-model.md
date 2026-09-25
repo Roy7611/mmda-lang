@@ -154,8 +154,8 @@ Field ──(呈现层)── UiField
 
 | 属性 | 说明 |
 | --- | --- |
-| `name` | 如 `OrderStatus` |
-| `baseType` | `int` \| `BitSet` |
+| `name` | 枚举名，如 `OrderStatus`（✔ 2026-09-25 作者认可此名） |
+| `baseType` | 基类型：`int` \| `BitSet`（✔ 2026-09-25 作者认可此名） |
 | `bitwise` | 是否位标志 |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
 | `color?` | **默认色** `<role>-<shade>`（`@Colorized(role, shade)`，枚举级默认；**一个字段、一个形态**，见 §6.1） |
@@ -165,7 +165,8 @@ Field ──(呈现层)── UiField
 
 **字符串表示**（`toString()` / `fromString()`）：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）—— 定义见 §6.1.1。
 
-**命名对照**：JSON / 内存模型的属性名 = `enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` / `members`（✔ 实测旧实现列名）；本节表里的 `name` / `baseType` 是**语言侧概念名**（`enum X : int` 里的 `X` / 基类型），两者一一对应。
+**命名统一采用本节的语言侧名**（✔ 2026-09-25 作者认可）：`name` / `baseType` / `bitwise` / `displayLabel` / `namespace` / `colorized` / `color` / `iconized` / `iconPrefix` / `members` —— 串、JSON、内存模型**同一套名字**。
+> 旧实现列名 `enumClass` / `dataType` 仅作**历史对照**（与 `name` / `baseType` 语义一一对应）。
 
 > ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）—— 旧实现的 `enumString` **列** = 新设计的 `toString()`（详见 §6.1）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
@@ -177,7 +178,7 @@ Field ──(呈现层)── UiField
 | 通道 | 方法 | 形态 |
 | --- | --- | --- |
 | **字符串** | `toString()` / `fromString()` | 成员串：`value;name;text;color;icon`，成员之间用 `|` |
-| **JSON** | `toJson()` / `fromJson()` | 对象：`enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` / `colorized` / `color` / `iconized` / `iconPrefix` / `members[]` |
+| **JSON** | `toJson()` / `fromJson()` | 对象：`name` / `displayLabel` / `namespace` / `baseType` / `bitwise` / `colorized` / `color` / `iconized` / `iconPrefix` / `members[]` |
 
 **`color` 只有一个形态**：**`<role>` 或 `<role>-<shade>`**（`info` / `info-500`）—— 注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段（`info-500`）；**mmda 对 color 的解析就是 `(role, shade)` 这个标准模式**。省略 shade = `500`；`role` 取 7 值、`shade` 取 10 档。
 
@@ -233,10 +234,10 @@ value ; name ; text ; color ; icon
 
 ```json
 {
-  "enumClass": "BomStatus",
+  "name": "BomStatus",
   "displayLabel": "BOM状态",
   "namespace": null,
-  "dataType": "int",
+  "baseType": "int",
   "bitwise": false,
   "colorized": true,
   "color": "gray-500",
@@ -253,7 +254,8 @@ value ; name ; text ; color ; icon
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` | 既有 | 与旧实现同义 |
+| `name` / `baseType` / `bitwise` | ✔ 语言侧名 | `enum X : int` 的名字与基类型、是否位标志（旧列名 `enumClass` / `dataType`） |
+| `displayLabel` / `namespace` | 既有 | 显示标签（来自 `///`，见 [`records.md`](records.md) §1.1）/ 所属模块（如 `mes`） |
 | ★ `colorized` / `iconized` | bool | 开关（对应 `@Colorized` / `@Iconized`） |
 | ★ `color` | string? | 枚举级**默认色** `<role>-<shade>`（`@Colorized(role, shade?)`；无默认 = `null`） |
 | ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
