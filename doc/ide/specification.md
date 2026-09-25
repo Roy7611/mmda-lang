@@ -62,7 +62,7 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 | 模块分组 | 树形导航 | `Module(type=1)` |
 | 功能特征 | 功能列表，绑定实体 | `Module(type=2)` + `objRef` |
 | 用例（可选） | Use Case 图 | `UseCase`（Phase 2，见 [`../requirements.md`](../requirements.md) §4） |
-| 需求条目（可选） | 与用例/功能关联 | `Requirement`（Phase 2，形态待裁 → [`../requirements.md`](../requirements.md) §7-1） |
+| 需求条目（可选） | 与用例/功能关联 | `Requirement`（**✔ 2026-09-25 已裁进语言**——一等声明 + 进库 + IDE 表格化管理，形态见 [`../requirements.md`](../requirements.md) §2.2；后缀与编号待裁 → 同文 §7-7 / §7-8） |
 
 ### 4.3 数据架构（L2）
 
