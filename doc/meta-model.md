@@ -158,14 +158,14 @@ Field ──(呈现层)── UiField
 | `baseType` | `int` \| `BitSet` |
 | `bitwise` | 是否位标志 |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
-| `colorRole?` / `colorDepth?` | **默认色**（`@Colorized(role, depth)`，枚举级默认；深度 = Material 色板档位） |
+| `colorRole?` / `colorShade?` | **默认色**（`@Colorized(role, shade)`，枚举级默认；shade = Material 色板档位） |
 | `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |
 | `iconPrefix?` | **默认别名前缀**（`@Iconized("bom")` → `bom-design`）；`@Iconized`（无参）= 空（默认别名取**成员名 kebab**） |
-| `values` | `{ code, value, label, colorRole?, colorDepth?, icon? }[]`（`colorRole` / `colorDepth` = 成员 `@Color(role, depth?)`；`icon` = `@Icon("alias")`） |
+| `values` | `{ code, value, label, colorRole?, colorShade?, icon? }[]`（`colorRole` / `colorShade` = 成员 `@Color(role, shade?)`；`icon` = `@Icon("alias")`） |
 
 文本存储格式：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）。
 
-> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）→ 生成期**新增** `colorized` / `colorRole` / `colorDepth` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorDepth` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
+> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
 ---
 

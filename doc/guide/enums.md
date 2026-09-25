@@ -116,22 +116,22 @@ stm BomApproval on Bom.status {
 | 位置 | 写法 | 含义 |
 | --- | --- | --- |
 | 声明 | `@Colorized` | 只开颜色（成员各自写 `@Color`，不写就不上色） |
-| 声明 | `@Colorized(role, depth?)` | 开颜色 + **默认色**：成员没写 `@Color` 时**回落**到它 |
-| 成员 | `@Color(role, depth?)` | 覆盖默认色（`@Color(warning, 500)`） |
+| 声明 | `@Colorized(role, shade?)` | 开颜色 + **默认色**：成员没写 `@Color` 时**回落**到它 |
+| 成员 | `@Color(role, shade?)` | 覆盖默认色（`@Color(warning, 500)`） |
 
 **角色（封闭 7 值）**：`primary` / `secondary` / `info` / `success` / `warning` / `danger` / **`gray`**。
 
 - `gray` 是**默认支持**的中性色 —— 黑白灰都走它（`gray-50` 近白 → `gray-900` 近黑），不必在主题里另配。
 - 拼错 / 不认识的角色 = **解析期 error**（不是 warning，不会静默通过）。
 
-**深度（封闭 10 档）**：`50` / `100` / `200` / `300` / `400` / `500` / `600` / `700` / `800` / `900`。
+**shade（封闭 10 档）**：`50` / `100` / `200` / `300` / `400` / `500` / `600` / `700` / `800` / `900`。
 
-- 语义：`500` = **基准档**（省略深度的默认值）、`200` = 浅档、`700` = 深档。
-- **省略深度 = `500`**；写 `250` 这种非档位值 = **error**。
+- 语义：`500` = **基准档**（省略 shade 时的默认值）、`200` = 浅档、`700` = 深档。
+- **省略 shade = `500`**；写 `250` 这种非档位值 = **error**。
 
 **两条硬规矩**：
 
-1. **只给角色与深度，不给色值** —— 具体颜色来自**主题令牌**（Material Design + Theme Builder），深浅色与皮肤切换由主题层负责；模型层**不写 `#RRGGBB`**。
+1. **只给角色与 shade，不给色值** —— 具体颜色来自**主题令牌**（Material Design + Theme Builder），深浅色与皮肤切换由主题层负责；模型层**不写 `#RRGGBB`**。
 2. **业务里的「每行一个颜色」不是这件事** —— 如 `taskColor varchar(7)`、`bankColor` 是**数据**；`@Color` 是**呈现语义**。两者不互相替代。
 
 ---
@@ -182,17 +182,17 @@ stm BomApproval on Bom.status {
 - [ ] 每个成员的 `///` 都在**上一行**，格式 `label` 或 `label : description`
 - [ ] 成员名 UPPER_SNAKE；值域固定、没随手改老值
 - [ ] 用状态就用 `@State` + `.ms` 状态机，别把流程写进枚举名
-- [ ] 开颜色：角色在 7 值内、深度在 10 档内（或省略 = 500）
+- [ ] 开颜色：角色在 7 值内、shade 在 10 档内（或省略 = 500）
 - [ ] 开图标：默认别名形态选一种（无前缀 / 带前缀），**写了 `@Icon` 就当完整别名**
 - [ ] 枚举的显示标签 `///` 写了（三端 UI 与 md 文档都靠它）
-- [ ] `mmda check` 无 error（角色拼错、深度越档、一对象多 `partitioned` 之类的硬门禁都会拦）
+- [ ] `mmda check` 无 error（角色拼错、shade 越档、一对象多 `partitioned` 之类的硬门禁都会拦）
 
 **`mmda check` 的级别**（枚举相关）：
 
 | 情况 | 级别 |
 | --- | --- |
 | 颜色角色拼错 / 不认识 | **error**（解析期） |
-| 深度不在 10 档内 | **error** |
+| shade 不在 10 档内 | **error** |
 | 没开开关却写 `@Color` / `@Icon` | **warning** |
 | 开了开关但该成员没值、也没有默认值 | 不告警（**该项不渲染**） |
 | 图标别名 UI 层没映射 | 可选 warning（语言层不管） |
@@ -206,9 +206,9 @@ stm BomApproval on Bom.status {
 | `DRAFTED = 1,  /// 已起草`（行尾注释） | 注释移到**成员上一行**（旧语料待迁移，见 §11） |
 | 写 `@Iconized(default)` | 那个形态已作废 —— **不写括号**的 `@Iconized` 就是「默认取成员名」 |
 | 以为 `@Icon("design")` 会拼成 `bom-design` | `@Icon` 写的是**完整别名**；要前缀效果就**别写** `@Icon` |
-| 只写 `@Colorized`（无默认色）却指望成员都有色 | 要么给默认色 `@Colorized(role, depth)`，要么每个成员写 `@Color` |
-| 把业务色写进注解（`@Color(primary, "#FF0000")`） | 注解只接受**角色 + 深度**；具体色值归主题 |
-| 用 `@ColorRole(role)`（旧写法） | 改成 `@Color(role, depth?)` |
+| 只写 `@Colorized`（无默认色）却指望成员都有色 | 要么给默认色 `@Colorized(role, shade)`，要么每个成员写 `@Color` |
+| 把业务色写进注解（`@Color(primary, "#FF0000")`） | 注解只接受**角色 + shade**；具体色值归主题 |
+| 用 `@ColorRole(role)`（旧写法） | 改成 `@Color(role, shade?)` |
 | 想让颜色/图标进多语言 | 颜色 / 图标**不翻译**；要翻译的是 `///` 的标签与描述 |
 | 给 `gray` 之外再自造角色（如 `brand`） | 角色集合**封闭 7 值**；要特殊色走主题皮肤变量 |
 
@@ -220,9 +220,9 @@ stm BomApproval on Bom.status {
 | --- | --- | --- |
 | 行尾成员注释 `NEW = 0,  /// 新` | 注释移到成员上一行 | 语料里大量存在（示例集 7 个 `.me` 就有 33 处）；可走 `mmda migrate` |
 | `@PartitionID` | `@Partitioned` | 与枚举无关但同批迁移（见 `errata` §五-56） |
-| `@ColorRole(role)` | `@Color(role, depth?)` | 一概念一主人 |
+| `@ColorRole(role)` | `@Color(role, shade?)` | 一概念一主人 |
 | `@Iconized(default)` | `@Iconized` | 不写括号 |
-| 旧实现无颜色 / 图标列 | 生成期新增 `MetaEnum.colorized` / `colorRole` / `colorDepth` / `iconized` / `iconPrefix` 与成员 `colorRole` / `colorDepth` / `icon` | `enumString`（`0;NEW;新`）保持兼容，不塞颜色图标 |
+| 旧实现无颜色 / 图标列 | 生成期新增 `MetaEnum.colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员 `colorRole` / `colorShade` / `icon` | `enumString`（`0;NEW;新`）保持兼容，不塞颜色图标 |
 
 ---
 
@@ -231,11 +231,11 @@ stm BomApproval on Bom.status {
 | 层 | 做什么 |
 | --- | --- |
 | 语言文件（真源） | `data/enums/**/*.me` |
-| 元数据（产物） | `MetaEnum`：`colorized` / `colorRole` / `colorDepth` / `iconized` / `iconPrefix`；`MetaEnumMember`：`colorRole` / `colorDepth` / `icon` |
-| 前端（TS，**唯一渲染方**） | 消费 `MetaEnum` 渲染：角色 + 深度 → 主题令牌；别名 → 图标；缺注解 → 文本 |
+| 元数据（产物） | `MetaEnum`：`colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix`；`MetaEnumMember`：`colorRole` / `colorShade` / `icon` |
+| 前端（TS，**唯一渲染方**） | 消费 `MetaEnum` 渲染：角色 + shade → 主题令牌；别名 → 图标；缺注解 → 文本 |
 | C# / Flutter | 同一份元数据，各自映射图标库（FontAwesome / Material Icons） |
 | i18n | `///` 标签与描述可翻译；颜色 / 图标不翻译 |
-| 文档出口 | `mmda doc` 生成的 Markdown 里，枚举按成员表输出（标签 + 角色 + 深度 + 别名） |
+| 文档出口 | `mmda doc` 生成的 Markdown 里，枚举按成员表输出（标签 + 角色 + shade + 别名） |
 
 ---
 

@@ -331,8 +331,8 @@ enum PartnerRole : BitSet {
 
 | 注解 | 形态 | 含义 |
 | --- | --- | --- |
-| `@Colorized` | 无参 | **开颜色**（成员各自写 `@Color(role, depth?)`） |
-| `@Colorized(role, depth?)` | 带默认色 | **开颜色 + 默认色**：成员没写 `@Color` 时用这个（`@Colorized(primary, 200)` = `primary` 色板的 **200 深度**） |
+| `@Colorized` | 无参 | **开颜色**（成员各自写 `@Color(role, shade?)`） |
+| `@Colorized(role, shade?)` | 带默认色 | **开颜色 + 默认色**：成员没写 `@Color` 时用这个（`@Colorized(primary, 200)` = `primary` 色板的 **200 shade**） |
 | `@Iconized` | **无参、不写括号** | **开图标 + 默认别名取成员名**（`DESIGN` → `design`，kebab-case；成员没写 `@Icon` 时用） |
 | `@Iconized("<prefix>")` | 字符串 | **开图标 + 默认别名 = `<prefix>-<成员名 kebab>`**（如 `@Iconized("bom")` + `DESIGN` → `bom-design`） |
 
@@ -340,7 +340,7 @@ enum PartnerRole : BitSet {
 
 | 注解 | 取值 | 含义 |
 | --- | --- | --- |
-| `@Color(role, depth?)` | `role` = `primary` \| `secondary` \| `info` \| `success` \| `warning` \| `danger` \| **`gray`**；`depth` = **色板深度**（**封闭 10 档**：`50` / `100` / `200` / `300` / `400` / `500` / `600` / `700` / `800` / `900`） | 该成员的**主题色**（角色 + 深度）；**省略深度 = `500`**（基准档） |
+| `@Color(role, shade?)` | `role` = `primary` \| `secondary` \| `info` \| `success` \| `warning` \| `danger` \| **`gray`**；`shade` = **色板 shade（色阶）**（**封闭 10 档**：`50` / `100` / `200` / `300` / `400` / `500` / `600` / `700` / `800` / `900`） | 该成员的**主题色**（角色 + shade）；**省略 shade = `500`**（基准档） |
 | `@Icon("alias")` | 图标**别名**字符串，如 `"cancel"` —— **完整别名** | 该成员要显示的图标；**显式写的就是最终别名，不再叠加 `@Iconized` 的前缀**；别名**不绑定具体图标库**，由各端主题映射 |
 
 - **`gray` 是默认支持的角色**（第 7 个）—— 用于**黑白灰**（从 `gray-50` 到 `gray-900` 覆盖近白到近黑），不需要在主题里另配。
@@ -375,8 +375,8 @@ enum BomStatus : int {
 
 - **开关在声明、取值在成员**：`@Colorized` / `@Iconized` 决定「这个枚举的成员**参不参与**颜色 / 图标渲染」，`@ColorRole` / `@Icon` 给成员**具体角色 / 别名**。
 - **没开开关**：成员上的取值**不生效**（写了 → `mmda check` warning，不是 error）。
-- **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, depth)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
-- **颜色是角色 + 深度，不是色值**：`@Color(role, depth)` 只声明**语义角色**与**色板深度**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
+- **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, shade)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
+- **颜色是角色 + shade，不是色值**：`@Color(role, shade)` 只声明**语义角色**与**色板 shade（色阶）**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
 - **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`displayLabel` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
 - **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
@@ -394,7 +394,7 @@ enum BomStatus : int {
 
 > 一句话记：**颜色角色封闭（语言层校验）、图标别名开放（UI 层映射）** —— 前者要拼错即报错，后者允许开发人员自己造词、映射不上顶多不显示。
 
-**✔ 5 条细节已裁（2026-09-25）**：① **`@Icon(x)` 写完整别名**（显式写的即最终别名，**前缀只作用于默认** —— 作者：「写完整别名，这样更灵活」）；② **默认别名 = 成员名转 kebab-case**（`DESIGN` → `design`，`RAW_MATERIAL` → `raw-material`）；③ **`@Colorized` 只负责给默认色板值**，成员 `@Color` 没写时**回落**到它（`@ColorRole` 归入 `@Color`）；④ **色板深度封闭 10 档 `50`–`900`，省略深度 = `500`**；⑤ **`@Iconized` 默认无前缀、不写括号**（`@Iconized` = 取成员名），与 `@Iconized("prefix")` 两种形态并存（**`@Iconized(default)` 写法作废**）。
+**✔ 5 条细节已裁（2026-09-25）**：① **`@Icon(x)` 写完整别名**（显式写的即最终别名，**前缀只作用于默认** —— 作者：「写完整别名，这样更灵活」）；② **默认别名 = 成员名转 kebab-case**（`DESIGN` → `design`，`RAW_MATERIAL` → `raw-material`）；③ **`@Colorized` 只负责给默认色板值**，成员 `@Color` 没写时**回落**到它（`@ColorRole` 归入 `@Color`）；④ **色板 shade（色阶）封闭 10 档 `50`–`900`，省略 shade = `500`**；⑤ **`@Iconized` 默认无前缀、不写括号**（`@Iconized` = 取成员名），与 `@Iconized("prefix")` 两种形态并存（**`@Iconized(default)` 写法作废**）。
 
 ---
 

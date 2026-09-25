@@ -68,7 +68,7 @@ materialId uint64 identity generated readonly hidden partitioned,
 
 ```sql
 /// BOM状态
-@Colorized(gray, 500)      // 开颜色 + 默认色 = gray 色板 500 深度
+@Colorized(gray, 500)      // 开颜色 + 默认色 = gray 色板 500 shade
 @Iconized("bom")           // 开图标 + 默认别名前缀 = bom
 enum BomStatus : int {
     /// 新
@@ -85,7 +85,7 @@ enum BomStatus : int {
 
 **作者手写样例**见 [`enums/BomUsage.me`](enums/BomUsage.me)（2026-09-25 作者改）：`@Iconized("bom")` 开图标并给前缀 —— **不写** `@Icon` 时默认得到 `bom-design`；**写了** `@Icon("design")` 就是 `design`（`@Icon` 写**完整别名**、不叠前缀）。
 
-要点：**开关 + 默认值在枚举声明**（`@Colorized(role, depth?)` / `@Iconized` 或 `@Iconized("prefix")`）、**取值在成员**（`@Color(role, depth?)` / `@Icon("alias")`）；颜色是**语义角色 + 色板深度**（封闭 10 档 `50`–`900`，省略 = `500`；色值来自主题，`gray` 默认支持黑白灰）、图标是**逻辑别名**（完整别名、三端各自映射）；**成员缺值先回落默认值**，没默认才不渲染。
+要点：**开关 + 默认值在枚举声明**（`@Colorized(role, shade?)` / `@Iconized` 或 `@Iconized("prefix")`）、**取值在成员**（`@Color(role, shade?)` / `@Icon("alias")`）；颜色是**语义角色 + 色板 shade（色阶）**（封闭 10 档 `50`–`900`，省略 = `500`；色值来自主题，`gray` 默认支持黑白灰）、图标是**逻辑别名**（完整别名、三端各自映射）；**成员缺值先回落默认值**，没默认才不渲染。
 
 ## 4. 写示例时顺手查出来的四件事
 
