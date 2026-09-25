@@ -323,56 +323,57 @@ enum PartnerRole : BitSet {
 
 ### 6.1 呈现注解：颜色与图标（✔ 2026-09-25 作者）
 
-**枚举声明上**（开关）：
+**枚举声明上**（开关 + 默认值）：
 
-| 注解 | 含义 |
-| --- | --- |
-| `@Colorized` | **开颜色**：本枚举的成员参与配色渲染 |
-| `@Iconized` | **开图标**：本枚举的成员参与图标渲染 |
+| 注解 | 形态 | 含义 |
+| --- | --- | --- |
+| `@Colorized` | 无参 | **开颜色**（成员各自写 `@Color(role, depth?)`） |
+| `@Colorized(role, depth?)` | 带默认色 | **开颜色 + 默认色**：成员没写 `@Color` 时用这个（`@Colorized(primary, 200)` = `primary` 色板的 **200 深度**） |
+| `@Iconized` | 无参 | **开图标**（成员各自写 `@Icon("alias")`） |
+| `@Iconized(default)` | 关键字 | **开图标 + 默认别名取成员名**（成员不写 `@Icon` 时） |
+| `@Iconized("<prefix>")` | 字符串 | **开图标 + 默认别名 = `<prefix>-<成员名小写>`**（如 `@Iconized("bom")` + `DESIGN` → `bom-design`） |
 
-**成员上**（取值）：
+**成员上**（取值 / 覆盖）：
 
 | 注解 | 取值 | 含义 |
 | --- | --- | --- |
-| `@ColorRole(role)` | `primary` \| `secondary` \| `info` \| `success` \| `warning` \| `danger` | 该成员的**主题色角色**（前端按主题令牌渲染） |
+| `@Color(role, depth?)` | `role` = `primary` \| `secondary` \| `info` \| `success` \| `warning` \| `danger` \| **`gray`**；`depth` = **色板深度**（`50`–`900`，Material 色板用 `200` / `500` 这类档位） | 该成员的**主题色**（角色 + 深度）；**只写角色 = 用该角色的默认深度** |
 | `@Icon("alias")` | 图标**别名**字符串，如 `"cancel"` | 该成员要显示的图标；别名**不绑定具体图标库**，由各端主题映射 |
+
+- **`gray` 是默认支持的角色**（第 7 个）—— 用于**黑白灰**（从 `gray-50` 到 `gray-900` 覆盖近白到近黑），不需要在主题里另配。
 
 ```sql
 /// BOM状态
-@Colorized
-@Iconized
+@Colorized(gray, 500)
+@Iconized("bom")
 enum BomStatus : int {
     /// 新
-    @ColorRole(primary)
-    @Icon("new")
+    @Color(info, 500)
     NEW = 0,
     /// 已起草 : 保存但未提交审核
-    @ColorRole(secondary)
-    @Icon("draft")
+    @Color(info, 200)
     DRAFTED = 1,
     /// 已审核
-    @ColorRole(info)
-    @Icon("verified")
+    @Color(success, 500)
     CERTIFIED = 2,
     /// 已批准
-    @ColorRole(success)
-    @Icon("approved")
+    @Color(success, 700)
     APPROVED = 4,
     /// 变更中
-    @ColorRole(warning)
-    @Icon("revising")
+    @Color(warning, 500)
     REVISING = 5,
     /// 已弃用
-    @ColorRole(danger)
-    @Icon("cancel")
+    /// （颜色取枚举默认色 `gray-500`，图标取默认别名 `bom-abandoned`）
     ABANDONED = -1,
 }
 ```
 
+**作者手写样例**（[`examples/enums/BomUsage.me`](examples/enums/BomUsage.me)，2026-09-25）：`@Iconized("bom")` 开图标并给前缀，`DESIGN` 上写的 `@Icon("design")` **可以不写** —— 默认就会得到 `bom-design`。
+
 - **开关在声明、取值在成员**：`@Colorized` / `@Iconized` 决定「这个枚举的成员**参不参与**颜色 / 图标渲染」，`@ColorRole` / `@Icon` 给成员**具体角色 / 别名**。
 - **没开开关**：成员上的取值**不生效**（写了 → `mmda check` warning，不是 error）。
-- **开了开关但成员缺值**：该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
-- **颜色是角色不是色值**：`@ColorRole` 只声明**语义角色**，色值来自**主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
+- **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, depth)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
+- **颜色是角色 + 深度，不是色值**：`@Color(role, depth)` 只声明**语义角色**与**色板深度**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
 - **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`displayLabel` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
 - **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
@@ -381,7 +382,7 @@ enum BomStatus : int {
 
 | # | 细节 | 裁决 |
 | --- | --- | --- |
-| 1 | 颜色角色集合 | **封闭 6 值**（`primary` / `secondary` / `info` / `success` / `warning` / `danger`），**不补** `light` / `dark`（明暗是主题切换的事，不是两个语义角色）；拼错 / 未知名 → **解析期 error** |
+| 1 | 颜色角色集合 | **封闭**（`primary` / `secondary` / `info` / `success` / `warning` / `danger`；**2026-09-25 同日修正：再加 `gray` = 共 7 值，见 `errata` §五-64**），**不补** `light` / `dark`（明暗是主题切换的事，不是两个语义角色）；拼错 / 未知名 → **解析期 error** |
 | 2 | 主题能否自定义角色 | **不能**：语言层写死 6 值，扩展只留在**皮肤变量**里（不新增角色名） |
 | 3 | **图标别名清单** | **开放** —— 别名由**开发人员定义语义词**（不在语言层内置清单、**不进关键字表**，语言层只校验它是字符串字面量）；**映射在 UI 层**（主题 / 皮肤）；**没映射上 → 充其量不显示**（不报 error）；**能警告更好**（UI 层 / IDE 可给 warning / lint，**可选的、不阻塞生成**） |
 | 4 | `@Icon` 是否只收别名 | **只收别名**（老实现模块图标的 `fas fa-sitemap fa-fw` 属旧实现，后续迁成别名） |
@@ -389,6 +390,12 @@ enum BomStatus : int {
 | 6 | 缺开关却写取值 | **warning**（`mmda check` 出警告，不阻塞） |
 
 > 一句话记：**颜色角色封闭（语言层校验）、图标别名开放（UI 层映射）** —— 前者要拼错即报错，后者允许开发人员自己造词、映射不上顶多不显示。
+
+**⏳ 待你点头（5 条）**：① **`@Iconized("bom")` 的 `"bom"` 是前缀吗**（`DESIGN` → `bom-design`；显式 `@Icon("design")` 写的是**主体**、前缀由声明加）—— 还是说 `@Icon("x")` 写的是**完整别名**、前缀只用于默认？（建议：**前缀 + 主体**，与你 BomUsage.me 的 `bom-design` 一致）
+② **成员名 → 默认别名**的大小写与分隔（`DESIGN` → `design`；`RAW_MATERIAL` → `raw-material` 还是 `raw_material`）？（建议：**全小写 + 下划线转连字符**，与 FontAwesome / Syncfusion 的 kebab 命名一致）
+③ **`@ColorRole` 是否并入 `@Color(role)`**（只留一个名字，一概念一主人）？（建议**并入**，`@ColorRole` 记为旧写法）
+④ **深度值集合是否封闭**（Material 十档 `50`–`900`）？**省略深度 = 500（基准档）**？
+⑤ **`@Iconized(default)` 与 `@Iconized("prefix")` 是否都要**（`default` = 无前缀取成员名）？（建议**都要**，`default` 就是「不加前缀」的意思）
 
 ---
 
