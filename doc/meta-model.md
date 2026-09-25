@@ -160,7 +160,7 @@ Field ──(呈现层)── UiField
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
 | `colorRole?` / `colorDepth?` | **默认色**（`@Colorized(role, depth)`，枚举级默认；深度 = Material 色板档位） |
 | `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |
-| `iconPrefix?` | **默认别名前缀**（`@Iconized("bom")` → `bom-design`）；`@Iconized(default)` = 空（取成员名） |
+| `iconPrefix?` | **默认别名前缀**（`@Iconized("bom")` → `bom-design`）；`@Iconized`（无参）= 空（默认别名取**成员名 kebab**） |
 | `values` | `{ code, value, label, colorRole?, colorDepth?, icon? }[]`（`colorRole` / `colorDepth` = 成员 `@Color(role, depth?)`；`icon` = `@Icon("alias")`） |
 
 文本存储格式：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）。
