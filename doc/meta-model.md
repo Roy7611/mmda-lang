@@ -177,10 +177,10 @@ value ; name ; text    ← 成员之间用 | 分隔
 0;NEW;新|1;PAYED;已付款|4;CANCELED;已取消
 ```
 
-**扩展格式**（**在末尾追加 3 段，前 3 段含义与顺序不变**）：
+**扩展格式**（**在末尾追加 2 段，前 3 段含义与顺序不变**）：
 
 ```
-value ; name ; text ; colorRole ; colorShade ; icon
+value ; name ; text ; color ; icon
 ```
 
 | 段 | 名 | 取值 | 可否省 |
@@ -188,32 +188,35 @@ value ; name ; text ; colorRole ; colorShade ; icon
 | 1 | `value` | 整数（位枚举为位值） | 不可省 |
 | 2 | `name` | 成员名（`UPPER_SNAKE`） | 不可省 |
 | 3 | `text` | 显示标签（对应 `///`） | 不可省（沿用老规则：不足 3 段 = 解析错误） |
-| 4 | `colorRole` | `primary` / `secondary` / `info` / `success` / `warning` / `danger` / `gray` | 可省（= 未声明） |
-| 5 | `colorShade` | 色板 shade 档位（`50`–`900`） | 可省（= 省略 shade，按 `500`）；**写了 shade 却没写 role = error** |
-| 6 | `icon` | 图标**别名**（完整别名） | 可省（= 未声明） |
+| 4 | `color` | **`<role>` 或 `<role>-<shade>`**（如 `info` / `info-500`）：`role` 取 7 值之一，`shade` 取 10 档之一，`-` 连接 | 可省（= 未声明）；**只写 `-500`（无 role）= error** |
+| 5 | `icon` | 图标**别名**（完整别名） | 可省（= 未声明） |
 
 **写法示例**：
 
 ```
-0;NEW;新;info;500;bom-new        ← 有色有图标
-1;DRAFTED;已起草;info;200        ← 有色、无图标（尾随空段可省）
-2;CERTIFIED;已审核;;;bom-verified ← 只有图标（中间空段占位）
+0;NEW;新;info-500;bom-new        ← 有色有图标
+1;DRAFTED;已起草;info-200        ← 有色（200）、无图标（尾随空段可省）
+2;CERTIFIED;已审核;;bom-verified ← 只有图标（空段占位）
+3;APPROVED;已批准;success        ← 有色、省略 shade（按 `500`）
 5;ABANDONED;已弃用               ← 都没有 → 与老格式完全一致
 ```
 
 **规则**：
 
 - **空段允许**（`;;` = 未声明）；**尾随空段可省**；段内**禁止出现 `;` 与 `|`**（`mmda check` error —— 与老格式同一限制，不做转义）。
-- **未声明 = 回落**：成员段为空时按枚举级默认解析（`colorRole` / `colorShade` → `@Colorized(role, shade?)`；`icon` → `@Iconized` / `@Iconized("prefix")`）。
+- **未声明 = 回落**：成员段为空时按枚举级默认解析（`color` → `@Colorized(role, shade?)`；`icon` → `@Iconized` / `@Iconized("prefix")`）。
+- **颜色段写法**：`<role>`（省略 shade = `500`）或 `<role>-<shade>`（如 `info-500`）；`role` 拼错 / 不在 7 值、`shade` 不在 10 档、只有 `-500` 没 role → **`mmda check` error**。
 - **枚举级信息不进串**：`colorized` / `iconized` / 默认色 / `iconPrefix` 是 `MetaEnum` 的属性（见下方 §6.2），串只描述**成员**。
 - **老格式（3 段）永远合法** —— 不用外观注解的枚举，串与旧实现逐字一致。
 
-> ⚠️ **兼容性硬事实（必须知道）**：旧实现按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `D:\2026\java\mmda-core\mmda-core-metadata\…\MetaEnumMember.java:69`）——**第 3 段会吞掉后面所有内容**，所以老运行时读 6 段串会把 `text` 读成 `新;info;500;bom-new`（**静默错标，不报错**）。
+> ⚠️ **兼容性硬事实（必须知道）**：旧实现按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `D:\2026\java\mmda-core\mmda-core-metadata\…\MetaEnumMember.java:69`）——**第 3 段会吞掉后面所有内容**，所以老运行时读扩展串会把 `text` 读成 `新;info-500;bom-new`（**静默错标，不报错**）。
 > 因此：① 扩展段**只在枚举用了外观注解时才产出**（老项目零影响）；② **同一份元数据必须与同一代内核/运行时配套**（按 4A：DB 元数据是**产物**，随内核重新生成）；③ 需要写回老格式时走 `mmda migrate --drop-enum-style`（或打包时 `mmda pack --compat 1.x`，丢弃外观、只留 3 段）。
 
 ### 6.2 元数据 JSON 形态（✔ 2026-09-25 设计）
 
 `MetaEnum` 对外的 JSON（**字段名沿用既有列名、camelCase**；★ = 本轮新增）：
+
+上例的 `enumString` 是**原始声明**：`CERTIFIED` 只声明了角色（`success`，省略 shade → 已解析为 `500`）、`ABANDONED` 什么都没声明（全靠回落），所以串里分别是 `success` 和空 —— 而 `members[]` 里两者都是回落后的**最终值**。
 
 ```json
 {
@@ -222,7 +225,7 @@ value ; name ; text ; colorRole ; colorShade ; icon
   "namespace": null,
   "dataType": "int",
   "bitwise": false,
-  "enumString": "0;NEW;新;info;500;bom-new|1;DRAFTED;已起草;info;200|2;CERTIFIED;已审核;success;500|5;ABANDONED;已弃用",
+  "enumString": "0;NEW;新;info-500;bom-new|1;DRAFTED;已起草;info-200|2;CERTIFIED;已审核;success|5;ABANDONED;已弃用",
   "colorized": true,
   "colorRole": "gray",
   "colorShade": 500,
@@ -246,10 +249,11 @@ value ; name ; text ; colorRole ; colorShade ; icon
 | ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
 | ★ `members[]` | array | 每项 `{ value, name, text, colorRole, colorShade, icon }` —— **已解析回落后的最终值**；未开开关 / 无默认且未声明时为 `null` |
 
-**两条口径**：
+**三条口径**：
 
-1. **`enumString` 存原始、`members[]` 存最终** —— 一处判读「显式还是默认」（IDE 属性面板要显示留空状态），一处直接拿来渲染（三端不必重算回落）。
-2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
+1. **串里颜色是一段、JSON 里拆两个字段** —— 串写 `info-500`（紧凑、可读）；JSON 给 `"colorRole": "info", "colorShade": 500`（前端按 role 查主题、按 shade 取令牌，不必再解析字符串）。
+2. **`enumString` 存原始、`members[]` 存最终** —— 一处判读「显式还是默认」（IDE 属性面板要显示留空状态），一处直接拿来渲染（三端不必重算回落）。
+3. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
 
 **校验（`mmda check`）**：段内 `;` `|` = error；`colorShade` 无 `colorRole` = error；`colorRole` / `colorShade` 越界（不在 7 值 / 10 档内）= error。
 

@@ -251,28 +251,28 @@ stm BomApproval on Bom.status {
 0;NEW;新|1;PAYED;已付款
 ```
 
-**扩展格式**（**末尾追加 3 段，前 3 段含义与顺序不变**）：
+**扩展格式**（**末尾追加 2 段，前 3 段含义与顺序不变**）：
 
 | 段 | 名 | 说明 |
 | --- | --- | --- |
 | 1 | `value` | 整数（位枚举为位值） |
 | 2 | `name` | 成员名 |
 | 3 | `text` | 显示标签（`///`） |
-| 4 | `colorRole` | 7 角色之一 |
-| 5 | `colorShade` | 色板 shade（`50`–`900`） |
-| 6 | `icon` | 图标别名（**完整别名**） |
+| 4 | `color` | **`<role>` 或 `<role>-<shade>`**（`info` / `info-500`） |
+| 5 | `icon` | 图标别名（**完整别名**） |
 
 ```text
-0;NEW;新;info;500;bom-new          ← 有色有图标
-1;DRAFTED;已起草;info;200          ← 有色、无图标（尾随空段可省）
-2;CERTIFIED;已审核;;;bom-verified   ← 只有图标（空段占位）
+0;NEW;新;info-500;bom-new          ← 有色有图标
+1;DRAFTED;已起草;info-200          ← 有色（200）、无图标（尾随空段可省）
+2;CERTIFIED;已审核;;bom-verified   ← 只有图标（空段占位）
 5;ABANDONED;已弃用                 ← 都没有 → 与老格式逐字一致
 ```
 
+- **颜色段** `info-500` = 角色 + shade（`-` 连接）；只写角色 `info` = 省略 shade（按 `500`）；只写 `-500`、角色拼错、shade 不在 10 档 → error。
 - **空段 = 未声明**，按枚举级默认回落；**段内禁止 `;` 与 `|`**（`mmda check` error）。
 - **不用外观注解的枚举，串一个字节都不变** —— 老项目零影响。
 
-> ⚠️ **必须知道**：老运行时按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `MetaEnumMember.java:69`），**第 3 段会吞掉后面所有内容** —— 老运行时读 6 段串会把标签读成 `新;info;500;bom-new`（静默错标）。
+> ⚠️ **必须知道**：老运行时按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `MetaEnumMember.java:69`），**第 3 段会吞掉后面所有内容** —— 老运行时读扩展串会把标签读成 `新;info-500;bom-new`（静默错标）。
 > 所以：扩展段**只在用了外观注解时**产出；**同一份元数据必须与同一代内核/运行时配套**（元数据是产物，随内核重生成）；要回退老格式用 `mmda migrate --drop-enum-style`。
 
 ### 13.2 元数据 JSON
@@ -283,7 +283,7 @@ stm BomApproval on Bom.status {
   "displayLabel": "BOM状态",
   "dataType": "int",
   "bitwise": false,
-  "enumString": "0;NEW;新;info;500;bom-new|1;DRAFTED;已起草;info;200|2;CERTIFIED;已审核;success;500|5;ABANDONED;已弃用",
+  "enumString": "0;NEW;新;info-500;bom-new|1;DRAFTED;已起草;info-200|2;CERTIFIED;已审核;success|5;ABANDONED;已弃用",
   "colorized": true,
   "colorRole": "gray",
   "colorShade": 500,

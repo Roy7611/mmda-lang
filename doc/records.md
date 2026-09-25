@@ -380,7 +380,7 @@ enum BomStatus : int {
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
 - **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`displayLabel` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
 - **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
-- **字符串表示（`enumString`）与元数据 JSON** 见 [`meta-model.md`](meta-model.md) §6.1 / §6.2（老 3 段 → 扩展 6 段 `value;name;text;colorRole;colorShade;icon`；`enumString` 存原始、`members[]` 存最终）。
+- **字符串表示（`enumString`）与元数据 JSON** 见 [`meta-model.md`](meta-model.md) §6.1 / §6.2（老 3 段 → 扩展 5 段 `value;name;text;color;icon`，颜色段写 `info-500`；`enumString` 存原始、`members[]` 存最终）。
 
 **✔ 细节 6 条已裁（2026-09-25，作者「其他都按你建议，除了图标别名是开放的」）**：
 
