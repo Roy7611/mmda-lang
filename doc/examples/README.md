@@ -62,6 +62,31 @@ materialId uint64 identity generated readonly hidden partitioned,
 
 `BIGID` = `uint64 identity partitioned` 也是同一件事的展开式（见 [`../datatypes.md`](../datatypes.md) §5）。
 
+### 3.1 演示：枚举的颜色与图标（规范新增，语料里还没有）
+
+[`../records.md`](../records.md) §6.1 裁定的外观注解（2026-09-25），**语料 `.me` 文件里目前一处都没有**，这里只做演示：
+
+```sql
+/// BOM状态
+@Colorized
+@Iconized
+enum BomStatus : int {
+    /// 新
+    @ColorRole(primary)
+    @Icon("new")
+    NEW = 0,
+    /// 已起草 : 保存但未提交审核
+    @ColorRole(secondary)
+    DRAFTED = 1,
+    /// 已弃用
+    @ColorRole(danger)
+    @Icon("cancel")
+    ABANDONED = -1,
+}
+```
+
+要点：**开关在枚举声明**（`@Colorized` / `@Iconized`）、**取值在成员**（`@ColorRole` / `@Icon`）；颜色是**语义角色**（色值来自主题）、图标是**逻辑别名**（三端各自映射）；`DRAFTED` 只上色不上图标 = 合法（**缺值 = 该项不渲染**）。
+
 ## 4. 写示例时顺手查出来的四件事
 
 1. **`Material` 显式写了段 `[32768,0x7fffff]`**（与 `Employee` 同值；其余 **169** 张表用默认 `[10000,0x000F_FFFF]`）—— ⚠️ **这本身不构成冲突**：realId 是**每张表自己的 identity 序**（`identity generated`），**物料 1 与职员 1 各归各、跨表重复完全正常**；段（`minId` / `maxId`）只在**要 UNION 成一个视图的那组表之间**才有语义，硬门禁也只查**同组**（见 [`../records.md`](../records.md) §2.3 / §7、`errata` §五-52）。

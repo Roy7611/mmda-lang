@@ -157,9 +157,13 @@ Field ──(呈现层)── UiField
 | `name` | 如 `OrderStatus` |
 | `baseType` | `int` \| `BitSet` |
 | `bitwise` | 是否位标志 |
-| `values` | `{ code, value, label }[]` |
+| `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
+| `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |
+| `values` | `{ code, value, label, colorRole?, icon? }[]`（`colorRole` = `@ColorRole(role)`；`icon` = `@Icon("alias")`） |
 
 文本存储格式：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）。
+
+> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）→ 生成期**新增** `colorized` / `iconized` / `colorRole` / `icon` 四列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
 ---
 

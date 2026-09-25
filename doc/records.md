@@ -321,6 +321,64 @@ enum PartnerRole : BitSet {
 
 > ⚠️ **待裁决**：`b0000` 位字面量与 BitSet 底层宽度（定宽？加成员是否变更存储宽度），见 `errata.md` 二-5。
 
+### 6.1 呈现注解：颜色与图标（✔ 2026-09-25 作者）
+
+**枚举声明上**（开关）：
+
+| 注解 | 含义 |
+| --- | --- |
+| `@Colorized` | **开颜色**：本枚举的成员参与配色渲染 |
+| `@Iconized` | **开图标**：本枚举的成员参与图标渲染 |
+
+**成员上**（取值）：
+
+| 注解 | 取值 | 含义 |
+| --- | --- | --- |
+| `@ColorRole(role)` | `primary` \| `secondary` \| `info` \| `success` \| `warning` \| `danger` | 该成员的**主题色角色**（前端按主题令牌渲染） |
+| `@Icon("alias")` | 图标**别名**字符串，如 `"cancel"` | 该成员要显示的图标；别名**不绑定具体图标库**，由各端主题映射 |
+
+```sql
+/// BOM状态
+@Colorized
+@Iconized
+enum BomStatus : int {
+    /// 新
+    @ColorRole(primary)
+    @Icon("new")
+    NEW = 0,
+    /// 已起草 : 保存但未提交审核
+    @ColorRole(secondary)
+    @Icon("draft")
+    DRAFTED = 1,
+    /// 已审核
+    @ColorRole(info)
+    @Icon("verified")
+    CERTIFIED = 2,
+    /// 已批准
+    @ColorRole(success)
+    @Icon("approved")
+    APPROVED = 4,
+    /// 变更中
+    @ColorRole(warning)
+    @Icon("revising")
+    REVISING = 5,
+    /// 已弃用
+    @ColorRole(danger)
+    @Icon("cancel")
+    ABANDONED = -1,
+}
+```
+
+- **开关在声明、取值在成员**：`@Colorized` / `@Iconized` 决定「这个枚举的成员**参不参与**颜色 / 图标渲染」，`@ColorRole` / `@Icon` 给成员**具体角色 / 别名**。
+- **没开开关**：成员上的取值**不生效**（写了 → `mmda check` warning，不是 error）。
+- **开了开关但成员缺值**：该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
+- **颜色是角色不是色值**：`@ColorRole` 只声明**语义角色**，色值来自**主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
+- **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
+- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`displayLabel` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
+- **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
+
+**⏳ 细节待裁（6 条）**：① 颜色角色是否**封闭 6 值**（是否补 `light` / `dark`？）；② 主题能否**自定义角色**（还是语言层写死 6 值）；③ **图标别名清单**归谁（主题包清单 + `mmda check` 校验存在性？还是语言内置别名表）？未知名是否 = 解析期 error；④ `@Icon` 是否**只收别名**（老实现模块图标写的是 `fas fa-sitemap fa-fw`，要不要统一到别名）；⑤ 字段 / 视图能否**覆盖**成员颜色（同一枚举在不同视图换色）；⑥ 缺开关却写了取值 → warning 还是 error。
+
 ---
 
 ## 7. View
