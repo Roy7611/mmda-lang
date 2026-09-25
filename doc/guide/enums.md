@@ -239,7 +239,71 @@ stm BomApproval on Bom.status {
 
 ---
 
-## 13. 实例索引
+## 13. 字符串表示与元数据 JSON
+
+> 这两样都是**产物**（语言文件才是真源）：`enumString` 是元数据里的成员串，JSON 是元数据对外的载荷。规范条文见 [`../meta-model.md`](../meta-model.md) §6.1 / §6.2。
+
+### 13.1 `enumString`：老 3 段 → 扩展 6 段
+
+**老格式**（旧实现，只到这里）：
+
+```
+0;NEW;新|1;PAYED;已付款
+```
+
+**扩展格式**（**末尾追加 3 段，前 3 段含义与顺序不变**）：
+
+| 段 | 名 | 说明 |
+| --- | --- | --- |
+| 1 | `value` | 整数（位枚举为位值） |
+| 2 | `name` | 成员名 |
+| 3 | `text` | 显示标签（`///`） |
+| 4 | `colorRole` | 7 角色之一 |
+| 5 | `colorShade` | 色板 shade（`50`–`900`） |
+| 6 | `icon` | 图标别名（**完整别名**） |
+
+```text
+0;NEW;新;info;500;bom-new          ← 有色有图标
+1;DRAFTED;已起草;info;200          ← 有色、无图标（尾随空段可省）
+2;CERTIFIED;已审核;;;bom-verified   ← 只有图标（空段占位）
+5;ABANDONED;已弃用                 ← 都没有 → 与老格式逐字一致
+```
+
+- **空段 = 未声明**，按枚举级默认回落；**段内禁止 `;` 与 `|`**（`mmda check` error）。
+- **不用外观注解的枚举，串一个字节都不变** —— 老项目零影响。
+
+> ⚠️ **必须知道**：老运行时按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `MetaEnumMember.java:69`），**第 3 段会吞掉后面所有内容** —— 老运行时读 6 段串会把标签读成 `新;info;500;bom-new`（静默错标）。
+> 所以：扩展段**只在用了外观注解时**产出；**同一份元数据必须与同一代内核/运行时配套**（元数据是产物，随内核重生成）；要回退老格式用 `mmda migrate --drop-enum-style`。
+
+### 13.2 元数据 JSON
+
+```json
+{
+  "enumClass": "BomStatus",
+  "displayLabel": "BOM状态",
+  "dataType": "int",
+  "bitwise": false,
+  "enumString": "0;NEW;新;info;500;bom-new|1;DRAFTED;已起草;info;200|2;CERTIFIED;已审核;success;500|5;ABANDONED;已弃用",
+  "colorized": true,
+  "colorRole": "gray",
+  "colorShade": 500,
+  "iconized": true,
+  "iconPrefix": "bom",
+  "members": [
+    { "value": 0, "name": "NEW",       "text": "新",     "colorRole": "info",    "colorShade": 500, "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "text": "已起草", "colorRole": "info",    "colorShade": 200, "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "text": "已审核", "colorRole": "success", "colorShade": 500, "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "text": "已弃用", "colorRole": "gray",    "colorShade": 500, "icon": "bom-abandoned" }
+  ]
+}
+```
+
+两条口径：
+
+1. **`enumString` 存原始、`members[]` 存最终** —— IDE 用前者判「显式还是默认」（属性面板显示留空状态），三端用后者直接渲染（不必重算回落）。
+2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签；**颜色 / 图标不逐条下发**，渲染方按值查 `members` 即可。
+
+## 14. 实例索引
 
 | 文件 | 看点 |
 | --- | --- |
@@ -253,7 +317,7 @@ stm BomApproval on Bom.status {
 
 ---
 
-## 14. 相关
+## 15. 相关
 
 - [`../records.md`](../records.md) §6 / §6.1 —— 枚举与呈现注解的**规范条文**
 - [`../presentation.md`](../presentation.md) §4.1 —— **渲染口径**（角色 → 主题令牌、别名 → 三端映射）

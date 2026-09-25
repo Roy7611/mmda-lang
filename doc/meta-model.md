@@ -167,6 +167,92 @@ Field ──(呈现层)── UiField
 
 > ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
+
+### 6.1 字符串表示（`enumString`）的扩展段（✔ 2026-09-25 设计）
+
+**老格式**（旧实现，3 段）：
+
+```
+value ; name ; text    ← 成员之间用 | 分隔
+0;NEW;新|1;PAYED;已付款|4;CANCELED;已取消
+```
+
+**扩展格式**（**在末尾追加 3 段，前 3 段含义与顺序不变**）：
+
+```
+value ; name ; text ; colorRole ; colorShade ; icon
+```
+
+| 段 | 名 | 取值 | 可否省 |
+| --- | --- | --- | --- |
+| 1 | `value` | 整数（位枚举为位值） | 不可省 |
+| 2 | `name` | 成员名（`UPPER_SNAKE`） | 不可省 |
+| 3 | `text` | 显示标签（对应 `///`） | 不可省（沿用老规则：不足 3 段 = 解析错误） |
+| 4 | `colorRole` | `primary` / `secondary` / `info` / `success` / `warning` / `danger` / `gray` | 可省（= 未声明） |
+| 5 | `colorShade` | 色板 shade 档位（`50`–`900`） | 可省（= 省略 shade，按 `500`）；**写了 shade 却没写 role = error** |
+| 6 | `icon` | 图标**别名**（完整别名） | 可省（= 未声明） |
+
+**写法示例**：
+
+```
+0;NEW;新;info;500;bom-new        ← 有色有图标
+1;DRAFTED;已起草;info;200        ← 有色、无图标（尾随空段可省）
+2;CERTIFIED;已审核;;;bom-verified ← 只有图标（中间空段占位）
+5;ABANDONED;已弃用               ← 都没有 → 与老格式完全一致
+```
+
+**规则**：
+
+- **空段允许**（`;;` = 未声明）；**尾随空段可省**；段内**禁止出现 `;` 与 `|`**（`mmda check` error —— 与老格式同一限制，不做转义）。
+- **未声明 = 回落**：成员段为空时按枚举级默认解析（`colorRole` / `colorShade` → `@Colorized(role, shade?)`；`icon` → `@Iconized` / `@Iconized("prefix")`）。
+- **枚举级信息不进串**：`colorized` / `iconized` / 默认色 / `iconPrefix` 是 `MetaEnum` 的属性（见下方 §6.2），串只描述**成员**。
+- **老格式（3 段）永远合法** —— 不用外观注解的枚举，串与旧实现逐字一致。
+
+> ⚠️ **兼容性硬事实（必须知道）**：旧实现按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `D:\2026\java\mmda-core\mmda-core-metadata\…\MetaEnumMember.java:69`）——**第 3 段会吞掉后面所有内容**，所以老运行时读 6 段串会把 `text` 读成 `新;info;500;bom-new`（**静默错标，不报错**）。
+> 因此：① 扩展段**只在枚举用了外观注解时才产出**（老项目零影响）；② **同一份元数据必须与同一代内核/运行时配套**（按 4A：DB 元数据是**产物**，随内核重新生成）；③ 需要写回老格式时走 `mmda migrate --drop-enum-style`（或打包时 `mmda pack --compat 1.x`，丢弃外观、只留 3 段）。
+
+### 6.2 元数据 JSON 形态（✔ 2026-09-25 设计）
+
+`MetaEnum` 对外的 JSON（**字段名沿用既有列名、camelCase**；★ = 本轮新增）：
+
+```json
+{
+  "enumClass": "BomStatus",
+  "displayLabel": "BOM状态",
+  "namespace": null,
+  "dataType": "int",
+  "bitwise": false,
+  "enumString": "0;NEW;新;info;500;bom-new|1;DRAFTED;已起草;info;200|2;CERTIFIED;已审核;success;500|5;ABANDONED;已弃用",
+  "colorized": true,
+  "colorRole": "gray",
+  "colorShade": 500,
+  "iconized": true,
+  "iconPrefix": "bom",
+  "members": [
+    { "value": 0, "name": "NEW",       "text": "新",     "colorRole": "info",    "colorShade": 500, "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "text": "已起草", "colorRole": "info",    "colorShade": 200, "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "text": "已审核", "colorRole": "success", "colorShade": 500, "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "text": "已弃用", "colorRole": "gray",    "colorShade": 500, "icon": "bom-abandoned" }
+  ]
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` | 既有 | 与旧实现同义 |
+| `enumString` | string | **原始声明的扩展串**（未声明处留空）—— IDE 据此知道「哪些是显式、哪些走默认」 |
+| ★ `colorized` / `iconized` | bool | 开关（对应 `@Colorized` / `@Iconized`） |
+| ★ `colorRole` / `colorShade` | string / int | 枚举级**默认色**（`@Colorized(role, shade?)`，无默认时为 `null`） |
+| ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
+| ★ `members[]` | array | 每项 `{ value, name, text, colorRole, colorShade, icon }` —— **已解析回落后的最终值**；未开开关 / 无默认且未声明时为 `null` |
+
+**两条口径**：
+
+1. **`enumString` 存原始、`members[]` 存最终** —— 一处判读「显式还是默认」（IDE 属性面板要显示留空状态），一处直接拿来渲染（三端不必重算回落）。
+2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
+
+**校验（`mmda check`）**：段内 `;` `|` = error；`colorShade` 无 `colorRole` = error；`colorRole` / `colorShade` 越界（不在 7 值 / 10 档内）= error。
+
 ---
 
 ## 7. View
