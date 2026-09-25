@@ -175,6 +175,6 @@ Please don't modify any code between GENERATED PARTS BEGIN and END
 | **图的文本源码** | Mermaid / PlantUML / D2 / dot | **只出不进**（BPMN 2.0 XML 例外），嵌 md 即可渲染 |
 | **文档产物** | 含 Mermaid 代码块的整篇 md | GitHub / GitLab / VS Code / Obsidian 原生渲染 |
 
-- **命令面（草案）**：`mmda doc` + `mmda diagram`（或统一 `mmda export --doc/--diagram`）—— ⏳ 待裁，见 [`ide/diagrams.md`](ide/diagrams.md) §10.4。
+- **命令面（✔ 已裁 2026-09-25）**：**`mmda doc`**（模型文档）+ **`mmda diagram`**（图，首版 Mermaid + PlantUML）；**不**统一到 `mmda export`。结构：每对象一节 + 字段表 + 关系图，`--with ui,tests` 附录开关；模板 = 固定骨架 + 预留覆盖；**不反哺布局**。见 [`ide/diagrams.md`](ide/diagrams.md) §10.4。
 - **不属于三端契约**：这是**内核侧出口**（与 `mmda test --target …` 同一驱动方式），不新增 `target` 成员，三端骨架不重复实现。
 - **验收**：产物落生成区、**diff = 0** 进 P9；图种映射见 [`ide/diagrams.md`](ide/diagrams.md) §10.1。
