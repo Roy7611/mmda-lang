@@ -158,17 +158,32 @@ Field ──(呈现层)── UiField
 | `baseType` | `int` \| `BitSet` |
 | `bitwise` | 是否位标志 |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
-| `colorRole?` / `colorShade?` | **默认色**（`@Colorized(role, shade)`，枚举级默认；shade = Material 色板档位） |
+| `color?` | **默认色** `<role>-<shade>`（`@Colorized(role, shade)`，枚举级默认；**一个字段、一个形态**，见 §6.1） |
 | `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |
 | `iconPrefix?` | **默认别名前缀**（`@Iconized("bom")` → `bom-design`）；`@Iconized`（无参）= 空（默认别名取**成员名 kebab**） |
-| `values` | `{ code, value, label, colorRole?, colorShade?, icon? }[]`（`colorRole` / `colorShade` = 成员 `@Color(role, shade?)`；`icon` = `@Icon("alias")`） |
+| `members[]` | 成员数组（内存模型 `getMembers()`）：`{ value, name, text, color?, icon? }`（`color` = 成员 `@Color(role, shade?)`，同样 `<role>-<shade>`；`icon` = `@Icon("alias")`） |
 
-文本存储格式：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）。
+**字符串表示**（`toString()` / `fromString()`）：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）—— 定义见 §6.1.1。
 
-> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
+**命名对照**：JSON / 内存模型的属性名 = `enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` / `members`（✔ 实测旧实现列名）；本节表里的 `name` / `baseType` 是**语言侧概念名**（`enum X : int` 里的 `X` / 基类型），两者一一对应。
+
+> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）—— 旧实现的 `enumString` **列** = 新设计的 `toString()`（详见 §6.1）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
 
-### 6.1 字符串表示（`enumString`）的扩展段（✔ 2026-09-25 设计）
+### 6.1 内存模型：两条通道（字符串 / JSON）
+
+`MetaEnum` / `MetaEnumMember` 是**内存模型**，对外只有两条通道，各一对方法：
+
+| 通道 | 方法 | 形态 |
+| --- | --- | --- |
+| **字符串** | `toString()` / `fromString()` | 成员串：`value;name;text;color;icon`，成员之间用 `|` |
+| **JSON** | `toJson()` / `fromJson()` | 对象：`enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` / `colorized` / `color` / `iconized` / `iconPrefix` / `members[]` |
+
+**`color` 只有一个形态**：**`<role>` 或 `<role>-<shade>`**（`info` / `info-500`）—— 注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段（`info-500`）；**mmda 对 color 的解析就是 `(role, shade)` 这个标准模式**。省略 shade = `500`；`role` 取 7 值、`shade` 取 10 档。
+
+> ⚠️ **`enumString` 不是字段**：旧实现把成员串当 DB 列存（列名 `enumString`），新设计里它就是 **`toString()` 的结果**，`fromString()` 反向解析。**JSON 里不再有 `enumString` 字段**（成员信息由 `members[]` 承载）；旧列如需保留，写 `toString()` 结果即可。
+
+#### 6.1.1 字符串表示（`toString()` / `fromString()`）
 
 **老格式**（旧实现，3 段）：
 
@@ -206,17 +221,15 @@ value ; name ; text ; color ; icon
 - **空段允许**（`;;` = 未声明）；**尾随空段可省**；段内**禁止出现 `;` 与 `|`**（`mmda check` error —— 与老格式同一限制，不做转义）。
 - **未声明 = 回落**：成员段为空时按枚举级默认解析（`color` → `@Colorized(role, shade?)`；`icon` → `@Iconized` / `@Iconized("prefix")`）。
 - **颜色段写法**：`<role>`（省略 shade = `500`）或 `<role>-<shade>`（如 `info-500`）；`role` 拼错 / 不在 7 值、`shade` 不在 10 档、只有 `-500` 没 role → **`mmda check` error**。
-- **枚举级信息不进串**：`colorized` / `iconized` / 默认色 / `iconPrefix` 是 `MetaEnum` 的属性（见下方 §6.2），串只描述**成员**。
+- **枚举级信息不进串**：`colorized` / `iconized` / 默认色 / `iconPrefix` 是 `MetaEnum` 的属性（见 §6.2），串只描述**成员**。
 - **老格式（3 段）永远合法** —— 不用外观注解的枚举，串与旧实现逐字一致。
 
 > ⚠️ **兼容性硬事实（必须知道）**：旧实现按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `D:\2026\java\mmda-core\mmda-core-metadata\…\MetaEnumMember.java:69`）——**第 3 段会吞掉后面所有内容**，所以老运行时读扩展串会把 `text` 读成 `新;info-500;bom-new`（**静默错标，不报错**）。
 > 因此：① 扩展段**只在枚举用了外观注解时才产出**（老项目零影响）；② **同一份元数据必须与同一代内核/运行时配套**（按 4A：DB 元数据是**产物**，随内核重新生成）；③ 需要写回老格式时走 `mmda migrate --drop-enum-style`（或打包时 `mmda pack --compat 1.x`，丢弃外观、只留 3 段）。
 
-### 6.2 元数据 JSON 形态（✔ 2026-09-25 设计）
+### 6.2 JSON 形态（`toJson()` / `fromJson()`）
 
-`MetaEnum` 对外的 JSON（**字段名沿用既有列名、camelCase**；★ = 本轮新增）：
-
-上例的 `enumString` 是**原始声明**：`CERTIFIED` 只声明了角色（`success`，省略 shade → 已解析为 `500`）、`ABANDONED` 什么都没声明（全靠回落），所以串里分别是 `success` 和空 —— 而 `members[]` 里两者都是回落后的**最终值**。
+**字段名沿用既有列名、camelCase**（★ = 本轮新增）：
 
 ```json
 {
@@ -225,17 +238,15 @@ value ; name ; text ; color ; icon
   "namespace": null,
   "dataType": "int",
   "bitwise": false,
-  "enumString": "0;NEW;新;info-500;bom-new|1;DRAFTED;已起草;info-200|2;CERTIFIED;已审核;success|5;ABANDONED;已弃用",
   "colorized": true,
-  "colorRole": "gray",
-  "colorShade": 500,
+  "color": "gray-500",
   "iconized": true,
   "iconPrefix": "bom",
   "members": [
-    { "value": 0, "name": "NEW",       "text": "新",     "colorRole": "info",    "colorShade": 500, "icon": "bom-new" },
-    { "value": 1, "name": "DRAFTED",   "text": "已起草", "colorRole": "info",    "colorShade": 200, "icon": "bom-drafted" },
-    { "value": 2, "name": "CERTIFIED", "text": "已审核", "colorRole": "success", "colorShade": 500, "icon": "bom-certified" },
-    { "value": 5, "name": "ABANDONED", "text": "已弃用", "colorRole": "gray",    "colorShade": 500, "icon": "bom-abandoned" }
+    { "value": 0, "name": "NEW",       "text": "新",     "color": "info-500",    "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "text": "已起草", "color": "info-200",    "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "text": "已审核", "color": "success-500", "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "text": "已弃用", "color": "gray-500",    "icon": "bom-abandoned" }
   ]
 }
 ```
@@ -243,19 +254,17 @@ value ; name ; text ; color ; icon
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `enumClass` / `displayLabel` / `namespace` / `dataType` / `bitwise` | 既有 | 与旧实现同义 |
-| `enumString` | string | **原始声明的扩展串**（未声明处留空）—— IDE 据此知道「哪些是显式、哪些走默认」 |
 | ★ `colorized` / `iconized` | bool | 开关（对应 `@Colorized` / `@Iconized`） |
-| ★ `colorRole` / `colorShade` | string / int | 枚举级**默认色**（`@Colorized(role, shade?)`，无默认时为 `null`） |
+| ★ `color` | string? | 枚举级**默认色** `<role>-<shade>`（`@Colorized(role, shade?)`；无默认 = `null`） |
 | ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
-| ★ `members[]` | array | 每项 `{ value, name, text, colorRole, colorShade, icon }` —— **已解析回落后的最终值**；未开开关 / 无默认且未声明时为 `null` |
+| ★ `members[]` | array | `{ value, name, text, color, icon }` —— **回落后的最终值**，色一律写全 `<role>-<shade>` |
 
-**三条口径**：
+**两条口径**：
 
-1. **串里颜色是一段、JSON 里拆两个字段** —— 串写 `info-500`（紧凑、可读）；JSON 给 `"colorRole": "info", "colorShade": 500`（前端按 role 查主题、按 shade 取令牌，不必再解析字符串）。
-2. **`enumString` 存原始、`members[]` 存最终** —— 一处判读「显式还是默认」（IDE 属性面板要显示留空状态），一处直接拿来渲染（三端不必重算回落）。
-3. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
+1. **`toString()` 存原始、JSON 存最终** —— 串里没声明的段就是空的（IDE 据此判「显式还是默认」），`members[]` 一律是回落后的完整值（三端不必重算）。
+2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
 
-**校验（`mmda check`）**：段内 `;` `|` = error；`colorShade` 无 `colorRole` = error；`colorRole` / `colorShade` 越界（不在 7 值 / 10 档内）= error。
+**校验（`mmda check`）**：段内 `;` `|` = error；`color` 只有 `-500` 无 role、`role` 不在 7 值、`shade` 不在 10 档 = error。
 
 ---
 

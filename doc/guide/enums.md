@@ -222,7 +222,7 @@ stm BomApproval on Bom.status {
 | `@PartitionID` | `@Partitioned` | 与枚举无关但同批迁移（见 `errata` §五-56） |
 | `@ColorRole(role)` | `@Color(role, shade?)` | 一概念一主人 |
 | `@Iconized(default)` | `@Iconized` | 不写括号 |
-| 旧实现无颜色 / 图标列 | 生成期新增 `MetaEnum.colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员 `colorRole` / `colorShade` / `icon` | `enumString`（`0;NEW;新`）保持兼容，不塞颜色图标 |
+| 旧实现无颜色 / 图标列 | 生成期新增 `MetaEnum.colorized` / `color` / `iconized` / `iconPrefix` 与成员 `color` / `icon` | `toString()` 串保持**老 3 段兼容**；只有用了外观注解的枚举才追加 `color` / `icon` 两段 |
 
 ---
 
@@ -231,7 +231,7 @@ stm BomApproval on Bom.status {
 | 层 | 做什么 |
 | --- | --- |
 | 语言文件（真源） | `data/enums/**/*.me` |
-| 元数据（产物） | `MetaEnum`：`colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix`；`MetaEnumMember`：`colorRole` / `colorShade` / `icon` |
+| 元数据（产物） | `MetaEnum`（内存模型，`toJson()`/`fromJson()`、`toString()`/`fromString()`）：`colorized` / `color` / `iconized` / `iconPrefix`；`MetaEnumMember`：`color` / `icon` |
 | 前端（TS，**唯一渲染方**） | 消费 `MetaEnum` 渲染：角色 + shade → 主题令牌；别名 → 图标；缺注解 → 文本 |
 | C# / Flutter | 同一份元数据，各自映射图标库（FontAwesome / Material Icons） |
 | i18n | `///` 标签与描述可翻译；颜色 / 图标不翻译 |
@@ -241,9 +241,10 @@ stm BomApproval on Bom.status {
 
 ## 13. 字符串表示与元数据 JSON
 
-> 这两样都是**产物**（语言文件才是真源）：`enumString` 是元数据里的成员串，JSON 是元数据对外的载荷。规范条文见 [`../meta-model.md`](../meta-model.md) §6.1 / §6.2。
+> 两者都是**产物**（语言文件才是真源）。`MetaEnum` 是**内存模型**，只有两条通道：**字符串**（`toString()` / `fromString()`）与 **JSON**（`toJson()` / `fromJson()`）。
+> **`color` 只有一个形态**：`<role>` 或 `<role>-<shade>` —— `info` / `info-500`；注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段。规范条文见 [`../meta-model.md`](../meta-model.md) §6.1 / §6.2。
 
-### 13.1 `enumString`：老 3 段 → 扩展 6 段
+### 13.1 字符串表示（`toString()` / `fromString()`）
 
 **老格式**（旧实现，只到这里）：
 
@@ -275,7 +276,7 @@ stm BomApproval on Bom.status {
 > ⚠️ **必须知道**：老运行时按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `MetaEnumMember.java:69`），**第 3 段会吞掉后面所有内容** —— 老运行时读扩展串会把标签读成 `新;info-500;bom-new`（静默错标）。
 > 所以：扩展段**只在用了外观注解时**产出；**同一份元数据必须与同一代内核/运行时配套**（元数据是产物，随内核重生成）；要回退老格式用 `mmda migrate --drop-enum-style`。
 
-### 13.2 元数据 JSON
+### 13.2 JSON（`toJson()` / `fromJson()`）
 
 ```json
 {
@@ -283,25 +284,22 @@ stm BomApproval on Bom.status {
   "displayLabel": "BOM状态",
   "dataType": "int",
   "bitwise": false,
-  "enumString": "0;NEW;新;info-500;bom-new|1;DRAFTED;已起草;info-200|2;CERTIFIED;已审核;success|5;ABANDONED;已弃用",
   "colorized": true,
-  "colorRole": "gray",
-  "colorShade": 500,
+  "color": "gray-500",
   "iconized": true,
   "iconPrefix": "bom",
   "members": [
-    { "value": 0, "name": "NEW",       "text": "新",     "colorRole": "info",    "colorShade": 500, "icon": "bom-new" },
-    { "value": 1, "name": "DRAFTED",   "text": "已起草", "colorRole": "info",    "colorShade": 200, "icon": "bom-drafted" },
-    { "value": 2, "name": "CERTIFIED", "text": "已审核", "colorRole": "success", "colorShade": 500, "icon": "bom-certified" },
-    { "value": 5, "name": "ABANDONED", "text": "已弃用", "colorRole": "gray",    "colorShade": 500, "icon": "bom-abandoned" }
+    { "value": 0, "name": "NEW",       "text": "新",     "color": "info-500",    "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "text": "已起草", "color": "info-200",    "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "text": "已审核", "color": "success-500", "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "text": "已弃用", "color": "gray-500",    "icon": "bom-abandoned" }
   ]
 }
 ```
 
-两条口径：
-
-1. **`enumString` 存原始、`members[]` 存最终** —— IDE 用前者判「显式还是默认」（属性面板显示留空状态），三端用后者直接渲染（不必重算回落）。
-2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签；**颜色 / 图标不逐条下发**，渲染方按值查 `members` 即可。
+- **JSON 里没有 `enumString` 字段** —— 旧实现的那个列就是 `toString()` 的结果；成员信息由 `members[]` 承载。
+- **`toString()` 存原始、JSON 存最终**：串里没声明就是空，`members[]` 一律回落后的完整值（色写全 `<role>-<shade>`）。
+- **外观随 `MetaEnum` 下发一次，不进业务数据**：记录里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签。
 
 ## 14. 实例索引
 

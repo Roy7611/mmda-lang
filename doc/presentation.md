@@ -84,7 +84,7 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 
 | 项 | 口径 |
 | --- | --- |
-| 渲染方 | **前端（TS）唯一渲染方**（§5.1 UI 契约）：后端只出 `MetaEnum` / `MetaEnumMember` 的 `colorized` / `iconized` / `colorRole` / `icon` |
+| 渲染方 | **前端（TS）唯一渲染方**（§5.1 UI 契约）：后端只出 `MetaEnum` / `MetaEnumMember` 的 `colorized` / `color` / `iconized` / `icon` |
 | 颜色 = 角色 + shade，不是色值 | `@Color(role, shade)` 只给**语义角色**（**封闭 7 值**：`primary` / `secondary` / `info` / `success` / `warning` / `danger` / **`gray`**，语言层校验、拼错即解析期 error）与**色板 shade（色阶）**（**封闭 10 档** `50`–`900`；`200` = 浅档、`500` = 基准；**省略 shade = `500`**）；**具体色值来自主题令牌**（Material Design + Theme Builder，见 [`ide/specification.md`](ide/specification.md) §4.8 域 7）—— 深浅色与皮肤切换由主题层负责，**模型层不写 `#RRGGBB`** |
 | 图标 = 别名，不是库绑定 | `@Icon("cancel")` 是**逻辑别名**（**开放**：开发人员自行定义语义词，语言层不内置清单、不校验存在性）：TS / Syncfusion（`e-icons`）、C# / FontAwesome、Flutter / Material Icons 各自映射成具体图标；**模型层不写 `fas fa-x`** |
 | 别名没映射上 | **充其量不显示**（不报错、不阻塞）；UI 层 / IDE **可给 warning / lint** 作为提醒（**可选**） |
