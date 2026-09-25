@@ -155,20 +155,22 @@ Field ──(呈现层)── UiField
 | 属性 | 说明 |
 | --- | --- |
 | `name` | 枚举名，如 `OrderStatus`（✔ 2026-09-25 作者认可此名） |
+| `displayLabel` | 显示标签（来自 `///`，见 [`records.md`](records.md) §1.1） |
+| `description?` | **描述**（`/// <label> : <description>` 的冒号后半段；只写标签时为空）——**`MetaEnum` 与 `MetaEnumMember` 都有**（✔ 2026-09-25 落地 §五-61 / §五-77） |
 | `baseType` | 基类型：`int` \| `BitSet`（✔ 2026-09-25 作者认可此名） |
 | `bitwise` | 是否位标志 |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
 | `color?` | **默认色** `<role>-<shade>`（`@Colorized(role, shade)`，枚举级默认；**一个字段、一个形态**，见 §6.1） |
 | `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |
 | `iconPrefix?` | **默认别名前缀**（`@Iconized("bom")` → `bom-design`）；`@Iconized`（无参）= 空（默认别名取**成员名 kebab**） |
-| `members[]` | 成员数组（内存模型 `getMembers()`）：`{ value, name, text, color?, icon? }`（`color` = 成员 `@Color(role, shade?)`，同样 `<role>-<shade>`；`icon` = `@Icon("alias")`） |
+| `members[]` | 成员数组（内存模型 `getMembers()`）：`{ value, name, text, description?, color?, icon? }`（`color` = 成员 `@Color(role, shade?)`，同样 `<role>-<shade>`；`icon` = `@Icon("alias")`） |
 
 **字符串表示**（`toString()` / `fromString()`）：`0;NEW;新|1;PAYED;已付款`（位枚举：`0;UNKNOWN;-|1;CUSTOMER;客户|…`）—— 定义见 §6.1.1。
 
-**命名统一采用本节的语言侧名**（✔ 2026-09-25 作者认可）：`name` / `baseType` / `bitwise` / `displayLabel` / `namespace` / `colorized` / `color` / `iconized` / `iconPrefix` / `members` —— 串、JSON、内存模型**同一套名字**。
+**命名统一采用本节的语言侧名**（✔ 2026-09-25 作者认可）：`name` / `baseType` / `bitwise` / `displayLabel` / `description` / `namespace` / `colorized` / `color` / `iconized` / `iconPrefix` / `members` —— 串、JSON、内存模型**同一套名字**。
 > 旧实现列名 `enumClass` / `dataType` 仅作**历史对照**（与 `name` / `baseType` 语义一一对应）。
 
-> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）—— 旧实现的 `enumString` **列** = 新设计的 `toString()`（详见 §6.1）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
+> ⚠️ **旧实现无颜色 / 图标列**（Java `MetaEnum`：`enumClass` / `displayLabel` / `namespace` / `enumString` / `dataType` / `bitwise`；`MetaEnumMember`：`value` / `name` / `text`）—— 旧实现的 `enumString` **列** = 新设计的 `toString()`（详见 §6.1）→ 生成期**新增** `colorized` / `colorRole` / `colorShade` / `iconized` / `iconPrefix` 与成员的 `colorRole` / `colorShade` / `icon` 列；**`description`（枚举级 + 成员级）同批新增**（旧实现两类都没有此列）；`enumString` **保持兼容**、不塞颜色图标（按 4A：DB 元数据是**产物**，加列不受老库约束）。
 
 
 ### 6.1 内存模型：两条通道（字符串 / JSON）
@@ -178,7 +180,7 @@ Field ──(呈现层)── UiField
 | 通道 | 方法 | 形态 |
 | --- | --- | --- |
 | **字符串** | `toString()` / `fromString()` | 成员串：`value;name;text;color;icon`，成员之间用 `|` |
-| **JSON** | `toJson()` / `fromJson()` | 对象：`name` / `displayLabel` / `namespace` / `baseType` / `bitwise` / `colorized` / `color` / `iconized` / `iconPrefix` / `members[]` |
+| **JSON** | `toJson()` / `fromJson()` | 对象：`name` / `displayLabel` / `description` / `namespace` / `baseType` / `bitwise` / `colorized` / `color` / `iconized` / `iconPrefix` / `members[]` |
 
 **`color` 只有一个形态**：**`<role>` 或 `<role>-<shade>`**（`info` / `info-500`）—— 注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段（`info-500`）；**mmda 对 color 的解析就是 `(role, shade)` 这个标准模式**。省略 shade = `500`；`role` 取 7 值、`shade` 取 10 档。
 
@@ -223,6 +225,7 @@ value ; name ; text ; color ; icon
 - **未声明 = 回落**：成员段为空时按枚举级默认解析（`color` → `@Colorized(role, shade?)`；`icon` → `@Iconized` / `@Iconized("prefix")`）。
 - **颜色段写法**：`<role>`（省略 shade = `500`）或 `<role>-<shade>`（如 `info-500`）；`role` 拼错 / 不在 7 值、`shade` 不在 10 档、只有 `-500` 没 role → **`mmda check` error**。
 - **枚举级信息不进串**：`colorized` / `iconized` / 默认色 / `iconPrefix` 是 `MetaEnum` 的属性（见 §6.2），串只描述**成员**。
+- **`description` 也不进串**：5 段格式（`value;name;text;color;icon`）已冻结；描述只出现在**内存模型与 JSON**（§6.2）——枚举级与成员级的描述都走 JSON。
 - **老格式（3 段）永远合法** —— 不用外观注解的枚举，串与旧实现逐字一致。
 
 > ⚠️ **兼容性硬事实（必须知道）**：旧实现按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `D:\2026\java\mmda-core\mmda-core-metadata\…\MetaEnumMember.java:69`）——**第 3 段会吞掉后面所有内容**，所以老运行时读扩展串会把 `text` 读成 `新;info-500;bom-new`（**静默错标，不报错**）。
@@ -236,6 +239,7 @@ value ; name ; text ; color ; icon
 {
   "name": "BomStatus",
   "displayLabel": "BOM状态",
+  "description": "BOM 的审批状态",
   "namespace": null,
   "baseType": "int",
   "bitwise": false,
@@ -244,10 +248,10 @@ value ; name ; text ; color ; icon
   "iconized": true,
   "iconPrefix": "bom",
   "members": [
-    { "value": 0, "name": "NEW",       "text": "新",     "color": "info-500",    "icon": "bom-new" },
-    { "value": 1, "name": "DRAFTED",   "text": "已起草", "color": "info-200",    "icon": "bom-drafted" },
-    { "value": 2, "name": "CERTIFIED", "text": "已审核", "color": "success-500", "icon": "bom-certified" },
-    { "value": 5, "name": "ABANDONED", "text": "已弃用", "color": "gray-500",    "icon": "bom-abandoned" }
+    { "value": 0, "name": "NEW",       "text": "新",     "description": "新建、未提交",     "color": "info-500",    "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "text": "已起草", "description": "保存但未提交审核", "color": "info-200",    "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "text": "已审核", "description": null,                "color": "success-500", "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "text": "已弃用", "description": "不可再启用",       "color": "gray-500",    "icon": "bom-abandoned" }
   ]
 }
 ```
@@ -255,15 +259,15 @@ value ; name ; text ; color ; icon
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `name` / `baseType` / `bitwise` | ✔ 语言侧名 | `enum X : int` 的名字与基类型、是否位标志（旧列名 `enumClass` / `dataType`） |
-| `displayLabel` / `namespace` | 既有 | 显示标签（来自 `///`，见 [`records.md`](records.md) §1.1）/ 所属模块（如 `mes`） |
+| `displayLabel` / `description` / `namespace` | 既有 | 显示标签与**描述**（来自 `///`，见 [`records.md`](records.md) §1.1；只写标签时 `description` = `null`）/ 所属模块（如 `mes`） |
 | ★ `colorized` / `iconized` | bool | 开关（对应 `@Colorized` / `@Iconized`） |
 | ★ `color` | string? | 枚举级**默认色** `<role>-<shade>`（`@Colorized(role, shade?)`；无默认 = `null`） |
 | ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
-| ★ `members[]` | array | `{ value, name, text, color, icon }` —— **回落后的最终值**，色一律写全 `<role>-<shade>` |
+| ★ `members[]` | array | `{ value, name, text, description, color, icon }` —— **回落后的最终值**，色一律写全 `<role>-<shade>` |
 
 **两条口径**：
 
-1. **`toString()` 存原始、JSON 存最终** —— 串里没声明的段就是空的（IDE 据此判「显式还是默认」），`members[]` 一律是回落后的完整值（三端不必重算）。
+1. **`toString()` 存原始、JSON 存最终** —— 串里没声明的段就是空的（IDE 据此判「显式还是默认」），`members[]` 一律是回落后的完整值（三端不必重算）。`displayLabel` / `description` 也在此列：只写标签时 `description` 写 `null`。
 2. **外观随 `MetaEnum` 下发一次，不进业务数据**：记录载荷里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签（[`guide/quickstart.md`](guide/quickstart.md) §8）—— **颜色 / 图标不逐条下发**，渲染方按值查 `MetaEnum.members` 即可。
 
 **校验（`mmda check`）**：段内 `;` `|` = error；`color` 只有 `-500` 无 role、`role` 不在 7 值、`shade` 不在 10 档 = error。
