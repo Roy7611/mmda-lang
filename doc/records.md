@@ -287,6 +287,8 @@ record OrderItem {
 
 ## 6. Enum
 
+> **枚举开发指南见 [`guide/enums.md`](guide/enums.md)**（模板 / 命名 / 注释 / 外观 / 自检 / 迁移 / 三端落地）。
+
 ```sql
 /// 订单状态
 enum OrderStatus : int {
@@ -322,6 +324,8 @@ enum PartnerRole : BitSet {
 > ⚠️ **待裁决**：`b0000` 位字面量与 BitSet 底层宽度（定宽？加成员是否变更存储宽度），见 `errata.md` 二-5。
 
 ### 6.1 呈现注解：颜色与图标（✔ 2026-09-25 作者）
+
+> **开发指引（怎么一步步写）见 [`guide/enums.md`](guide/enums.md)**；本节是规范条文。
 
 **枚举声明上**（开关 + 默认值）：
 

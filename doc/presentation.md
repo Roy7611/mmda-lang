@@ -80,7 +80,7 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 
 ## 4.1 枚举的呈现：颜色与图标（✔ 已裁 2026-09-25）
 
-**语法在 [`records.md`](records.md) §6.1**（`@Colorized(role, depth?)` / `@Iconized(default | "prefix")` 开关 + 默认值、成员 `@Color(role, depth?)` / `@Icon("alias")` 取值），本节只说**渲染口径**。
+**开发指引见 [`guide/enums.md`](guide/enums.md)**；**语法在 [`records.md`](records.md) §6.1**（`@Colorized(role, depth?)` / `@Iconized(default | "prefix")` 开关 + 默认值、成员 `@Color(role, depth?)` / `@Icon("alias")` 取值），本节只说**渲染口径**。
 
 | 项 | 口径 |
 | --- | --- |

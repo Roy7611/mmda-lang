@@ -1,6 +1,6 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.72 · 2026-09-25
+> v1.78 · 2026-09-25
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
 > 已拍定决策见 §0，未决项见 §6，**2026-09-24 起已定六十四项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
@@ -626,6 +626,9 @@ cargo run -p mmda-cli -- bus replay --flow goods-arrived --from dead-letter
 - v1.41（2026-09-24）：**「脚本的查询形态与兜底层」登记为待裁**（作者原话：「**还有一种可能，给上下文后，写类 SQL 的语句，然后 C#, java 都有 sql 包，能自动翻译执行，也是很好**」；「**或者干脆注入 EntityFactory，直接 java/c# 写**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 尾追加「查询形态与兜底层」**：**类 SQL 查询块**两条路线（**路线 1 内核解析 → 内核生成方言 SQL → 宿主只执行**（建议、只读）／ 路线 2 宿主 SQL 包翻译）+ **已核代价**（jOOQ 开源版不含 SQL Server / 达梦 / 金仓，商业库需 99 / 399 / 799 €；Java 现状 Spring Data JPA、**C# 现状 Dapper 2.1.35 无查询 DSL 翻译能力**）+ **兜底层 = 注入 `EntityFactory` / `Repository` 直写宿主代码 = KEEP 区**（非第三档脚本）+ **四档分层结论**；② [`doc/errata.md`](doc/errata.md) §三 新增第 33 条 + 校勘第四十七轮；③ 本文件 §6.2 新增未决项 27；④ [`doc/index.md`](doc/index.md) 版本升 0.39。
 - v1.42（2026-09-24）：**「宿主语言运行期编译（A′）」登记为待裁 + 双端实测**（作者原话：「**Java Compiler API**」「**Roslyn / DLR**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 追加第 3 条「宿主语言运行期编译」**并记入**本机实测表**（JDK 17 / **JDK 21**：内存编译 **19~34 ms**、318 B、调用 `Hook.run(21)=42`；**.NET 10.0.12 + Roslyn 5.3.0**：冷 **344 ms**、热 **31 ms**、2048 B；**脚本能读环境变量 / 列宿主目录 / 拿进程号 / 起进程 → 无沙箱**；`getSystemJavaCompiler()` 在纯 JRE 上为 `null`）；② 助手建议：**A′ 定位为 KEEP 区宿主扩展的「运行期加载方式」（热更版），不做钩子脚本的语言**；③ [`doc/errata.md`](doc/errata.md) §三 新增第 34 条 + 校勘第四十八轮；④ 本文件 §6.2 新增未决项 28；⑤ [`doc/index.md`](doc/index.md) 版本升 0.40。
 - v1.43（2026-09-24）：**脚本语言维持 A + 类 SQL 归入 m 语言未来语法 + A′ 不做脚本语言**（作者原话：「**维持A, m语言，未来如果支持类SQL语法也是有可能的**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.5 重申「维持 A」**（在 Java Compiler API / Roslyn 双端实测之后）；② **§4.6（1）类 SQL 标 ✔ 已裁**：**方向 = 将来可能成为 m 语言自身的查询语法**（内核解析编译、宿主只执行），**不做宿主 SQL 包翻译层**、首版不进、语法归语法专题；③ **§4.6（2）兜底层标 ✔ 已裁**（注入 `EntityFactory` / `Repository` 直写 = KEEP 区）；④ **§4.6（3）A′ 标 ✔ 已裁**（不做钩子脚本语言，保留为 P6 之后的 KEEP 区运行期加载候选）；⑤ 本文件 §6.2-27 / §6.2-28 标已裁、§6.3 新增第 35 条、抬头改「三十五项」；⑥ [`doc/errata.md`](doc/errata.md) §三-33 / §三-34 标已裁 + §五 新增第 36 条 + 校勘第四十九轮；⑦ [`doc/index.md`](doc/index.md) 版本升 0.41。
+- v1.78（2026-09-25）：**新增 [`doc/guide/enums.md`](doc/guide/enums.md) 枚举开发指南**（作者：「**你在 guide 子目录中落盘此次关于枚举怎么开发的文档**」）——
+  ① 把本轮四批枚举裁决（§6.3-61～64）整理成**照着做的 how-to**：一分钟模板 / 文件与命名 / 注释规范 / 值域与位枚举 / `@State` 与状态机 / 颜色（7 角色 + 封闭 10 档深度 + 省略 = 500）/ 图标（完整别名、默认别名 = 成员名 kebab、前缀形态、开放别名 + UI 层映射）/ 回落规则表 / 自检清单与 `mmda check` 级别 / 常见坑 8 条 / 迁移 / 三端落地 / 实例索引；
+  ② 交叉链接 [`doc/records.md`](doc/records.md) §6、§6.1 与 [`doc/presentation.md`](doc/presentation.md) §4.1；③ [`doc/index.md`](doc/index.md) 参考与对照 + 阅读顺序第 26 行 + 升 **0.74**；④ [`doc/errata.md`](doc/errata.md) 校勘第八十四轮。
 - v1.77（2026-09-25）：**枚举默认别名 5 条细节收口**（作者五答「**完整别名** / **kebab** / **`@Colorized` 只给默认色** / **深度封闭 50-900、省略 = 500** / **`@Iconized` 不写括号**」）——
   ① [`doc/records.md`](doc/records.md) §6.1 与 [`doc/presentation.md`](doc/presentation.md) §4.1 同步；② [`doc/meta-model.md`](doc/meta-model.md) §6 `iconPrefix?` 说明同步；③ [`doc/glossary.md`](doc/glossary.md) 三条词条同步；
   ④ [`doc/examples/README.md`](doc/examples/README.md) §3.1 同步（指出 `BomUsage.me` 里 `@Icon("design")` 的实际效果 = `design`，要 `bom-design` 就删那行）；
