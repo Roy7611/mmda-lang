@@ -55,9 +55,9 @@ enum BomStatus : int {
 
 ## 3. 注释规范（`///`）
 
-**格式**：`/// <label>` 或 `/// <label> : <description>` —— 即**元数据里的显示标签与描述**（`displayLabel` / `description`）。三端 UI 标签、API 文档、`mmda doc` 生成的 Markdown 都从这里取。
+**格式**：`/// <label>` 或 `/// <label> : <description>` —— 即**元数据里的显示标签与描述**（`label` / `description`）。三端 UI 标签、API 文档、`mmda doc` 生成的 Markdown 都从这里取。
 
-**落点**：标签 → `displayLabel`，描述 → **`description`**（**枚举级与成员级都有**；只写标签时描述为空）。两者都进**内存模型与 JSON**（§13.2）；**字符串表示里没有描述段**（§13.1 的 5 段格式不变）。
+**落点**：标签 → `label`，描述 → **`description`**（**枚举级与成员级都有**；只写标签时描述为空）。两者都进**内存模型与 JSON**（§13.2）；**字符串表示里没有描述段**（§13.1 的 5 段格式不变）。
 
 **位置**：**写在被注释元素上方、独占一行**（枚举声明上方 = 枚举的标签；成员上方 = 成员的标签）；有 `@` 注解行时 `///` 在注解行**之上**。
 
@@ -226,6 +226,7 @@ stm BomApproval on Bom.status {
 | `@PartitionID` | `@Partitioned` | 与枚举无关但同批迁移（见 `errata` §五-56） |
 | `@ColorRole(role)` | `@Color(role, shade?)` | 一概念一主人 |
 | `@Iconized(default)` | `@Iconized` | 不写括号 |
+| 旧列名 `label`（标题） | **列名 `displayLabel` → `label`** | ✔ 2026-09-25 作者裁 B：**只重构设计**，老代码与旧库列先不动；新设计里「显示标签」只有一个名字 `label`（`MetaObject` / `MetaCol` / `MetaEnum` / `MetaEnumMember` / `MetaUiField` / `Module`…） |
 | 旧实现无颜色 / 图标 / 描述列 | 生成期新增 `MetaEnum.colorized` / `color` / `iconized` / `iconPrefix` / **`description`** 与成员 `color` / `icon` / **`description`** | `toString()` 串保持**老 3 段兼容**；只有用了外观注解的枚举才追加 `color` / `icon` 两段 |
 
 ---
@@ -235,7 +236,7 @@ stm BomApproval on Bom.status {
 | 层 | 做什么 |
 | --- | --- |
 | 语言文件（真源） | `data/enums/**/*.me` |
-| 元数据（产物） | `MetaEnum`（内存模型，`toJson()`/`fromJson()`、`toString()`/`fromString()`）：`displayLabel` / **`description`** / `colorized` / `color` / `iconized` / `iconPrefix`；`MetaEnumMember`：`text` / **`description`** / `color` / `icon` |
+| 元数据（产物） | `MetaEnum`（内存模型，`toJson()`/`fromJson()`、`toString()`/`fromString()`）：`label` / **`description`** / `colorized` / `color` / `iconized` / `iconPrefix`；`MetaEnumMember`：`label` / **`description`** / `color` / `icon` |
 | 前端（TS，**唯一渲染方**） | 消费 `MetaEnum` 渲染：角色 + shade → 主题令牌；别名 → 图标；缺注解 → 文本 |
 | C# / Flutter | 同一份元数据，各自映射图标库（FontAwesome / Material Icons） |
 | i18n | `///` 标签与描述可翻译；颜色 / 图标不翻译 |
@@ -262,7 +263,7 @@ stm BomApproval on Bom.status {
 | --- | --- | --- |
 | 1 | `value` | 整数（位枚举为位值） |
 | 2 | `name` | 成员名 |
-| 3 | `text` | 显示标签（`///`） |
+| 3 | `text` | 显示标签（`///`）——**段名是历史名，语义 = 该成员的 `label`**（JSON 里就叫 `label`） |
 | 4 | `color` | **`<role>` 或 `<role>-<shade>`**（`info` / `info-500`） |
 | 5 | `icon` | 图标别名（**完整别名**） |
 
@@ -286,7 +287,7 @@ stm BomApproval on Bom.status {
 ```json
 {
   "name": "BomStatus",
-  "displayLabel": "BOM状态",
+  "label": "BOM状态",
   "description": "BOM 的审批状态",
   "baseType": "int",
   "bitwise": false,
@@ -295,15 +296,15 @@ stm BomApproval on Bom.status {
   "iconized": true,
   "iconPrefix": "bom",
   "members": [
-    { "value": 0, "name": "NEW",       "text": "新",     "description": "新建、未提交",     "color": "info-500",    "icon": "bom-new" },
-    { "value": 1, "name": "DRAFTED",   "text": "已起草", "description": "保存但未提交审核", "color": "info-200",    "icon": "bom-drafted" },
-    { "value": 2, "name": "CERTIFIED", "text": "已审核", "description": null,                "color": "success-500", "icon": "bom-certified" },
-    { "value": 5, "name": "ABANDONED", "text": "已弃用", "description": "不可再启用",       "color": "gray-500",    "icon": "bom-abandoned" }
+    { "value": 0, "name": "NEW",       "label": "新",     "description": "新建、未提交",     "color": "info-500",    "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "label": "已起草", "description": "保存但未提交审核", "color": "info-200",    "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "label": "已审核", "description": null,                "color": "success-500", "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "label": "已弃用", "description": "不可再启用",       "color": "gray-500",    "icon": "bom-abandoned" }
   ]
 }
 ```
 
-- **`description` 与 `displayLabel` 同源不同物**：`/// 已起草 : 保存但未提交审核` → `displayLabel: "已起草"`、`description: "保存但未提交审核"`；只写标签时 `description` = `null`（**JSON 存最终**，同 `color` / `icon`）。
+- **`description` 与 `label` 同源不同物**：`/// 已起草 : 保存但未提交审核` → `label: "已起草"`、`description: "保存但未提交审核"`；只写标签时 `description` = `null`（**JSON 存最终**，同 `color` / `icon`）。
 - **JSON 里没有 `enumString` 字段** —— 旧实现的那个列就是 `toString()` 的结果；成员信息由 `members[]` 承载。
 - **`toString()` 存原始、JSON 存最终**：串里没声明就是空，`members[]` 一律回落后的完整值（色写全 `<role>-<shade>`）。
 - **外观随 `MetaEnum` 下发一次，不进业务数据**：记录里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签。

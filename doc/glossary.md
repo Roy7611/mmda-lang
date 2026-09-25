@@ -10,6 +10,7 @@
 | 元对象 | MetaObject / Record | 实体或视图的逻辑定义 |
 | 元列 | MetaCol / Field | 字段：类型、约束、关系引用 |
 | 元关系 | MetaRelation | 实体间一对多等导航关系 |
+| 显示标签 | `label` | 元数据里「给人看的标题」的**唯一属性名与 JSON 键**（✔ 2026-09-25 作者裁 B；**旧实现列名 `displayLabel`**）；枚举成员同叫 `label`，只在**字符串表示**里仍写第 3 段（历史名 `text`）；见 [meta-model.md](meta-model.md) §6 |
 | 子系统 | Subsystem | 业务域顶层划分，如 MES、WMS |
 | 模块 | Module | 子系统下的功能分组 |
 | 功能 | Feature | 可独立交付的功能单元，通常绑定一个 Record |

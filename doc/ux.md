@@ -78,7 +78,7 @@
 | # | 原则 | 在 MMDA 生成物里的体现 | 主要判据落点 | 等级 |
 | --- | --- | --- | --- | --- |
 | 1 | 状态可见（Visibility of system status） | 动作后有状态变化与提示；列表页用 `fixedFilter` 做**状态页签**；单据状态列不隐藏 | `Action` 元数据、[meta-model.md](meta-model.md) `fixedFilter`、[event_bus.md](event_bus.md) 通知器 | A |
-| 2 | 环境贴切（Match between system and the real world） | 界面用**业务词**：`displayLabel`、枚举标签、i18n 词条齐全（不用数据库缩写、不用拼音） | [presentation.md](presentation.md) §5 i18n、[naming.md](naming.md) §2（i18n key） | A |
+| 2 | 环境贴切（Match between system and the real world） | 界面用**业务词**：`label`、枚举标签、i18n 词条齐全（不用数据库缩写、不用拼音） | [presentation.md](presentation.md) §5 i18n、[naming.md](naming.md) §2（i18n key） | A |
 | 3 | 用户可控（User control and freedom） | 破坏性动作**二次确认**；流程可逆（STM 允许回退的状态迁移）；草稿态 | [quality.md](quality.md) §1.4「用户差错防护」、`.ms` 状态机 | A / B |
 | 4 | 一致性（Consistency and standards） | 同一动作跨模块同名、同一含义同一标签；日期/小数格式统一（`formatter` = `D` / `N3`） | [naming.md](naming.md) §1/§2、[presentation.md](presentation.md) §2 | A |
 | 5 | 防错（Error prevention） | 约束写在**声明层**（必填、范围、唯一、长度）→ 生成物两侧（前端 + 服务端）**同时**拦截 | [records.md](records.md) 约束、[api.md](api.md) §3.5 | A |
@@ -163,7 +163,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 | 检查 | 判据 | 落点 |
 | --- | --- | --- |
-| **语义标签不缺** | 每个可编辑字段都有 `displayLabel`（i18n 词条无缺失，含非默认 locale） | [presentation.md](presentation.md) §5、[quality.md](quality.md) §1.4 |
+| **语义标签不缺** | 每个可编辑字段都有 `label`（i18n 词条无缺失，含非默认 locale） | [presentation.md](presentation.md) §5、[quality.md](quality.md) §1.4 |
 | **键盘可达与焦点顺序** | 焦点顺序 = 视图字段顺序（`groupLabel` 分组序号 + 字段声明顺序）——**顺序本身是契约，不是皮肤自由** | [presentation.md](presentation.md) §3 |
 | **错误可被读屏** | 错误消息是**文本**（有词条 key），不是纯图标/颜色语义 | 本表上行 + [quality.md](quality.md) §1.4 |
 | 对比度 / 焦点可见 / 动效 | **皮肤侧**（`vui*` / `rui*` 各自负责） | 不在后端契约面 |
@@ -210,7 +210,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 | --- | --- | --- | --- |
 | 1 | **上线后度量的回流腿**（UCD 的 measure 闭环） | A **把 `mmda ops` 的只读诊断指标（任务完成率、校验失败 top N、最常放弃的操作）做成需求与设计评审的输入清单，只进报告** ／ B 进 `mmda check` 出 warning ／ C 不做，保持单向流程 | **1A**：度量是「回来的信息」，不是门禁；与 DORA 四指标同档（只进报告不进硬门禁）。**代价**：需要 `mmda ops` 先落地（[operations.md](operations.md) §11-5） |
 | 2 | **§4 十原则清单的生效强度** | A 只进 `quality-report.json` 报告项 ／ B **A 类子集进 `mmda check` 出 warning（不阻断）** ／ C 择条进 `mmda quality gate` 硬门禁 | **2B**：与 [naming.md](naming.md) §5 的命名检查同档（warning 不阻断）；**门禁应先有 A 类信号再有判定**，直接上 C 会把体验问题变成发布阻塞项 |
-| 3 | **无障碍基线** | A 只声明「以 WCAG 2.2 AA 为目标」并出报告 ／ B **AA 的可自动化子集（语义标签 / 焦点顺序 / 错误文本）进 `mmda check` 出 warning** ／ C 进硬门禁 | **3B**：§8 表里那三条本来就藏在既有声明里（`displayLabel`、字段顺序、校验词条），**零额外建模成本**；对比度等视觉项留皮肤，不进契约 |
+| 3 | **无障碍基线** | A 只声明「以 WCAG 2.2 AA 为目标」并出报告 ／ B **AA 的可自动化子集（语义标签 / 焦点顺序 / 错误文本）进 `mmda check` 出 warning** ／ C 进硬门禁 | **3B**：§8 表里那三条本来就藏在既有声明里（`label`、字段顺序、校验词条），**零额外建模成本**；对比度等视觉项留皮肤，不进契约 |
 | 4 | **服务设计「旅程」的建模位置** | A 不进语言与元模型（用 `Role` + 流程 + 事件表达） ／ B **A + 在设计器插件侧留「旅程视图」口子**（只读产物、不进真源） ／ C 新增元模型元素 | **4A + B**：语言层零新增不能破；旅程图作为**设计器插件**的展示面是合规的（[ide/plugins.md](ide/plugins.md) §8–§13） |
 
 ---

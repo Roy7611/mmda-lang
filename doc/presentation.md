@@ -105,7 +105,7 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 | 层 | 归属 | 内容 |
 | --- | --- | --- |
 | Shell i18n | IDE 自身（Vue） | 界面文案；见 [ide/i18n.md](ide/i18n.md) |
-| Model i18n | 项目 SSOT | 模型元素的显示名与翻译：`displayLabel`、UiField 的 `placeholder`/`tooltip`、枚举成员标签 |
+| Model i18n | 项目 SSOT | 模型元素的显示名与翻译：`label`、UiField 的 `placeholder`/`tooltip`、枚举成员标签 |
 
 模型侧翻译在元数据里的承载（旧实现）：`MetaUi18n`（词 → 翻译）、`MetaUiFieldI18n` / `MetaUiFieldI18nt`（字段级，按 locale 与 tenant 覆盖）。
 

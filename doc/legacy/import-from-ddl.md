@@ -13,7 +13,7 @@ COMMENT='@Department 部门。部门及分支机构，包括加盟公司'
 | 部分 | 规则 |
 |------|------|
 | `@ObjectName` | Record 名（PascalCase；MySQL 表名不区分大小写时需 `@` 前缀） |
-| 中文名称 | 默认 `displayLabel` |
+| 中文名称 | 默认 `label` |
 | 句号后 | 备注 / description |
 
 ## 字段 COMMENT

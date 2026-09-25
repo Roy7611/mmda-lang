@@ -73,6 +73,7 @@
 | **指标名** | `mmda_<域>_<对象>_<计量>`（已在 [`operations.md`](operations.md) §3.1） | 自动打点 | 指标名清单对账 |
 | **i18n key** | 见 [`ide/i18n.md`](ide/i18n.md)（Shell 与模型双层 key） | 设计器 | — |
 | **模块 / 权限码 / 端点 id** | 沿用既有（`M.01` · `B` · 端点 id）——见 [`project.md`](project.md)、[`event_bus.md`](event_bus.md) §6 | — | 装载期冲突检测已有 |
+| **元数据属性名 / JSON 键**（`Meta*`） | camelCase、**与语言侧名一致**；**「显示标签」统一 `label`**（**旧实现列名 `displayLabel` 仅作历史对照**，✔ 2026-09-25 作者裁 B） | [`meta-model.md`](meta-model.md) §6 | 元数据类与 JSON 键对账（[`targets.md`](targets.md) §5） |
 | **数据库标识符（表 / 视图 / 列）** | **= 模型名逐字一致**（表与视图 PascalCase、列 camelCase，**不转写、不加前缀**） | 内核 IR → DDL 生成器（各方言） | **生成 DDL 的标识符逐字对账**（§3.3、[`targets.md`](targets.md) §5） |
 
 ---

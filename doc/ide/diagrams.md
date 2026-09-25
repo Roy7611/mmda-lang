@@ -44,7 +44,7 @@ Architect 中的图形是元模型的**视图**，不是独立数据源。图形
 > **STM 图绑定到带 `@State` 的 Record 及其 Feature Module。**
 
 - **状态节点** ↔ `status` 字段引用的 `Enum` 各值
-- **转换边** ↔ `Action`，标签 = `displayLabel`，守卫 = `executableExpression`
+- **转换边** ↔ `Action`，标签 = `label`，守卫 = `executableExpression`
 - **边上文字** ↔ `statusTransition` 解析结果
 
 ### 3.2 示例（BOM 审批）

@@ -18,7 +18,7 @@
 - **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](naming.md) §1**）。
 - **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`）。
 - **限制关键字**：零个或多个，空格分隔；行末逗号 `,`。
-- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`displayLabel`）** 与 **描述（`description`）**；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
+- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
 
 ```sql
 userId   uint64 identity generated readonly,
@@ -378,7 +378,7 @@ enum BomStatus : int {
 - **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, shade)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
 - **颜色是角色 + shade，不是色值**：`@Color(role, shade)` 只声明**语义角色**与**色板 shade（色阶）**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
-- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`displayLabel` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
+- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`label` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
 - **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
 - **字符串表示与元数据 JSON** 见 [`meta-model.md`](meta-model.md) §6.1 / §6.2：`MetaEnum` 是内存模型（`toString()`/`fromString()` + `toJson()`/`fromJson()`）；串 = `value;name;text;color;icon`（老 3 段永远合法）；**`color` 一律写 `<role>-<shade>`**（`info-500`）。
 

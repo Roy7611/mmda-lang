@@ -1,8 +1,9 @@
 # m 语言示例（取自 mmda-mes 语料）
 
 > **来源**：`E:\Dev\mmda-architect\examples\mmda-mes`（378 个语言文件的**语料真源**）。
-> **语料即语法基线**（见 [`../errata.md`](../errata.md) §一 冲突 1/2/4/5），所以本目录**逐字照语料**，只做**一处**规范化改写：
-> **`@PartitionID` → `@Partitioned`**（旧名已废，见 [`../records.md`](../records.md) §2.3；语料里 186 处旧写法待 `mmda migrate --rename` 迁移）。
+> **语料即语法基线**（见 [`../errata.md`](../errata.md) §一 冲突 1/2/4/5），所以本目录**逐字照语料**，只做**两处**规范化改写：
+> ① **`@PartitionID` → `@Partitioned`**（旧名已废，见 [`../records.md`](../records.md) §2.3；语料里 186 处旧写法待 `mmda migrate --rename` 迁移）。
+> ② **`@Ref Xxx(col,displayLabel)` → `@Ref Xxx(col,label)`**（✔ 2026-09-25 作者裁 B：「显示标签」统一 `label`；**只重构设计**——外部语料与三端老代码仍写 `displayLabel`，见 [`../errata.md`](../errata.md) §五-78 / §三-42）。
 >
 > 作者要求：「拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按 m 语言的语法写出来我看看」。
 > ✔ **`mes.Process` = `Routing`（工艺路线）** —— 作者 2026-09-25 确认「**是Routing**」，本目录以 [`mes/Routing.mm`](mes/Routing.mm) 为准；

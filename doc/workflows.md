@@ -119,7 +119,7 @@
 | 4 | 状态型实体 | 建 `@State` 枚举 + STM：`stm X on R.field { action … { transition A->B } }` | `data/enums/*.me`、`data/stms/*.ms` | 每个 `@State` 字段有 STM；无不可达状态；每个 Action 有前置状态 |
 | 5 | 跨对象编排 | 定 Converter（数据流）与跨模块流程节点 | `flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` | 映射字段类型兼容；流程节点有 owner |
 | 6 | 模型 | 设计呈现：五视图引用、UiField（editor/formatter/align/placeholder）、分组 `groupLabel` | `ui/**/*.mi` → `MetaUi` | 未提供 `.mi` 时框架能按元数据生成标准 CRUD；**渲染方唯一 = mmda-vue**（[`presentation.md`](presentation.md) §5.1），后端只产 `MetaUi` |
-| 7 | 呈现 | 填 i18n：displayLabel、字段 placeholder/tooltip、枚举成员标签（默认语言 + 其余语言） | 模型内 i18n 词条 | 无空标签；**多语言映射编辑**并排核对（`presentation.md` §7） |
+| 7 | 呈现 | 填 i18n：label、字段 placeholder/tooltip、枚举成员标签（默认语言 + 其余语言） | 模型内 i18n 词条 | 无空标签；**多语言映射编辑**并排核对（`presentation.md` §7） |
 | 8 | 完成设计 | 出 E-R 图 / 状态图并自检、跑校验 | `*.g` 图形投影 + 校验报告 | `mmda validate` 零 error；图形与文本双向一致 |
 
 **交接物**：可生成的完整元模型（模型 + 状态机 + 呈现 + 词条）。→ 交给**程序员**实现逻辑，交给**业务人员**审语义。
@@ -292,3 +292,11 @@ open → read(相关子集) → dryRun 补丁 → validate → diff --impact
 | 7 | ~~测试用例的形态与验收门禁~~ → **✔ 已裁（2026-09-24）**：`.mt` 进语言族；覆盖率门禁见 [`testing.md`](testing.md) §6；AI 用例业务 + 设计师双签；中文验收单作为验收凭证 | 落点见 [`testing.md`](testing.md) §11 已裁表 |
 | 8 | AI Reviewer 的采纳率阈值与降权规则、质量报告是否作为交付物 | 见 [`quality.md`](quality.md) §7（5 条待裁） |
 | 9 | 架构评估的硬门禁范围与阈值、例外白名单机制 | **✔ 已裁（2026-09-24）**：硬门禁 = ARCH-101/102/104/105 + 302/304/305；抽象度 `A` 采用「对外契约 /（契约 + 具体对象）」（见 [`architecture-review.md`](architecture-review.md) §8） |
+
+## 我想像的流程
+
+### IDEA - 创意
+
+之所以叫`IDEA`，因为需求从来都是慢慢清晰的，AI时代更是先有个创意就开干了。
+
+AI时代更讲究单一职责，就是你别把一个大事情交给AI，我实践下来，效果都不理想。应该先分解到足够细粒度，依赖口最小。这符合软件开发的高内聚、松耦合的策略。

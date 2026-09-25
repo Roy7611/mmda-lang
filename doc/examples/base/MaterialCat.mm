@@ -21,8 +21,8 @@ record MaterialCat {
     childrenCount int32 default 0,
     /// 默认下单提前期
     defaultPreorderDays int32?,
-    /// 扩展对象: REF metadata.XMetaObject(tenantObjName,displayLabel)
-    @Ref XMetaObject(tenantObjName,displayLabel)
+    /// 扩展对象: REF metadata.XMetaObject(tenantObjName,label)
+    @Ref XMetaObject(tenantObjName,label)
     materialX varchar(64)? indexed,
     @Index IDX_materialcat_code(categoryCode),
     @Index IDX_materialcat_materialType(materialType),
