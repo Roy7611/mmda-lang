@@ -1,6 +1,6 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.70 · 2026-09-25
+> v1.71 · 2026-09-25
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
 > 已拍定决策见 §0，未决项见 §6，**2026-09-24 起已定五十九项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
@@ -621,7 +621,10 @@ cargo run -p mmda-cli -- bus replay --flow goods-arrived --from dead-letter
 - v1.41（2026-09-24）：**「脚本的查询形态与兜底层」登记为待裁**（作者原话：「**还有一种可能，给上下文后，写类 SQL 的语句，然后 C#, java 都有 sql 包，能自动翻译执行，也是很好**」；「**或者干脆注入 EntityFactory，直接 java/c# 写**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 尾追加「查询形态与兜底层」**：**类 SQL 查询块**两条路线（**路线 1 内核解析 → 内核生成方言 SQL → 宿主只执行**（建议、只读）／ 路线 2 宿主 SQL 包翻译）+ **已核代价**（jOOQ 开源版不含 SQL Server / 达梦 / 金仓，商业库需 99 / 399 / 799 €；Java 现状 Spring Data JPA、**C# 现状 Dapper 2.1.35 无查询 DSL 翻译能力**）+ **兜底层 = 注入 `EntityFactory` / `Repository` 直写宿主代码 = KEEP 区**（非第三档脚本）+ **四档分层结论**；② [`doc/errata.md`](doc/errata.md) §三 新增第 33 条 + 校勘第四十七轮；③ 本文件 §6.2 新增未决项 27；④ [`doc/index.md`](doc/index.md) 版本升 0.39。
 - v1.42（2026-09-24）：**「宿主语言运行期编译（A′）」登记为待裁 + 双端实测**（作者原话：「**Java Compiler API**」「**Roslyn / DLR**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 追加第 3 条「宿主语言运行期编译」**并记入**本机实测表**（JDK 17 / **JDK 21**：内存编译 **19~34 ms**、318 B、调用 `Hook.run(21)=42`；**.NET 10.0.12 + Roslyn 5.3.0**：冷 **344 ms**、热 **31 ms**、2048 B；**脚本能读环境变量 / 列宿主目录 / 拿进程号 / 起进程 → 无沙箱**；`getSystemJavaCompiler()` 在纯 JRE 上为 `null`）；② 助手建议：**A′ 定位为 KEEP 区宿主扩展的「运行期加载方式」（热更版），不做钩子脚本的语言**；③ [`doc/errata.md`](doc/errata.md) §三 新增第 34 条 + 校勘第四十八轮；④ 本文件 §6.2 新增未决项 28；⑤ [`doc/index.md`](doc/index.md) 版本升 0.40。
 - v1.43（2026-09-24）：**脚本语言维持 A + 类 SQL 归入 m 语言未来语法 + A′ 不做脚本语言**（作者原话：「**维持A, m语言，未来如果支持类SQL语法也是有可能的**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.5 重申「维持 A」**（在 Java Compiler API / Roslyn 双端实测之后）；② **§4.6（1）类 SQL 标 ✔ 已裁**：**方向 = 将来可能成为 m 语言自身的查询语法**（内核解析编译、宿主只执行），**不做宿主 SQL 包翻译层**、首版不进、语法归语法专题；③ **§4.6（2）兜底层标 ✔ 已裁**（注入 `EntityFactory` / `Repository` 直写 = KEEP 区）；④ **§4.6（3）A′ 标 ✔ 已裁**（不做钩子脚本语言，保留为 P6 之后的 KEEP 区运行期加载候选）；⑤ 本文件 §6.2-27 / §6.2-28 标已裁、§6.3 新增第 35 条、抬头改「三十五项」；⑥ [`doc/errata.md`](doc/errata.md) §三-33 / §三-34 标已裁 + §五 新增第 36 条 + 校勘第四十九轮；⑦ [`doc/index.md`](doc/index.md) 版本升 0.41。
-- v1.70（2026-09-25）：**m 语言示例集落地 [`doc/examples/`](doc/examples/README.md)**（作者：「**拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按照 m 语言的语法，写出来我看看，放在 `doc/examples` 下面**」）——
+- v1.71（2026-09-25）：**示例集补 `Routing`**（作者对「`mes.Process` 对应谁」回「**是Routing**」）——
+  ① [`doc/examples/mes/Routing.mm`](doc/examples/mes/Routing.mm)（工艺路线，55 行）+ [`enums/RoutingType.me`](doc/examples/enums/RoutingType.me) + [`stms/RoutingLifecycle.ms`](doc/examples/stms/RoutingLifecycle.ms) 入示例集（照语料，只改 `@PartitionID` → `@Partitioned` 1 处）；
+  ② [`doc/examples/README.md`](doc/examples/README.md) 把 `mes.Process` 的对应物更正为 **`Routing`（工艺路线）**，`Operation`（工序）保留为**其子项**（`@Many operations Operation[+]`）；
+  ③ [`doc/errata.md`](doc/errata.md) 校勘第七十七轮；④ [`doc/index.md`](doc/index.md) 升 0.68。**m 语言示例集落地 [`doc/examples/`](doc/examples/README.md)**（作者：「**拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按照 m 语言的语法，写出来我看看，放在 `doc/examples` 下面**」）——
   ① 16 个文件**逐字照语料**（只把 `@PartitionID` → `@Partitioned`，7 处）+ [`doc/examples/README.md`](doc/examples/README.md)（对照表 / 语法要点逐条给出处 / 字段级 `partitioned` 等价简写 / 实测发现）；
   ② ⚠️ `mes.Process` 语料无同名实体 → 按 **`Operation`（工序）** 出，已在 README 注明；
   ③ 三项实测发现：`Material` 与 `Employee` **共用段** `[32768,0x7fffff]`（建议核对）、**段范围 5 种写法并存**（新登记 §6.1 第 14 条）、**位字面量 `b'0`/`b'1` 确实存在**（`errata` §二-5 回正）；

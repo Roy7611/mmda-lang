@@ -5,7 +5,8 @@
 > **`@PartitionID` → `@Partitioned`**（旧名已废，见 [`../records.md`](../records.md) §2.3；语料里 186 处旧写法待 `mmda migrate --rename` 迁移）。
 >
 > 作者要求：「拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按 m 语言的语法写出来我看看」。
-> ⚠️ **`mes.Process` 在语料里没有同名实体**，最贴近的是 **`Operation`（工序）**（`opId` / `opCode` / `opName` / 工序组合类型 / 标准工时 / 所需资源 …），本目录按 `Operation` 出；若你指的是 `Routing`（工艺路线）或别的，说一声我换。
+> ✔ **`mes.Process` = `Routing`（工艺路线）** —— 作者 2026-09-25 确认「**是Routing**」，本目录以 [`mes/Routing.mm`](mes/Routing.mm) 为准；
+> 其**子项 `Operation`（工序）**由 `Routing` 用 `@Many` 挂上（`operations Operation[+] readonly,`），故一并保留。
 
 ## 1. 文件 ↔ 语料源
 
@@ -17,10 +18,11 @@
 | [`mes/BomItem.mm`](mes/BomItem.mm) | `data/models/mes/BomItem.mm` | BOM 明细 |
 | [`mes/DailyReport.mm`](mes/DailyReport.mm) | `data/models/mes/DailyReport.mm` | 日报（49 行，最小的完整示例） |
 | [`mes/DailyReportEvent.mm`](mes/DailyReportEvent.mm) | `data/models/mes/DailyReportEvent.mm` | 日报事件（含复合主键 `@Id PK_...(reportId, itemId)`） |
-| [`mes/Operation.mm`](mes/Operation.mm) | `data/models/mes/Operation.mm` | **工序 = 你说的 `Process`**（含 `@ForeignKey … references …`） |
+| [`mes/Routing.mm`](mes/Routing.mm) | `data/models/mes/Routing.mm` | **工艺路线 = 你说的 `Process`**（55 行；`@Many operations Operation[+]` 挂工序、`@Many operationFlows`、`@Many lines`） |
+| [`mes/Operation.mm`](mes/Operation.mm) | `data/models/mes/Operation.mm` | 工序（`Routing` 的子项；含 `@ForeignKey … references Routing(routingId)`） |
 | [`enums/MaterialType.me`](enums/MaterialType.me) / `CirculationSpeed.me` / `MaterialTracingMode.me` | `data/enums/base/*.me` | 枚举（`flags` 位枚举与普通枚举两种） |
-| [`enums/BomStatus.me`](enums/BomStatus.me) / `BomUsage.me` / `DailyReportStatus.me` | `data/enums/mes/*.me` | 枚举（状态枚举值域与 STM 对齐） |
-| [`stms/MaterialLifecycle.ms`](stms/MaterialLifecycle.ms) / [`BomApproval.ms`](stms/BomApproval.ms) / [`DailyReportLifecycle.ms`](stms/DailyReportLifecycle.ms) | `data/stms/{base,mes}/*.ms` | 状态机（`stm X on Record.status` + `action` + `transition`） |
+| [`enums/BomStatus.me`](enums/BomStatus.me) / `BomUsage.me` / `DailyReportStatus.me` / `RoutingType.me` | `data/enums/mes/*.me` | 枚举（状态枚举值域与 STM 对齐） |
+| [`stms/MaterialLifecycle.ms`](stms/MaterialLifecycle.ms) / [`BomApproval.ms`](stms/BomApproval.ms) / [`DailyReportLifecycle.ms`](stms/DailyReportLifecycle.ms) / [`RoutingLifecycle.ms`](stms/RoutingLifecycle.ms) | `data/stms/{base,mes}/*.ms` | 状态机（`stm X on Record.status` + `action` + `transition`） |
 
 ## 2. 这批示例里能看到的语法（逐条给出处）
 
@@ -35,7 +37,7 @@
 | **计算列**：`@Computed <表达式>`（独占一行，载荷是表达式） | `@Computed concat_ws(' ',brand,materialName,specs,…)` | `base/Material.mm:21` |
 | **一对一 + 别名**：`@One X(a,b) as alias`；**跨模块**写 `@One base.X(...)` | `@One MaterialCat(categoryId,categoryName,parentCatId) as category` | `base/Material.mm:9`、`mes/Bom.mm:24` |
 | **引用**：`@Ref X(a,b)`（生成导航属性） | `@Ref User(userId,userName)` | `base/Material.mm:85` |
-| **一对多集合**：`@Many` + 字段行尾 `[+]` | `@Many` / `features MaterialFeature[+] readonly,` | `base/Material.mm:99-100` |
+| **一对多集合**：`@Many` + 字段行尾 `[+]` | `@Many` / `features MaterialFeature[+] readonly,`；`operations Operation[+] readonly,`（`Routing` 挂工序） | `base/Material.mm:99-100`、`mes/Routing.mm:46-51` |
 | **复合主键**：`@Id PK_xxx(col1, col2),` | `@Id PK_dailyreportevent(reportId, itemId),` | `mes/DailyReportEvent.mm:31` |
 | **索引**：`@Index IDX_xxx(cols),`（组合索引必须具名声明） | `@Index IDX_bom_group(bomGroup,refBomId),` | `mes/Bom.mm:109` |
 | **外键**：`@ForeignKey FK_xxx(col) references X(col),` | `@ForeignKey FK_operation_routing(routingId) references Routing(routingId),` | `mes/Operation.mm:67` |
