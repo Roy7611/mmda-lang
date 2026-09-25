@@ -16,7 +16,9 @@
 | **S1 意图** | 业务 + 架构师（AI 辅助；**人类参与最多**） | 解决 **why / what**：三层需求 → SERU 四要素；**在需求阶段识别关键用户（Role）**；**定 UAT（验收准则，可执行）** | SRS / 用例、**Role 清单**、**可执行 UAT** | [requirements.md](../requirements.md)、[workflows.md](../workflows.md) |
 | **S2 建模** | **架构师 + 设计师**（图形化工具；AI 起草）+ **程序员**（KEEP 区） | 解决 **how**：① 功能模块分解 + Action ② 数据结构设计（类 / E-R / 枚举 / STM）③ 元数据生成与修改（五视图、字段呈现、Flow / DataFlow / BPMN）④ **原型自动生成**（`mmda generate`：三端产物 + DDL + 接口骨架 + TS 类型，「跑起来看看」）⑤ 逻辑代码实现（GENERATED 区外的 KEEP 区 / `handlers/`） | `.mmda` 项目 + 声明（`intents/**`、`models/**`）+ `generated/` + `handlers/` | [meta-model.md](../meta-model.md)、[presentation.md](../presentation.md)、[runtime.md](../runtime.md) §9、[targets.md](../targets.md)（P5–P6） |
 | **S3 验收** | **人定标准 + 审核；AI 跑与诊断** | 测试与验证：用例从声明**机械生成**、AI 造数（人审）、三端一致性、覆盖率与变异、**UAT 全绿 + 验收单签字** | 用例 + 基线 + 覆盖率 + 验收单 + 质量报告 | [testing.md](../testing.md)、[quality.md](../quality.md) §5、[targets.md](../targets.md) §5 |
-| **S4 交付** | 框架 + 运维 | 部署与运维：离线交付包 + `mmda doctor` 自检 + 监控出口 + 运行期回写对账与度量回流 | 生成物 / 镜像 / `SHA256SUMS` / 对账与运行指标 | [operations.md](../operations.md)、[vision.md](../vision.md) §5.2.1 |
+| **S4 交付** | 框架 + 交付负责人 | 交付物与部署：离线交付包 + `mmda doctor` 自检 + 版本与交付清单（**每轮迭代可追溯、可回滚**） | 生成物 / 镜像 / `SHA256SUMS` / 版本清单 | [workflows-phase.md](../workflows-phase.md) §3.5、[vision.md](../vision.md) §5.2.1 |
+
+> **运维在四阶段之外**（✔ 2026-09-25 作者）：**IDE 不提供运维能力**，运维由 MMDA 底座**集成监控平台**；**运维日志与报告**作为**下一轮迭代的输入**（[workflows-phase.md](../workflows-phase.md) §3.2 / §3.5）。
 
 > **一句话记法**：**设计在元数据里、逻辑在 KEEP 区、验收在一致性套件 + UAT**——这就是「**设计师配置 + 程序员定制**」的固定模式（[runtime.md](../runtime.md) §4）。
 

@@ -57,9 +57,9 @@ erp/
 │   ├── order/Order.m           #   用例（covers / req / source / kind / suite / reviewedBy）
 │   └── baseline/               #   冻结基线（按版本，作为验收标准，[`testing.md`](testing.md) §5）
 │
-├── delivery/                   # S4 交付：部署与运维
+├── delivery/                   # S4 交付：交付物与部署（**运维在四阶段之外**，[`workflows-phase.md`](workflows-phase.md) §3.2）
 │   ├── profiles/prototype-sqlite.m   # Codegen Profile（原 `codegen/profiles/*.yaml`）
-│   └── deploy/                       # 部署与运维口径（镜像 / 监控出口 / SLO）
+│   └── deploy/                       # 部署配置与交付清单（镜像 / 发布参数 / 版本）
 │
 ├── doc/                        # 设计文档、评审纪要（Markdown）
 ├── generated/                  # 生成物（默认不打包）
@@ -91,7 +91,9 @@ erp/
 | 流程架构 · 跨模块流程 | **S2 建模** | `models/bpml/`（目录名待裁） | `bpmn` |
 | 交互设计 | **S2 建模** | `models/ui/` | `ui` |
 | 测试与验收 | **S3 验收** | `tests/`（`tests/baseline/` = 冻结基线） | `test` |
-| 交付（Profile / 部署运维） | **S4 交付** | `delivery/` | `profile` / `deploy` |
+| 交付（Profile / 部署配置） | **S4 交付** | `delivery/` | `profile` / `deploy` |
+
+> **运维不在四阶段内**（✔ 2026-09-25 作者）：IDE 不提供运维能力，运维由底座集成监控平台；运维日志与报告发起下一轮迭代（[`workflows-phase.md`](workflows-phase.md) §3.2 / §3.5）。
 
 > 四个阶段与阶段根目录的口径见 [`workflows-phase.md`](workflows-phase.md) §3。
 
