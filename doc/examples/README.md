@@ -41,7 +41,8 @@
 | **复合主键**：`@Id PK_xxx(col1, col2),` | `@Id PK_dailyreportevent(reportId, itemId),` | `mes/DailyReportEvent.mm:31` |
 | **索引**：`@Index IDX_xxx(cols),`（组合索引必须具名声明） | `@Index IDX_bom_group(bomGroup,refBomId),` | `mes/Bom.mm:109` |
 | **外键**：`@ForeignKey FK_xxx(col) references X(col),` | `@ForeignKey FK_operation_routing(routingId) references Routing(routingId),` | `mes/Operation.mm:67` |
-| 枚举：`enum X : int flags { A = 0, /// 文档 }`（`flags` = 位枚举） | `enum MaterialType : int flags {` | `enums/MaterialType.me:2` |
+| **文档注释规范**：`/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签 + 描述**），**写在被注释元素上方独占一行**、**不许写行尾** | `/// 新` + `NEW = 0,` | `enums/BomStatus.me:3-4`、[`../records.md`](../records.md) §1.1 / §6 |
+| 枚举：`enum X : int flags { … }`（`flags` = 位枚举）+ 成员注释在**上一行** | `enum MaterialType : int flags {` / `/// 劳动技能` + `LABOR_SKILL = 0,` | `enums/MaterialType.me:2-4` |
 | 状态机：`stm X on Record.status { action a { transition A,B->C, } }`（`*` = 任意状态） | `stm BomApproval on Bom.status {` | `stms/BomApproval.ms:2` |
 
 ## 3. 等价简写：字段级 `partitioned`（2026-09-25 新裁）
@@ -61,11 +62,13 @@ materialId uint64 identity generated readonly hidden partitioned,
 
 `BIGID` = `uint64 identity partitioned` 也是同一件事的展开式（见 [`../datatypes.md`](../datatypes.md) §5）。
 
-## 4. 写示例时顺手查出来的三件事
+## 4. 写示例时顺手查出来的四件事
 
-1. **`Material` 与 `Employee` 共用同一个段 `[32768,0x7fffff]`** —— 语料里只有这两张表用这个段（其余 **169** 张用默认 `[10000,0x000F_FFFF]`）。要么它们确实属于**同一个标识共享组**，要么是**笔误**。按 §五-52 的**段重叠硬门禁**（同组之外的段两两不得重叠、重叠 = error），**建议核对**。
+1. **`Material` 显式写了段 `[32768,0x7fffff]`**（与 `Employee` 同值；其余 **169** 张表用默认 `[10000,0x000F_FFFF]`）—— ⚠️ **这本身不构成冲突**：realId 是**每张表自己的 identity 序**（`identity generated`），**物料 1 与职员 1 各归各、跨表重复完全正常**；段（`minId` / `maxId`）只在**要 UNION 成一个视图的那组表之间**才有语义，硬门禁也只查**同组**（见 [`../records.md`](../records.md) §2.3 / §7、`errata` §五-52）。
+   **中性观察**：不在任何组里的表写不写范围、写了是否起作用，规范暂未硬性规定（可考虑建议：不在组里就统一用默认段或字段级行尾 `partitioned`）。
 2. **段范围写法不统一**：语料里同时出现 `[10000,0x000F_FFFF]`、`[32768,0x7fffff]`、`[..0x7ffffff]`、`[0x80000000..]`（`..` 省略式）、`[0x8000000,0x7fffffff]`（hex 与 `0x800000` 位数不一致）→ **语法待裁**：段范围是否允许 `..` 省略式、hex 是否规范化（大小写/位数）。
 3. **位字面量 `b'0` / `b'1` 确实在用**（85 + 8 处）—— 台账里早前写的「`b[01]{4,}` 0 命中」是**我的检索模式写错**（真实形态是 `b'0`），已在 [`../errata.md`](../errata.md) §二-5 回正。
+4. **语料枚举成员注释全是行尾写法**（本示例集 7 个 `.me` 就有 **33 处**）—— 与作者 2026-09-25 裁定的「**注释写在成员上方**」不一致，属**语料待迁移**（可比照 `@PartitionID` → `@Partitioned` 的 `mmda migrate --rename` 机制）；本示例集**已按规范改成上一行**。
 
 ## 5. 相关
 

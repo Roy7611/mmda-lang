@@ -18,6 +18,7 @@
 - **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](naming.md) §1**）。
 - **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`）。
 - **限制关键字**：零个或多个，空格分隔；行末逗号 `,`。
+- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`displayLabel`）** 与 **描述（`description`）**；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
 
 ```sql
 userId   uint64 identity generated readonly,
@@ -289,8 +290,11 @@ record OrderItem {
 ```sql
 /// 订单状态
 enum OrderStatus : int {
+    /// 新
     NEW = 0,
+    /// 已付款
     PAYED = 1,
+    /// 已取消
     CANCELED = 4,
 }
 ```
@@ -300,16 +304,20 @@ enum OrderStatus : int {
 ```sql
 /// 伙伴角色
 enum PartnerRole : BitSet {
+    /// 未知
     UNKNOWN  = b0000,
+    /// 客户
     CUSTOMER = b0001,
+    /// 供应商
     SUPPLIER = b0010,
+    /// 承运商
     CARRIER  = b1000,
 }
 ```
 
 - 文本存储格式：`0;NEW;新|1;PAYED;已付款`（`@State` 的初始状态取第一个/`default` 指定项）。
 - 枚举成员值可负（语料 `ABANDONED = -1`）。
-- 成员描述可写行尾 `/// 新` 或块注释形式的文档注释。
+- **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](meta-model.md) §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
 
 > ⚠️ **待裁决**：`b0000` 位字面量与 BitSet 底层宽度（定宽？加成员是否变更存储宽度），见 `errata.md` 二-5。
 

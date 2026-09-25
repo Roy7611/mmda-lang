@@ -1,8 +1,8 @@
 # m 语言（MMDA 元模型驱动架构语言）— 落地计划
 
-> v1.71 · 2026-09-25
+> v1.72 · 2026-09-25
 > 语言规范草稿在 `doc/`；**前一轮尝试的全部资产在 `E:\Dev\mmda-architect`**（见 §2.3）。
-> 已拍定决策见 §0，未决项见 §6，**2026-09-24 起已定五十九项裁决见 §6.3**。
+> 已拍定决策见 §0，未决项见 §6，**2026-09-24 起已定六十项裁决见 §6.3**。
 > 语法细节按你的要求**另开专题逐个讨论**，本文只固定工程与架构口径。
 > **目标端契约**见 [`doc/targets.md`](doc/targets.md)，**逐行对照清单**见 [`doc/contracts-inventory.md`](doc/contracts-inventory.md) —— 两者是 P6 的前置。
 
@@ -514,6 +514,7 @@ tools/                      方言/类型映射数据表
 | 57 | **纯脚本文件 = `.m`（与对象同目录、可 `import` 复用）**——**作者原话：「`.m` 里面的程序，可以 import 到其他的文件里使用，例如 record 的 beforeXxx 拦截器，跟他们放同一个目录」**：① 模型之外的脚本（拦截器 / 钩子体 / 可复用函数）**单独成 `.m` 文件**，**与它服务的对象同目录**；② **可 `import` 到别的文件里使用**（脚本是可复用单元）；③ **两种容器一套语法**（内嵌脚本块 / 独立 `.m`）；④ 判据：模型分片靠首关键字判 partType，`.m` 是**语句序列**；⑤ 形态草案（⏳ 待点头）：`import "./common.m";`、只允许 import `.m`、**重名与循环 = 报错**、**同名配对**；⑥ ⚠️ 与动作能力 `import`（`beforeImport`）同字不同域，是否更名 ⏳ 待点头 | [`doc/runtime.md`](doc/runtime.md) §4.7、[`doc/project.md`](doc/project.md) §1、[`doc/glossary.md`](doc/glossary.md)、[`doc/errata.md`](doc/errata.md) §五-58 |
 | 58 | **代码与图 → Markdown 文档 + Mermaid / PlantUML 源码（可嵌 md）**——**作者原话：「我希望我的代码、图最终能生成文档 md，类似 plantuml, mermaid 这些标准，或者我能输出他们的格式，然后嵌入 md」**：① **两个出口**（模型文档 md / 图的文本源码 Mermaid · PlantUML · D2 · dot）；② **不造新图语言**（图 = 投影，导出器与 Syncfusion 适配器同层）；③ **只出不进**（BPMN 2.0 XML 例外，见 `errata` §三-16）；④ **产物落生成区、`diff = 0` 进 P9**、内核统一产出、不新增 `target`；⑤ 图种映射（E-R → `erDiagram` / STM → `stateDiagram-v2` / 模块树 → `flowchart` / DFD → `flowchart` / `.mb` → `flowchart` 近似）；⑥ 细节 5 条待裁（§6.2） | [`doc/ide/diagrams.md`](doc/ide/diagrams.md) §10、[`doc/targets.md`](doc/targets.md) §9、[`doc/errata.md`](doc/errata.md) §五-59 |
 | 59 | **文档与图形出口 5 条细节已裁**——**作者：「5 条都按你建议」**：① 命令面 = **`mmda doc` + `mmda diagram`** 两条（不并进 `mmda export`）；② 首版格式 = **Mermaid + PlantUML**（D2 / dot 留口子）；③ 每对象一节 + 字段表 + 关系图，`--with ui,tests` 附录开关、首页 = 模块树小节；④ **固定骨架 + 预留模板覆盖**；⑤ **不反哺布局** | [`doc/ide/diagrams.md`](doc/ide/diagrams.md) §10.4、[`doc/targets.md`](doc/targets.md) §9、[`doc/errata.md`](doc/errata.md) §五-60 |
+| 60 | **文档注释统一格式 = `/// <label> : <description>`（枚举成员注释写在成员上一行）**——**作者原话：「我原来的例子写的是：`/// label : description` 相当于元数据中的显示标签和描述，统一格式，你枚举成员需要这样：`/// text` / `NAME = value`」**：① **注释即元数据**（`/// <label>` = `displayLabel`；`/// <label> : <description>` = 显示标签 + 描述）；② **位置**：写在被注释元素**上方、独占一行**（有注解行时在注解行之上），**不许写行尾**；③ 语料 `.me` 全是行尾写法（示例集 7 文件 33 处）→ **语料待迁移** | [`doc/records.md`](doc/records.md) §1.1 / §6、[`doc/errata.md`](doc/errata.md) §五-61 |
 | 56 | **旧名一次性迁移 = `mmda migrate --rename`**——**作者对「语料 186 处旧名要不要一次性迁移」回「好」**：① `mmda migrate --rename @PartitionID=@Partitioned`，默认 **`--dry-run`** 出「文件:行:列 + 改动」清单、**`--write`** 才落盘；② **只动语言文件**，不碰生成区 / KEEP 区；③ 与 `naming.md` §5 的命名迁移脚本**合并为同一条线**，一并归 **P9**；④ 解析器只认新名 → **旧项目升级必经** | [`doc/records.md`](doc/records.md) §2.3、[`doc/naming.md`](doc/naming.md) §5、[`doc/project.md`](doc/project.md)、[`doc/errata.md`](doc/errata.md) §五-57 |
 
 ---
@@ -621,7 +622,15 @@ cargo run -p mmda-cli -- bus replay --flow goods-arrived --from dead-letter
 - v1.41（2026-09-24）：**「脚本的查询形态与兜底层」登记为待裁**（作者原话：「**还有一种可能，给上下文后，写类 SQL 的语句，然后 C#, java 都有 sql 包，能自动翻译执行，也是很好**」；「**或者干脆注入 EntityFactory，直接 java/c# 写**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 尾追加「查询形态与兜底层」**：**类 SQL 查询块**两条路线（**路线 1 内核解析 → 内核生成方言 SQL → 宿主只执行**（建议、只读）／ 路线 2 宿主 SQL 包翻译）+ **已核代价**（jOOQ 开源版不含 SQL Server / 达梦 / 金仓，商业库需 99 / 399 / 799 €；Java 现状 Spring Data JPA、**C# 现状 Dapper 2.1.35 无查询 DSL 翻译能力**）+ **兜底层 = 注入 `EntityFactory` / `Repository` 直写宿主代码 = KEEP 区**（非第三档脚本）+ **四档分层结论**；② [`doc/errata.md`](doc/errata.md) §三 新增第 33 条 + 校勘第四十七轮；③ 本文件 §6.2 新增未决项 27；④ [`doc/index.md`](doc/index.md) 版本升 0.39。
 - v1.42（2026-09-24）：**「宿主语言运行期编译（A′）」登记为待裁 + 双端实测**（作者原话：「**Java Compiler API**」「**Roslyn / DLR**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.6 追加第 3 条「宿主语言运行期编译」**并记入**本机实测表**（JDK 17 / **JDK 21**：内存编译 **19~34 ms**、318 B、调用 `Hook.run(21)=42`；**.NET 10.0.12 + Roslyn 5.3.0**：冷 **344 ms**、热 **31 ms**、2048 B；**脚本能读环境变量 / 列宿主目录 / 拿进程号 / 起进程 → 无沙箱**；`getSystemJavaCompiler()` 在纯 JRE 上为 `null`）；② 助手建议：**A′ 定位为 KEEP 区宿主扩展的「运行期加载方式」（热更版），不做钩子脚本的语言**；③ [`doc/errata.md`](doc/errata.md) §三 新增第 34 条 + 校勘第四十八轮；④ 本文件 §6.2 新增未决项 28；⑤ [`doc/index.md`](doc/index.md) 版本升 0.40。
 - v1.43（2026-09-24）：**脚本语言维持 A + 类 SQL 归入 m 语言未来语法 + A′ 不做脚本语言**（作者原话：「**维持A, m语言，未来如果支持类SQL语法也是有可能的**」）——① [`doc/runtime.md`](doc/runtime.md) **§4.5 重申「维持 A」**（在 Java Compiler API / Roslyn 双端实测之后）；② **§4.6（1）类 SQL 标 ✔ 已裁**：**方向 = 将来可能成为 m 语言自身的查询语法**（内核解析编译、宿主只执行），**不做宿主 SQL 包翻译层**、首版不进、语法归语法专题；③ **§4.6（2）兜底层标 ✔ 已裁**（注入 `EntityFactory` / `Repository` 直写 = KEEP 区）；④ **§4.6（3）A′ 标 ✔ 已裁**（不做钩子脚本语言，保留为 P6 之后的 KEEP 区运行期加载候选）；⑤ 本文件 §6.2-27 / §6.2-28 标已裁、§6.3 新增第 35 条、抬头改「三十五项」；⑥ [`doc/errata.md`](doc/errata.md) §三-33 / §三-34 标已裁 + §五 新增第 36 条 + 校勘第四十九轮；⑦ [`doc/index.md`](doc/index.md) 版本升 0.41。
-- v1.71（2026-09-25）：**示例集补 `Routing`**（作者对「`mes.Process` 对应谁」回「**是Routing**」）——
+- v1.73（2026-09-25）：**段口径澄清**（作者：「**Material 和 Employee 一个物料，一个职员，根本是两种不相关的实体，有啥关系？我有物料1，有职员1不可以吗？**」）——
+  ① realId 是**每张表自己的 identity 序**（`identity generated`），**跨表重复完全正常**；段只在**要 UNION 成同一视图的那组表之间**才有语义，硬门禁只查**同组**；
+  ② 助手在 [`doc/examples/README.md`](doc/examples/README.md) §4-1 把「同组」丢掉、推断成「疑似笔误」→ **已收回改写为中性观察**；
+  ③ [`doc/errata.md`](doc/errata.md) §二-14 补口径澄清 + 校勘第七十九轮；④ [`doc/index.md`](doc/index.md) 升 0.69。
+- v1.72（2026-09-25）：**文档注释规范落盘**（作者：「**我原来的例子写的是：`/// label : description` 相当于元数据中的显示标签和描述，统一格式，你枚举成员需要这样：`/// text` / `NAME = value`**」）——
+  ① [`doc/records.md`](doc/records.md) §1.1 新增「文档注释」条文（`/// <label>` / `/// <label> : <description>` = 显示标签 + 描述，写在被注释元素**上方独占一行**、**不许写行尾**）+ §6 Enum 示例改为成员上方注释、删「成员描述可写行尾」旧条文；
+  ② [`doc/examples/enums/*.me`](doc/examples/README.md) **7 个文件 33 处**行尾注释移到成员上方；
+  ③ 语料 `.me` 仍全是行尾写法 → **语料待迁移**（可复用 `mmda migrate` 机制）；
+  ④ [`doc/errata.md`](doc/errata.md) §五-61 + 校勘第七十八轮；⑤ 语法要点表补「文档注释规范」行。**示例集补 `Routing`**（作者对「`mes.Process` 对应谁」回「**是Routing**」）——
   ① [`doc/examples/mes/Routing.mm`](doc/examples/mes/Routing.mm)（工艺路线，55 行）+ [`enums/RoutingType.me`](doc/examples/enums/RoutingType.me) + [`stms/RoutingLifecycle.ms`](doc/examples/stms/RoutingLifecycle.ms) 入示例集（照语料，只改 `@PartitionID` → `@Partitioned` 1 处）；
   ② [`doc/examples/README.md`](doc/examples/README.md) 把 `mes.Process` 的对应物更正为 **`Routing`（工艺路线）**，`Operation`（工序）保留为**其子项**（`@Many operations Operation[+]`）；
   ③ [`doc/errata.md`](doc/errata.md) 校勘第七十七轮；④ [`doc/index.md`](doc/index.md) 升 0.68。**m 语言示例集落地 [`doc/examples/`](doc/examples/README.md)**（作者：「**拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按照 m 语言的语法，写出来我看看，放在 `doc/examples` 下面**」）——
