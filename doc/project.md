@@ -58,7 +58,7 @@ erp/
 │   └── mes/BomEditor.mi
 │
 ├── doc/                        # 设计文档、评审纪要（Markdown）
-├── tests/                      # 测试用例：一对象一文件，与模型同粒度（*.mt）
+├── tests/                      # 测试用例：一对象一文件，与模型同粒度（*.mt）；**含 suite 分类与状态跟踪**（[`testing.md`](testing.md) §9.1）
 │   ├── order/Order.mt          #   用例（含 covers / source / reviewedBy）
 │   └── baseline/               #   冻结基线（按版本，作为验收标准，见 testing.md §5）
 ├── codegen/profiles/           # 交付：Codegen Profile（YAML）
@@ -77,7 +77,7 @@ erp/
 | 数据架构 · STM | `data/stms/` | `.ms` |
 | 流程架构 · 角色权限 | `flow/roles/` | `.mr` |
 | 流程架构 · 数据转换 | `flow/converters/` | `.mc` |
-| 测试与验收 | `tests/` | `.mt` |
+| 测试与验收 | `tests/` | `.mt` （用例含 `source` / `kind` / `suite` / 状态，见 [`testing.md`](testing.md) §9.1） |
 | 流程架构 · 数据流 | `flow/` | **`.mf`**（数据流编排：节点图 / 数据流图 / 数据映射图） |
 | 流程架构 · 跨模块流程 | `flow/` | **`.mb`**（BPMN） |
 | 交互设计 | `ui/` | `.mi` |
@@ -97,7 +97,7 @@ erp/
 | `.mb` | Meta BPMN | `bpmn` | **跨模块流程（BPMN）**——✔ 2026-09-24 新增（原 `.mf` 的职责迁来） |
 | `.mi` | Meta Interface | `ui` | 定制五视图：index / editor / details / search / report |
 | `*.{ma\|mm\|ms\|mf\|mb}.g` | Graph 投影 | `graph` | JSON 布局/样式，见 [ide/graph-files.md](ide/graph-files.md) |
-| `.mt` | Meta Test | `test` | 测试用例：`given/when/expect` + `covers`/`source`/`reviewedBy`/`baseline`，见 [`testing.md`](testing.md) §9 |
+| `.mt` | Meta Test | `test` | 测试用例：`given/when/expect` + `covers`/`source`/`reviewedBy`/`baseline`，见 [`testing.md`](testing.md) §9 ；**✔ 2026-09-25：进库 + 分类 / 集合 / 状态跟踪管理**（库表形态待裁 → [`testing.md`](testing.md) §11-15；IDE 管理面见同文 §8.1） |
 | `.md` | — | `doc` | 文档 |
 | `.mmdax` | — | `archive` | ZIP 归档包 |
 

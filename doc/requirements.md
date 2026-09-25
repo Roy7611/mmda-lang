@@ -66,6 +66,7 @@
 | **进库** | **像元对象一样落 `meta_*` 表**（拟 `meta_requirement` + 关联表），供运行时与 IDE 直读 | ⚠️ **单向流不变**：文件（git）是真源，库里的需求是**产物 / 缓存**（[`PLAN.md`](../PLAN.md) §3.2、[`project.md`](project.md) §0）。运行期在库里改了需求 → **必须回写文件并进版本控制**（[`workflows.md`](workflows.md) §2 第三个时间面） |
 | **进 IDE** | 图形化（需求树 / 追溯矩阵 / 用例图）+ **表格化**（需求清单：层 / 优先级 / 状态 / 归属 / 覆盖 / 验收）+ CRUD + 变更管理（走变更分级 L0–L3）+ 进度状态跟踪 | [`quality.md`](quality.md) §5 的「需求矩阵」面板、[`ide/specification.md`](ide/specification.md) §4.2 |
 | **双格式** | **人写人审走文本声明，AI 与工具走 IR / JSON**——同一份内容两条通道，做法同 `MetaEnum` 的 `toString` / `toJson`（[`meta-model.md`](meta-model.md) §6.1） | 作者要求「**AI 和人类都能理解的格式都要**」 |
+| **验收面** | 每条需求必须带**可执行的验收准则**（UAT 用例），随**需求基线**一起冻结；**没有可执行 UAT 的需求条目 = 还没说完**（`mmda check` error） | UAT 的地位 / 时点 / 执行通道见 [`testing.md`](testing.md) §0.1；0 站产物见 [`workflows-phase.md`](workflows-phase.md) §3 |
 | **自动编号** | `REQ-<模块编码>-<NNN>`（用例 `UC-<模块编码>-<NNN>`）；**内核生成，人不手写、AI 不编**；单调、不复用、不重排；**层次 / 优先级 / 标题不进编号**（会变的东西不进主键）；形态仍待裁（§7-8） | `REQ-` 前缀已被 [`testing.md`](testing.md) §1（`covers:` … 或 `req: REQ-xxx`）与 [`api.md`](api.md) §6（「待回收的需求（`REQ-x` → 声明 → 用例）」）两处引用锁定 |
 
 ---

@@ -55,6 +55,8 @@ MMDA-Architect 通过 **MCP Server** 与 **`mmda` CLI** 暴露工具，供 Curso
 
 ### 2.5 测试与验收（详见 [`../testing.md`](../testing.md)）
 
+> **UAT 是交付验收的唯一标准**（2026-09-25 作者共识）：UAT 用例**需求完成即出**、**必须可执行**；AI 的执行通道 = **hooks**（三端拦截点，[`../runtime.md`](../runtime.md) §4.2）+ `mmda_test_run`；**人只做两件事——定验收标准、审核签字**。AI 可以跑、可以驱动、可以诊断，**判定仍只来自声明与冻结基线**（[`../testing.md`](../testing.md) §0.1 / §0.2）。
+
 | 工具 | 说明 |
 |------|------|
 | `mmda_diff_impact` | 变更影响面：哪些 Record/字段/接口/页面/DDL 会变——**写元模型前必调** |
