@@ -15,7 +15,7 @@
 
 ## 迁入时的注意事项
 
-1. **术语按本轮统一**：文中 `manifest.json`（formatVersion 1.x）是历史形态；2.0 用根 `{projectCode}.mmda` 清单，见 [`../project.md`](../lang/project.md。
+1. **术语按本轮统一**：文中 `manifest.json`（formatVersion 1.x）是历史形态；2.0 用根 `{projectCode}.mmda` 清单，见 [`../project.md`](../lang/project.md)。
 2. **`.ma` 正文形态**：文中称 `.ma` 是语言文本 —— **✔ 已裁（2026-09-25，取语料）**：**`.ma` 是 JSON**、`.mm` / `.me` / `.ms` / `.mi` 是 M 语言文本，见 [`../errata.md`](../errata.md) 冲突 2。
 3. **目录引用**：原文里的相对链接（如 `../language/records.md`、`../metadata/ui-field.md`）在本仓库已改址为 `../records.md`、`../presentation.md`，跳转可能失效——按 `../index.md` 检索。
 4. **设计笔记**：原文根目录的 `mmda-workflow.md`（36 KB，含各层语言示例）已迁至 [`../design-notes.md`](../design-notes.md)。

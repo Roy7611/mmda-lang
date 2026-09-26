@@ -21,7 +21,7 @@ output:
   flui: d:/flutter
 ```
 
-新规范等价物：`manifest.json` + [project-format.md](../lang/project.md + `codegen/profiles/*.yaml`。
+新规范等价物：`manifest.json` + [project-format.md](../lang/project.md) + `codegen/profiles/*.yaml`。
 
 ## 命令
 
@@ -76,7 +76,7 @@ MySQL `mmda_metadata` 表名与逻辑元素对照（**导入用，非 SSOT**）�
 
 | 字段 | 说明 |
 |------|------|
-| groupLabel | `a1` 主要 / `s9` 概要（见 [ui-field.md](../lang/presentation.md） |
+| groupLabel | `a1` 主要 / `s9` 概要（见 [ui-field.md](../lang/presentation.md)） |
 | listed / filterable / hidden | 列表与过滤 |
 
 ### MetaRelation（一对多需手加）

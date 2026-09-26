@@ -121,4 +121,4 @@ Action 元数据：
 
 - [../architect/diagrams.md](../architect/diagrams.md) — STM 图
 - [../events/language.md](../events/language.md) — 事件声明
-- [records.md](../../../lang/records.md
+- [records.md](../../../lang/records.md)

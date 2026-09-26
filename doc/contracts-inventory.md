@@ -91,7 +91,7 @@
 | 皮肤/组件库 | 无 | `Mmda.Ui.Blazor`、`Mmda.Ui.Razor`、`Mmda.Ui.VtRazor`（+Syncfusion） | `vui-syncfusion`/`vui-primevue`/`vui-agnaive` + `rui-syncfusion` + 9 个 `vuix-*` | **✗** |
 
 > **已裁决（2026-09-24）**：不追求「统一 UI 抽象」，改为**后端只出渲染描述**（字段/控件/分组/校验/i18n 词条），**各端 kit 自己渲染**。见 [`targets.md`](targets.md) §8。**（同日收紧，见下一行）**
-> **✔ 再裁（同一日，收紧）**：UI 契约 = **现有 mmda-vue 前端项目**（`D:\2026\ts\mmda`）；**不考虑 C# MVC 与 Java 的 UI**；后端只提供 `MetaUi` 元数据。上表 C# 列的 `Mmda.Ui.*` 一律视为**遗留实现**（不纳入契约、不作生成目标、不随 mmda-lang 演进）。落点：[`presentation.md`](lang/presentation.md §5.1。
+> **✔ 再裁（同一日，收紧）**：UI 契约 = **现有 mmda-vue 前端项目**（`D:\2026\ts\mmda`）；**不考虑 C# MVC 与 Java 的 UI**；后端只提供 `MetaUi` 元数据。上表 C# 列的 `Mmda.Ui.*` 一律视为**遗留实现**（不纳入契约、不作生成目标、不随 mmda-lang 演进）。落点：[`presentation.md`](lang/presentation.md) §5.1。
 
 ## 7. 代码生成
 

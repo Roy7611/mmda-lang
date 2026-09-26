@@ -88,7 +88,7 @@ items OrderItem[+] readonly,
 
 **`@PartitionID` 范围**：`[min,max]`、`(min,max]`、`[..max]`、`[min..]`、`(0..]` 等；`[`/`(` 与 `]`/`)` 表示开闭；省略 `min`/`max` 表示该字段数据类型的默认最小/最大值。
 
-见 [meta-model.md](../../../lang/meta-model.md 中 MetaCol 映射。
+见 [meta-model.md](../../../lang/meta-model.md) 中 MetaCol 映射。
 
 **加载策略**（注解行尾 `eager` / `lazy`）：
 
@@ -273,4 +273,4 @@ record OrderItem {
 
 - [types.md](types.md)
 - [behaviors.md](behaviors.md)
-- [../architect/meta-model.md](../../../lang/meta-model.md
+- [../architect/meta-model.md](../../../lang/meta-model.md)

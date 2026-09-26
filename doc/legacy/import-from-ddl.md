@@ -1,6 +1,6 @@
 ﻿# 从 DDL COMMENT 导入（Legacy）
 
-> 补充说明。新规范主路径为直接编写 [M语言](../lang/records.md 或 Architect 建模。
+> 补充说明。新规范主路径为直接编写 [M语言](../lang/records.md) 或 Architect 建模。
 
 Java `MetadataGenerator` 从 `information_schema` 读取表/列注释，生成 MetaObject/MetaCol。Architect 规划命令：`mmda import --from-ddl`。
 
@@ -41,12 +41,12 @@ COMMENT='@Department 部门。部门及分支机构，包括加盟公司'
 | HAS_ONE … AS x | 导航属性名 + 可选 WHERE |
 | REF | 小表、可缓存，不加载整实体 |
 
-与 [meta-model.md](../lang/meta-model.md 中 FieldRef 语法一致。
+与 [meta-model.md](../lang/meta-model.md) 中 FieldRef 语法一致。
 
 ## 多租户 ID（Legacy 运行时）
 
 - 表必须有主键；多租户时主键宜为 **BIGINT**
-- partitionKey：高 16 位 tenant id，低 48 位实体 id **（⚠️ 旧口径，已废 —— 现为高 28 位 tenantId（27 位有效）+ 低 36 位 realId，见 [`../records.md`](../lang/records.md §2.3）**
+- partitionKey：高 16 位 tenant id，低 48 位实体 id **（⚠️ 旧口径，已废 —— 现为高 28 位 tenantId（27 位有效）+ 低 36 位 realId，见 [`../records.md`](../lang/records.md) §2.3）**
 - 未表分区时可用 `id BETWEEN min AND max` 隔离租户
 - 应为 uniqueKey 建索引
 

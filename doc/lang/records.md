@@ -12,15 +12,15 @@
 | # | 原则 | 判定点（可验收） | 落点 / 现状 |
 | --- | --- | --- | --- |
 | 1 | **一份 record 多端同形落地**：数据库（DDL）· JSON（载荷）· 实体类（C# / Java；**Rust / 其他 = 预留宿主**，语言层不写死宿主清单）· FlatBuffers —— **正向生成无缝、ORM 零映射** | 同一个 record 的字段名在**表 / 列名、JSON key、属性名、FlatBuffers 字段名**之间全链路对应；改一处模型 ⇒ 多端同步改 | 已裁：**B7**（DDL 与方言生成放在 Rust 内做）、**B5**（跨语言 IR 先做 FlatBuffers）、[`naming.md`](../naming.md) §1 / §3.3（**表 = 类名、列 = 属性名 ⇒ JPA 不用 `@Column`、EF 不用 `HasColumnName`**）；⚠️ **缺口 = 下方 FlatBuffers 细则 ⏳** |
-| 2 | **字段（Field）＝ 属性 ＝ JSON key ＝ 列名**；**类型语言无关、通用、无二义** | 「一个字段只有一个名字」，三端逐字一致（契约测试抓）；元模型只存**逻辑类型名 / 编码 + 8 轴**，不存宿主类型 | 已裁：[`naming.md`](../naming.md) §1 / §2（契约名零端差异、**JSON 字段 = 字段名原样**、元数据属性名 / JSON 键 camelCase）、[`datatypes.md`](datatypes.md §11（逻辑类型 + 各方言投影器）、[`api.md`](../api.md) §3.5（逐类型的 JSON 表示） |
-| 3 | **一切皆 byte**：每个逻辑类型都有**确定的字节表示**（存储大小可推导），**PLC 存储口径与数据库存储口径同源** | 任何类型都能回答「占几字节、怎么摆位、怎么序列化」；位域与 `1`/`0` 口径统一 | 已裁：**B2**（类型必须能推出存储大小：`string` ≡ `nvarchar(255)`）、[`datatypes.md`](datatypes.md §11.4（**8 轴**，含 `STORAGE_BITS` 存储位宽 —— **轴值按位计**，`fixedBytes(8)` ≡ `fixedBits(64)`）、§2（`bool` / `bit` 存 `1`/`0`）、§6 / §7（`BitStr(n)` / `BitVector(n)` = PLC / IoT 位域对接点） |
+| 2 | **字段（Field）＝ 属性 ＝ JSON key ＝ 列名**；**类型语言无关、通用、无二义** | 「一个字段只有一个名字」，三端逐字一致（契约测试抓）；元模型只存**逻辑类型名 / 编码 + 8 轴**，不存宿主类型 | 已裁：[`naming.md`](../naming.md) §1 / §2（契约名零端差异、**JSON 字段 = 字段名原样**、元数据属性名 / JSON 键 camelCase）、[`datatypes.md`](datatypes.md) §11（逻辑类型 + 各方言投影器）、[`api.md`](../api.md) §3.5（逐类型的 JSON 表示） |
+| 3 | **一切皆 byte**：每个逻辑类型都有**确定的字节表示**（存储大小可推导），**PLC 存储口径与数据库存储口径同源** | 任何类型都能回答「占几字节、怎么摆位、怎么序列化」；位域与 `1`/`0` 口径统一 | 已裁：**B2**（类型必须能推出存储大小：`string` ≡ `nvarchar(255)`）、[`datatypes.md`](datatypes.md) §11.4（**8 轴**，含 `STORAGE_BITS` 存储位宽 —— **轴值按位计**，`fixedBytes(8)` ≡ `fixedBits(64)`）、§2（`bool` / `bit` 存 `1`/`0`）、§6 / §7（`BitStr(n)` / `BitVector(n)` = PLC / IoT 位域对接点） |
 
-> **「无缝」的方向边界（✔ 沿用 [`datatypes.md`](datatypes.md §11.3 单向原则）**：**正向（record → DDL / JSON / 实体类 / FlatBuffers）无缝、无损**；**反向（DB → record）有损**，只做 **best-effort + 警告**（逻辑类型是唯一真源、目标类型是投影；有损或有歧义的不反查）。若要让反向也「无缝」，等于再养第二套映射表 —— 与已裁的单向原则冲突，先不动。
+> **「无缝」的方向边界（✔ 沿用 [`datatypes.md`](datatypes.md) §11.3 单向原则）**：**正向（record → DDL / JSON / 实体类 / FlatBuffers）无缝、无损**；**反向（DB → record）有损**，只做 **best-effort + 警告**（逻辑类型是唯一真源、目标类型是投影；有损或有歧义的不反查）。若要让反向也「无缝」，等于再养第二套映射表 —— 与已裁的单向原则冲突，先不动。
 
 **✔ 本轮派生的两条已收口（2026-09-26）**：
 
 - ✔ **Rust = 预留宿主，不是第 4 个实现目标**（作者原话：「**rust目前不实现，未来可能，你作为架构师不会这么想？**」）—— **`PLAN.md` §0 B6 仍是「Java / C# / TS」三个目标端**（事实面不虚报）；但 **语言层 / 类型层 / 映射层不写死宿主清单**：宿主 = **Profile 声明的投影器**，加 Rust（或其他语言）**只增一行数据，不改语言**。落点：[`..\PLAN.md`](../../PLAN.md) §3.4、[`targets.md`](../targets.md) §1。
-- ✔ **FlatBuffers 的方向 = 性能 / 效率优先**（作者原话：「**flatbuffers的映射细则我没想，性能和效率优先，你觉得呢**」）—— **细则表见 [`datatypes.md`](datatypes.md §11.5**（枚举 → 原生 `enum`、可空 → `table` vtable 存位、子表 → `vector of tables`、`decimal` → scaled `int64` / `DateTime` → epoch `int64`、`BitVector` → `uint64` 或 `vector<uint64>`、`BitStr` → `string`）；**方向与细则均 ✔ 定案**（§11.5 逐类型表）。
+- ✔ **FlatBuffers 的方向 = 性能 / 效率优先**（作者原话：「**flatbuffers的映射细则我没想，性能和效率优先，你觉得呢**」）—— **细则表见 [`datatypes.md`](datatypes.md) §11.5**（枚举 → 原生 `enum`、可空 → `table` vtable 存位、子表 → `vector of tables`、`decimal` → scaled `int64` / `DateTime` → epoch `int64`、`BitVector` → `uint64` 或 `vector<uint64>`、`BitStr` → `string`）；**方向与细则均 ✔ 定案**（§11.5 逐类型表）。
 
 ---
 
@@ -35,9 +35,9 @@
 
 - **注解行**（可选）：字段名上方一行或多行 `@Xxx`，见 [§3](#3-字段注解)。
 - **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](../naming.md) §1**）。
-- **数据类型**：见 [datatypes.md](datatypes.md；后缀 `?` 表示可空（未写 `default` 时默认 `null`；**显式 `default null` 也认** —— ✔ 2026-09-26）。**空值只有一个 = `null`**（TS 的 `undefined` 不进语言，见 [`datatypes.md`](datatypes.md §1）；**`NONE = 0` 不是空值**（§12）。**非空字段不写 `default` = 用户必须输入**（✔ 2026-09-26 作者：「**非空字段为什么一定要写？没写说明用户必须输入阿**」）—— 只有可空字段（`T?`）才默认 `null`；**字段类型没有「嵌套 record」**（不做值对象 / 组合 —— 组合一律子表或引用，见 [`datatypes.md`](datatypes.md §10）。
+- **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`；**显式 `default null` 也认** —— ✔ 2026-09-26）。**空值只有一个 = `null`**（TS 的 `undefined` 不进语言，见 [`datatypes.md`](datatypes.md) §1）；**`NONE = 0` 不是空值**（§12）。**非空字段不写 `default` = 用户必须输入**（✔ 2026-09-26 作者：「**非空字段为什么一定要写？没写说明用户必须输入阿**」）—— 只有可空字段（`T?`）才默认 `null`；**字段类型没有「嵌套 record」**（不做值对象 / 组合 —— 组合一律子表或引用，见 [`datatypes.md`](datatypes.md) §10）。
 - **限制关键字**：零个或多个，空格分隔；行末逗号 `,`。
-- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**：`label` 进 JSON 并**另走词条**；**描述 = 文档注释，不进 JSON，另存 comments 层**（⤴ 2026-09-26 作者：「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」，见 [`meta-model.md`](meta-model.md §6.3）；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
+- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**：`label` 进 JSON 并**另走词条**；**描述 = 文档注释，不进 JSON，另存 comments 层**（⤴ 2026-09-26 作者：「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」，见 [`meta-model.md`](meta-model.md) §6.3）；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
 
 ```sql
 userId   int64 identity generated readonly,
@@ -50,7 +50,7 @@ quantity decimal(18,3) positive,
 
 ### 1.2 限制关键字
 
-> ✔ **约束关键字一律大小写不敏感**（`indexed` = `INDEXED`、`unique` = `UNIQUE`、`identity` = `IDENTITY`）——**与 SQL 一致**（✔ 2026-09-25 作者裁，见 [`datatypes.md`](datatypes.md §1）。
+> ✔ **约束关键字一律大小写不敏感**（`indexed` = `INDEXED`、`unique` = `UNIQUE`、`identity` = `IDENTITY`）——**与 SQL 一致**（✔ 2026-09-25 作者裁，见 [`datatypes.md`](datatypes.md) §1）。
 
 | 关键字 | 含义 |
 | --- | --- |
@@ -150,7 +150,7 @@ MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
 parseTenantID(id) = id >>> 36
 ```
 
-**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`（**语料原文；A2 已裁：语言侧写 `int64 identity`，外部语料 102 处待迁**），即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md §5。
+**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`（**语料原文；A2 已裁：语言侧写 `int64 identity`，外部语料 102 处待迁**），即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
 
 **为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
 
@@ -181,7 +181,7 @@ parseTenantID(id) = id >>> 36
 - **✔ 一次性迁移（2026-09-25 作者同意）**：**`mmda migrate --rename @PartitionID=@Partitioned`** —— 默认 **`--dry-run`**（只出「文件:行:列 + 改动」清单），**`--write`** 才落盘；**只动语言文件**（`.mm` / `.me` / `.ms` / `.mi` / `.mmda` …），不碰生成区与 KEEP 区；与 [`naming.md`](../naming.md) §5 的命名迁移脚本**同一条线**，一并归 **P9**；
 - **唯一性校验**：**一个对象只能有一个 `partitioned` 字段**（分区主键唯一）→ `mmda check` **error**。
 
-**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](../design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`int64 identity partitioned`**（**⤴ 2026-09-26 更正，原写 `uint64`**）（见 [`datatypes.md`](datatypes.md §5）。
+**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](../design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`int64 identity partitioned`**（**⤴ 2026-09-26 更正，原写 `uint64`**）（见 [`datatypes.md`](datatypes.md) §5）。
 
 **✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](../workflows.md) §1）。
 
@@ -342,7 +342,7 @@ enum PartnerRole : BitVector {
 - 枚举成员值可负（语料 `ABANDONED = -1`）。
 - **存储 = 整型值**（取能装下全部成员值的最小整型），**语言层一律写成员名**（✔ 2026-09-26 作者：「枚举在存储层我们是存储的整型值，不是字符串，我考虑节约空间」「到了语言层面，肯定不能写 1，2，3，要用 enum」）；**`NONE = 0` 是本语言约定**（见 §0）。
 - **位标志枚举**：底层 = **整型**（`BitVector` 是承载写法）；`default` 写组合值（如 `default 3` = `1|2`）时**保留数值**，**值域外 → error**（诊断码待定，见 [`datatypes.md`](datatypes.md) §14）。
-- **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](meta-model.md §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
+- **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](meta-model.md) §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
 
 > ✔ **已裁（2026-09-26）**：**位向量规范名 = `BitVector(n)`**（`BitSet` / `BitArray` = 别名；`BitVector8`…`BitVector64` 保留）；**`n` = 位数**（8 的倍数、默认 8、上限 128 位）；**加成员不改宽度**（`n` 由声明显式给定，不按成员数推断）；**多位位串字面量统一 `0b…`**（早期文档的 `b0000` 已作废）。详见 [`datatypes.md`](datatypes.md) §7。
 
@@ -401,9 +401,9 @@ enum BomStatus : int {
 - **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, shade)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
 - **颜色是角色 + shade，不是色值**：`@Color(role, shade)` 只声明**语义角色**与**色板 shade（色阶）**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
-- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`label` / `description`）；注解 = **呈现**（颜色 / 图标）。**i18n 只管 `label`**（⤴ 2026-09-26：颜色 / 图标**走不了词条** —— 语言无关、随元数据一次下发）；**`description` 不进 JSON、也不进 i18n**，另存 **comments 层**（只进 `mmda doc` / IDE，见 [`meta-model.md`](meta-model.md §6.3）。
-- **渲染口径**见 [`presentation.md`](presentation.md §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md §6。
-- **字符串表示与元数据 JSON** 见 [`meta-model.md`](meta-model.md §6.1 / §6.2：`MetaEnum` 是内存模型（`toString()`/`fromString()` + `toJson()`/`fromJson()`）；串 = `value;name;label;color;icon`（**段名 = `label`**，⤴ 2026-09-26 作者：「**text => label**」；老 3 段永远合法）；**`color` 一律写 `<role>-<shade>`**（`info-500`）；**JSON 顶层带 `locale`** —— **一份一个 locale、这才是最终输出形态**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」；缺译文回落项目 `defaultLocale`）。
+- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`label` / `description`）；注解 = **呈现**（颜色 / 图标）。**i18n 只管 `label`**（⤴ 2026-09-26：颜色 / 图标**走不了词条** —— 语言无关、随元数据一次下发）；**`description` 不进 JSON、也不进 i18n**，另存 **comments 层**（只进 `mmda doc` / IDE，见 [`meta-model.md`](meta-model.md) §6.3）。
+- **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
+- **字符串表示与元数据 JSON** 见 [`meta-model.md`](meta-model.md) §6.1 / §6.2：`MetaEnum` 是内存模型（`toString()`/`fromString()` + `toJson()`/`fromJson()`）；串 = `value;name;label;color;icon`（**段名 = `label`**，⤴ 2026-09-26 作者：「**text => label**」；老 3 段永远合法）；**`color` 一律写 `<role>-<shade>`**（`info-500`）；**JSON 顶层带 `locale`** —— **一份一个 locale、这才是最终输出形态**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」；缺译文回落项目 `defaultLocale`）。
 
 **✔ 细节 6 条已裁（2026-09-25，作者「其他都按你建议，除了图标别名是开放的」）**：
 
@@ -501,13 +501,13 @@ union all Contactor as c
 | `view` | View | `MetaView`（`whereCondition`、`orderBy`、`relatives`） |
 | 对象级 `@Id/@Index/@ForeignKey/@Check` | 约束 | `MetaIndex`/`MetaForeignKey`/`MetaCheck` |
 
-完整元模型见 [meta-model.md](meta-model.md；旧库表名映射见 [legacy/java-factory.md](../legacy/java-factory.md)。
+完整元模型见 [meta-model.md](meta-model.md)；旧库表名映射见 [legacy/java-factory.md](../legacy/java-factory.md)。
 
 ---
 
 ## 10. 相关
 
-- [datatypes.md](datatypes.md — 类型
-- [statements.md](statements.md — 表达式、行为与状态机
-- [meta-model.md](meta-model.md — 元模型
+- [datatypes.md](datatypes.md) — 类型
+- [statements.md](statements.md) — 表达式、行为与状态机
+- [meta-model.md](meta-model.md) — 元模型
 - [errata.md](../errata.md) — 待裁决

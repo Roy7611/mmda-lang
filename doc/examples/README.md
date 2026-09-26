@@ -2,7 +2,7 @@
 
 > **来源**：`E:\Dev\mmda-architect\examples\mmda-mes`（378 个语言文件的**语料真源**）。
 > **语料即语法基线**（见 [`../errata.md`](../errata.md) §一 冲突 1/2/4/5），所以本目录**逐字照语料**，只做**两处**规范化改写：
-> ① **`@PartitionID` → `@Partitioned`**（旧名已废，见 [`../records.md`](../lang/records.md §2.3；语料里 186 处旧写法待 `mmda migrate --rename` 迁移）。
+> ① **`@PartitionID` → `@Partitioned`**（旧名已废，见 [`../records.md`](../lang/records.md) §2.3；语料里 186 处旧写法待 `mmda migrate --rename` 迁移）。
 > ② **`@Ref Xxx(col,displayLabel)` → `@Ref Xxx(col,label)`**（✔ 2026-09-25 作者裁 B：「显示标签」统一 `label`；**只重构设计**——外部语料与三端老代码仍写 `displayLabel`，见 [`../errata.md`](../errata.md) §五-78 / §三-42）。
 >
 > 作者要求：「拿 `base.Material` 及其相关的，`mes.Bom`、`mes.DailyReport`、`mes.Process` 这几个实体，按 m 语言的语法写出来我看看」。
@@ -42,7 +42,7 @@
 | **复合主键**：`@Id PK_xxx(col1, col2),` | `@Id PK_dailyreportevent(reportId, itemId),` | `mes/DailyReportEvent.mm:31` |
 | **索引**：`@Index IDX_xxx(cols),`（组合索引必须具名声明） | `@Index IDX_bom_group(bomGroup,refBomId),` | `mes/Bom.mm:109` |
 | **外键**：`@ForeignKey FK_xxx(col) references X(col),` | `@ForeignKey FK_operation_routing(routingId) references Routing(routingId),` | `mes/Operation.mm:67` |
-| **文档注释规范**：`/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签 + 描述**），**写在被注释元素上方独占一行**、**不许写行尾** | `/// 新` + `NEW = 0,` | `enums/BomStatus.me:3-4`、[`../records.md`](../lang/records.md §1.1 / §6 |
+| **文档注释规范**：`/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签 + 描述**），**写在被注释元素上方独占一行**、**不许写行尾** | `/// 新` + `NEW = 0,` | `enums/BomStatus.me:3-4`、[`../records.md`](../lang/records.md) §1.1 / §6 |
 | 枚举：`enum X : int flags { … }`（`flags` = 位枚举）+ 成员注释在**上一行** | `enum MaterialType : int flags {` / `/// 劳动技能` + `LABOR_SKILL = 0,` | `enums/MaterialType.me:2-4` |
 | 状态机：`stm X on Record.status { action a { transition A,B->C, } }`（`*` = 任意状态） | `stm BomApproval on Bom.status {` | `stms/BomApproval.ms:2` |
 
@@ -61,11 +61,11 @@ materialId int64 identity generated readonly hidden,
 materialId int64 identity generated readonly hidden partitioned,
 ```
 
-`BIGID` = `int64 identity partitioned`（⤴ 2026-09-26 更正，原写 `uint64`）也是同一件事的展开式（上面带 `@Partitioned [min,max]` 的那行是语料旧写法，**A2 已裁：示例集已迁 `int64`、外部语料待迁**）（见 [`../datatypes.md`](../lang/datatypes.md §3）。
+`BIGID` = `int64 identity partitioned`（⤴ 2026-09-26 更正，原写 `uint64`）也是同一件事的展开式（上面带 `@Partitioned [min,max]` 的那行是语料旧写法，**A2 已裁：示例集已迁 `int64`、外部语料待迁**）（见 [`../datatypes.md`](../lang/datatypes.md) §3）。
 
 ### 3.1 演示：枚举的颜色与图标（规范新增，语料里还没有）
 
-[`../records.md`](../lang/records.md §6.1 裁定的外观注解（2026-09-25），**语料 `.me` 文件里目前一处都没有**，这里只做演示：
+[`../records.md`](../lang/records.md) §6.1 裁定的外观注解（2026-09-25），**语料 `.me` 文件里目前一处都没有**，这里只做演示：
 
 ```sql
 /// BOM状态
@@ -90,15 +90,15 @@ enum BomStatus : int {
 
 ## 4. 写示例时顺手查出来的四件事
 
-1. **`Material` 显式写了段 `[32768,0x7fffff]`**（与 `Employee` 同值；其余 **169** 张表用默认 `[10000,0x000F_FFFF]`）—— ⚠️ **这本身不构成冲突**：realId 是**每张表自己的 identity 序**（`identity generated`），**物料 1 与职员 1 各归各、跨表重复完全正常**；段（`minId` / `maxId`）只在**要 UNION 成一个视图的那组表之间**才有语义，硬门禁也只查**同组**（见 [`../records.md`](../lang/records.md §2.3 / §7、`errata` §五-52）。
+1. **`Material` 显式写了段 `[32768,0x7fffff]`**（与 `Employee` 同值；其余 **169** 张表用默认 `[10000,0x000F_FFFF]`）—— ⚠️ **这本身不构成冲突**：realId 是**每张表自己的 identity 序**（`identity generated`），**物料 1 与职员 1 各归各、跨表重复完全正常**；段（`minId` / `maxId`）只在**要 UNION 成一个视图的那组表之间**才有语义，硬门禁也只查**同组**（见 [`../records.md`](../lang/records.md) §2.3 / §7、`errata` §五-52）。
    **中性观察**：不在任何组里的表写不写范围、写了是否起作用，规范暂未硬性规定（可考虑建议：不在组里就统一用默认段或字段级行尾 `partitioned`）。
 2. **段范围写法有 12 种** → **✔ 2026-09-25 作者已裁：不是语法问题** —— **区间是数学区间表达式**（`[a,b]` / `(a,b)` / 半开半闭）+ **C# 风格 `..` 区间运算符**（`a..b` / `..b` / `a..`，**不是「省略式」**）；**端点是数值字面量**（十 / `0x` / `0b`、`_` 分组、大小写不敏感；**八进制已撤**），词法层产出**数值**、**按值比较** → **没有「hex 位数 / 大小写规范化」这回事**；只有「某些表的段值本身与同组表错位」才是数据问题，归**同组不重叠**硬门禁（见 [`../errata.md`](../errata.md) §二-14）。
-3. **`b'0` / `b'1`（85 + 8 处）是逆向工程期的偏移 → 现已作废**（✔ 2026-09-26 作者：「`b'0` / `b'1` 是 MySQL 的默认值语法，**不要**」）—— ⚠️ 作废范围 = **「作布尔值」与「不带引号」的形态**；**`b'0110'` 作为 `BitStr` 的位串字面量仍合法**（✔ 2026-09-26 二次裁定，见 [`../datatypes.md`](../lang/datatypes.md §7）。**规范形态 = `true` / `false`（大小写不敏感；或 `1` / `0`）**，与早期文档 `archive/2026-06/language/types.md:14` 一致。**示例集 5 个文件 9 处已改**，语料 93 处待迁移（见 [`../guide/records.md`](../lang/records.md §13）。
+3. **`b'0` / `b'1`（85 + 8 处）是逆向工程期的偏移 → 现已作废**（✔ 2026-09-26 作者：「`b'0` / `b'1` 是 MySQL 的默认值语法，**不要**」）—— ⚠️ 作废范围 = **「作布尔值」与「不带引号」的形态**；**`b'0110'` 作为 `BitStr` 的位串字面量仍合法**（✔ 2026-09-26 二次裁定，见 [`../datatypes.md`](../lang/datatypes.md) §7）。**规范形态 = `true` / `false`（大小写不敏感；或 `1` / `0`）**，与早期文档 `archive/2026-06/language/types.md:14` 一致。**示例集 5 个文件 9 处已改**，语料 93 处待迁移（见 [`../guide/records.md`](../lang/records.md) §13）。
 4. **语料枚举成员注释全是行尾写法**（本示例集 7 个 `.me` 就有 **33 处**）—— 与作者 2026-09-25 裁定的「**注释写在成员上方**」不一致，属**语料待迁移**（可比照 `@PartitionID` → `@Partitioned` 的 `mmda migrate --rename` 机制）；本示例集**已按规范改成上一行**。
 
 ## 5. 相关
 
-- [`../records.md`](../lang/records.md — 记录 / 视图 / 约束的规范正文
-- [`../datatypes.md`](../lang/datatypes.md — 类型与 `BIGID` 位布局
-- [`../statements.md`](../lang/statements.md — 行为与状态机
+- [`../records.md`](../lang/records.md) — 记录 / 视图 / 约束的规范正文
+- [`../datatypes.md`](../lang/datatypes.md) — 类型与 `BIGID` 位布局
+- [`../statements.md`](../lang/statements.md) — 行为与状态机
 - [`../ide/diagrams.md`](../ide/diagrams.md) §10 — 这些实体还能导成 Mermaid / PlantUML 图并嵌进 md

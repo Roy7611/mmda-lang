@@ -204,6 +204,6 @@ apps/architect-ui/
 ## 7. 相关文档
 
 - [specification.md](specification.md)
-- [project-format.md](../lang/project.md
+- [project-format.md](../lang/project.md)
 - [plugins.md](plugins.md)
 - [diagram-adapters.md](diagram-adapters.md)

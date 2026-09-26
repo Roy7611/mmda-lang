@@ -10,7 +10,7 @@
 | 2 | [guide/quickstart.md](guide/quickstart.md) | 上手（mmda-mes 示例） |
 | 3 | [architect/specification.md](architect/specification.md) | Architect 工具规格 |
 | 3b | [architect/workflow.md](architect/workflow.md) | 架构师六步工作流 |
-| 4 | [architect/meta-model.md](../../lang/meta-model.md | 元模型 |
+| 4 | [architect/meta-model.md](../../lang/meta-model.md) | 元模型 |
 | 5 | [language/overview.md](language/overview.md) | M语言 |
 | 6 | [ai/tools.md](ai/tools.md) | AI 工具 |
 
@@ -21,7 +21,7 @@
 | 文档 | 内容 |
 |------|------|
 | [architect/specification.md](architect/specification.md) | 目标、MVP、Codegen |
-| [architect/meta-model.md](../../lang/meta-model.md | Record、Field、Module、Action… |
+| [architect/meta-model.md](../../lang/meta-model.md) | Record、Field、Module、Action… |
 | [architect/project-format.md](architect/project-format.md) | 工作区 + `.mmdax` 归档、parts |
 | [architect/ui-shell.md](architect/ui-shell.md) | Architect 主界面布局 |
 | [architect/workflow.md](architect/workflow.md) | 架构师工作流（六步 + 导航树） |
@@ -36,7 +36,7 @@
 |------|------|
 | [language/overview.md](language/overview.md) | 原则、MVP 子集 |
 | [language/types.md](language/types.md) | 数据类型 |
-| [language/records.md](../../lang/records.md | record、enum、view |
+| [language/records.md](../../lang/records.md) | record、enum、view |
 | [language/behaviors.md](language/behaviors.md) | @Action、@State |
 | [language/expressions.md](language/expressions.md) | 表达式 |
 

@@ -53,7 +53,7 @@
 | 账号 → 角色 | 决定**导航**（没这顶帽子就看不到对应导航项/编辑区）与**写入边界**（§1.3 矩阵是工具强制的硬边界，不只是约定） |
 | 角色 → 签字权 | 决定 §8 各变更级别的签字落到谁 |
 
-> 注意：这里配置的是「**账号 → Role 的授予**」。**Role 本身是设计元素**——需求阶段识别的关键用户，声明在语言里（`flow/roles/*.mr`，与 `biz/*.ma` 的模块分解**同级**，见 [`meta-model.md`](lang/meta-model.md §8.1）；Role 的能力范围（`auth module` / `actions` / `scope`）由架构师设计，**谁持有它**才是在 IDE 里配置的。
+> 注意：这里配置的是「**账号 → Role 的授予**」。**Role 本身是设计元素**——需求阶段识别的关键用户，声明在语言里（`flow/roles/*.mr`，与 `biz/*.ma` 的模块分解**同级**，见 [`meta-model.md`](lang/meta-model.md) §8.1）；Role 的能力范围（`auth module` / `actions` / `scope`）由架构师设计，**谁持有它**才是在 IDE 里配置的。
 
 **因此「一人到底」不是绕过权限模型，而是把多项角色授予同一个人**：规则不变、门禁不减；同一个账号同时持有几顶帽子时，IDE 要在界面上明确提示「你现在在改哪一层、这一层改完必须跑什么」。
 
@@ -70,7 +70,7 @@
 | `data/models/*.mm`、`data/enums/*.me` | 审 | **写** | 读 | 提议 | 审（标签/取值） |
 | `data/stms/*.ms`（状态机、Action） | 审 | **写** | 读 | 提议 | 审（状态名/流转语义） |
 | `flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` | **写** | **写** | 读 | 提议 | 审 |
-| `ui/**/*.mi`（五视图定制） | 读 | **写** | 读 | 提议 | 审（字段顺序/标签）——**消费方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md §5.1）；前端 kit（Vue `vui*` / React `rui*`）**由开发者自选**（写自定义前端 UI 插件时按熟悉度挑） |
+| `ui/**/*.mi`（五视图定制） | 读 | **写** | 读 | 提议 | 审（字段顺序/标签）——**消费方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1）；前端 kit（Vue `vui*` / React `rui*`）**由开发者自选**（写自定义前端 UI 插件时按熟悉度挑） |
 | `conventions.md`、`codegen/profiles/*.yaml`、capability 声明 | **写** | 读 | 写（工程参数） | 提议 | — |
 | `generated/**` 的 GENERATED 区 | 禁 | 禁 | 禁（工具写） | 工具写 | — |
 | KEEP 区 / `handlers/**`（业务逻辑） | 禁 | 禁 | **写** | **写**（受 `conventions.md` 约束） | — |
@@ -118,7 +118,7 @@
 | 3 | 字段 | 写业务约束与计算属性（`@Computed`、约束表达式） | 同上 | **表达式纯函数**（禁 IO/赋值/随机/时间依赖，`doc/lang/events.md:97-102`） |
 | 4 | 状态型实体 | 建 `@State` 枚举 + STM：`stm X on R.field { action … { transition A->B } }` | `data/enums/*.me`、`data/stms/*.ms` | 每个 `@State` 字段有 STM；无不可达状态；每个 Action 有前置状态 |
 | 5 | 跨对象编排 | 定 Converter（数据流）与跨模块流程节点 | `flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` | 映射字段类型兼容；流程节点有 owner |
-| 6 | 模型 | 设计呈现：五视图引用、UiField（editor/formatter/align/placeholder）、分组 `groupLabel` | `ui/**/*.mi` → `MetaUi` | 未提供 `.mi` 时框架能按元数据生成标准 CRUD；**渲染方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md §5.1），后端只产 `MetaUi` |
+| 6 | 模型 | 设计呈现：五视图引用、UiField（editor/formatter/align/placeholder）、分组 `groupLabel` | `ui/**/*.mi` → `MetaUi` | 未提供 `.mi` 时框架能按元数据生成标准 CRUD；**渲染方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1），后端只产 `MetaUi` |
 | 7 | 呈现 | 填 i18n：label、字段 placeholder/tooltip、枚举成员标签（默认语言 + 其余语言） | 模型内 i18n 词条 | 无空标签；**多语言映射编辑**并排核对（`presentation.md` §7） |
 | 8 | 完成设计 | 出 E-R 图 / 状态图并自检、跑校验 | `*.g` 图形投影 + 校验报告 | `mmda validate` 零 error；图形与文本双向一致 |
 

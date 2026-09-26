@@ -170,7 +170,7 @@ erp/
 }
 ```
 
-> **清单是设计源（单份）**：这里的 `projectLabel` / `modules[].label` / `description` 都写在**清单自身**里（`label` 取项目 `defaultLocale`；`description` 同 `comments` 层，不进元数据 JSON，见 [`meta-model.md`](meta-model.md §6.3）；**按 locale 切片的是元数据 JSON（每份顶层带 `locale`，一份一个 locale）** —— ⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」（[`presentation.md`](presentation.md §5、[`meta-model.md`](meta-model.md §6.2）。
+> **清单是设计源（单份）**：这里的 `projectLabel` / `modules[].label` / `description` 都写在**清单自身**里（`label` 取项目 `defaultLocale`；`description` 同 `comments` 层，不进元数据 JSON，见 [`meta-model.md`](meta-model.md) §6.3）；**按 locale 切片的是元数据 JSON（每份顶层带 `locale`，一份一个 locale）** —— ⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」（[`presentation.md`](presentation.md) §5、[`meta-model.md`](meta-model.md) §6.2）。
 
 | 字段 | 说明 |
 | --- | --- |
@@ -226,7 +226,7 @@ Record 内不嵌完整 STM：`@State OrderFlow` 指向 `models/stms/OrderFlow.m`
 
 | 路径 | 文件 | 说明 |
 | --- | --- | --- |
-| `intents/roles/` | `SalesMan.m` | `role` + `auth module` / `actions` / `scope`（**Role 来自 S1 识别的关键用户**，[`meta-model.md`](meta-model.md §8.1） |
+| `intents/roles/` | `SalesMan.m` | `role` + `auth module` / `actions` / `scope`（**Role 来自 S1 识别的关键用户**，[`meta-model.md`](meta-model.md) §8.1） |
 | `models/converters/` | `AsnToReceipt.m` | `converter S->T { field->field, … }` |
 | `models/flows/` | `crm.m` | 数据流（DataFlow）：节点图 / DFD / 数据映射图 |
 | `models/bpml/` | `crm.m` | 跨模块流程（BPMN）活动 / 网关 / 消息流（目录名待裁） |
@@ -248,7 +248,7 @@ ui InterviewEditor for Interview {
 }
 ```
 
-未提供定制视图文件时，按对象声明（`models/objects/*.m`）生成标准 CRUD。详见 [presentation.md](presentation.md。
+未提供定制视图文件时，按对象声明（`models/objects/*.m`）生成标准 CRUD。详见 [presentation.md](presentation.md)。
 
 ---
 
@@ -403,7 +403,7 @@ events/**/*.mmda
 ## 12. 相关
 
 - [workflows-phase.md](../workflows-phase.md) — 四阶段模型（意图 / 建模 / 验收 / 交付）与目录的阶段归属
-- [meta-model.md](meta-model.md — 逻辑元素
+- [meta-model.md](meta-model.md) — 逻辑元素
 - [ide/graph-files.md](../ide/graph-files.md) — `*.g` 格式
 - [ide/workflow.md](../ide/workflow.md) — 六步工作流与导航
 - [errata.md](../errata.md) — 口径冲突

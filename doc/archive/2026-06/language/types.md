@@ -136,4 +136,4 @@ ENUMS PartnerRole
 REF User(userID, userName)
 ```
 
-见 [records.md](../../../lang/records.md。
+见 [records.md](../../../lang/records.md)。

@@ -2,7 +2,7 @@
 
 > **一句话**：**API 不是新的一层声明，而是「模块分解 + Feature + 视图 + Action + Role + 字段约束」的派生物**。语言层只需要补**两样最小声明**（暴露边界、稳定度/版本），OpenAPI 文档是**产物**，YApi / Apifox / Swagger / Postman 是**消费者**。
 > **为什么这么定**：与「用例是派生物」「装配是派生物」同一条原则——**同一份声明长出多个产物**；也与「DB 降级为产物/缓存」同一原则——**不允许出现第二真源**。
-> 状态：草案（2026-09-24）· 联动 [`runtime.md`](runtime.md)（Controller = API 开放 / 进入路径）、[`meta-model.md`](lang/meta-model.md（Module / Feature / Action / Role）、[`presentation.md`](lang/presentation.md（五视图）、[`testing.md`](testing.md)（用例来源与契约测试）、[`targets.md`](targets.md)（三端文档插件挂接）、[`quality.md`](quality.md)（运维面指标）。
+> 状态：草案（2026-09-24）· 联动 [`runtime.md`](runtime.md)（Controller = API 开放 / 进入路径）、[`meta-model.md`](lang/meta-model.md)（Module / Feature / Action / Role）、[`presentation.md`](lang/presentation.md)（五视图）、[`testing.md`](testing.md)（用例来源与契约测试）、[`targets.md`](targets.md)（三端文档插件挂接）、[`quality.md`](quality.md)（运维面指标）。
 
 ---
 
@@ -19,7 +19,7 @@
 | **查询参数形态** | 分页 / 排序 / 过滤参数 | `mmda-core-api/.../web/SearchParam.java:7-10`：`pageSize` / `pageNo` / `sorts`（+ filters） |
 | **字段约束 / 默认值** | OpenAPI `schema` 的 `required` / `maxLength` / `enum` / `default` / `format` | 约束即校验，无需二次声明 |
 | **STM 状态机** | 合法状态转移的**可判定前置**（非法转移 → 404/409 的契约） | `meta-model.md` §Action 的 `statusTransition` |
-| **Role**（`auth module` / `actions` / `scope`） | **securitySchemes + scopes + 每端点的授权要求** | [`meta-model.md`](lang/meta-model.md §8.1 |
+| **Role**（`auth module` / `actions` / `scope`） | **securitySchemes + scopes + 每端点的授权要求** | [`meta-model.md`](lang/meta-model.md) §8.1 |
 | **事件**（`events.md`） | 对外通知：webhook / SSE / SignalR 的回调描述 | Java 无总线、C# 有 `IEventBus`（[`targets.md`](targets.md)） |
 | **capability**（`targets.md` §3） | 各端**文档插件的挂接**（Java springdoc / C# Swashbuckle / TS 只消费） | C# 已在 `Mmda.Iot/Mmda.Iot.Server/Mmda.Iot.Server.csproj:20` 装 `Swashbuckle.AspNetCore 6.9.0` |
 
@@ -27,7 +27,7 @@
 
 **这是本篇的第一原则**：语言只定义 **module（边界）+ 数据模型（schema）+ 权限（谁能调）**，三者一确定，**该开放哪些 API 就已经约定了**。
 
-**为什么是硬的（不是设计口味）**：`Role` 的授权是**按 module 授的**（`auth module` / `actions` / `scope`，[`meta-model.md`](lang/meta-model.md §8.1），模块/功能节点上还有 `sops` 操作位掩码决定开放什么操作，加上 ARCH-104（数据所有权唯一）与 ARCH-106（无孤立模块）——四条合起来推出：
+**为什么是硬的（不是设计口味）**：`Role` 的授权是**按 module 授的**（`auth module` / `actions` / `scope`，[`meta-model.md`](lang/meta-model.md) §8.1），模块/功能节点上还有 `sops` 操作位掩码决定开放什么操作，加上 ARCH-104（数据所有权唯一）与 ARCH-106（无孤立模块）——四条合起来推出：
 
 > **module 边界 = API 边界 = 权限边界 = 文档分组边界，四个边界一个来源。**
 >
@@ -76,7 +76,7 @@
 | 事项 | 口径 |
 | --- | --- |
 | **谁生成** | **Rust 内核**（它掌握全部声明）→ **OpenAPI 3.1**（JSON + YAML 各一份）；**每项目一份 + 每模块一份**（便于按模块交付给外包/合作方） |
-| 产物位置 | `generated/<target>/openapi/`（generated 区，KEEP 边界规则不变——[`project.md`](lang/project.md） |
+| 产物位置 | `generated/<target>/openapi/`（generated 区，KEEP 边界规则不变——[`project.md`](lang/project.md)） |
 | **契约测试** | 三端生成的 Controller **实际行为 vs 生成的 OpenAPI schema** → 一致性测试的 **API 维度**（现有 L3 一致性 + UI 维度只测 TS，这里补第三维） |
 | **IDE（设计期）** | 模块树旁挂 **API 面板**：按模块看端点清单、看某个声明影响哪些 API、与基线 diff（API 变更影响面） |
 | 命令面（草案） | `mmda api export --format openapi3`、`mmda api diff --baseline`、`mmda api check`（契约测试）；**✔ 已裁 2026-09-24：独立子命令**，不与 `mmda generate` 合并（导出与生成是两个动作，CI 可分开跑；见 §8.2-5） |
@@ -141,7 +141,7 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 
 ### 3.4 五视图 / Action → 端点与状态码
 
-**路径形态（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：下表里的 `/{模块路径}/{资源}` 一律写成 **`/api/<模块小写>/<模型名复数>`**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**。例：`GET /api/mes/WorkOrders`、`PUT /api/mes/WorkOrders/{id}`、`POST /api/mes/WorkOrders/{id}/approve`。**✔ 已裁 2026-09-24（2c 取 1A 2A）**：**① `/api` 前缀不写死 —— 由模块的 `moduleUrl` 配置**（作者原话：「**实际上我在 module.moduleUrl 中配置了**」；真源 [`meta-model.md`](lang/meta-model.md 的 Module 元素 `moduleUrl`）；**② 复数变形遵循英文单词规则、前后端同一套实现（以现状为准）**（作者原话：「**复数形式遵循英文单词，前后端都有实现**」）。
+**路径形态（✔ 已裁 2026-09-24，§8.2-2 / 2b）**：下表里的 `/{模块路径}/{资源}` 一律写成 **`/api/<模块小写>/<模型名复数>`**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**。例：`GET /api/mes/WorkOrders`、`PUT /api/mes/WorkOrders/{id}`、`POST /api/mes/WorkOrders/{id}/approve`。**✔ 已裁 2026-09-24（2c 取 1A 2A）**：**① `/api` 前缀不写死 —— 由模块的 `moduleUrl` 配置**（作者原话：「**实际上我在 module.moduleUrl 中配置了**」；真源 [`meta-model.md`](lang/meta-model.md) 的 Module 元素 `moduleUrl`）；**② 复数变形遵循英文单词规则、前后端同一套实现（以现状为准）**（作者原话：「**复数形式遵循英文单词，前后端都有实现**」）。
 
 | m 声明 | 端点 | 方法 | 成功码 | 说明 |
 | --- | --- | --- | --- | --- |
@@ -168,10 +168,10 @@ OAS 3.1 共 **30 个对象**（实测清单 4.8.1–4.8.30）。根对象与公�
 
 Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.openapis.org/oas/3.1/dialect/base`）+ OAS 专有字段 `discriminator` / `xml` / `externalDocs` / `example`；`integer` 定义为"没有小数部分或指数部分的 JSON 数字"；OAS 另有 `format`：`int32` / `int64` / `float` / `double` / `password`。
 
-| 逻辑类型（[`datatypes.md`](lang/datatypes.md） | JSON Schema | 备注 |
+| 逻辑类型（[`datatypes.md`](lang/datatypes.md)） | JSON Schema | 备注 |
 | --- | --- | --- |
 | `bool` / `bit` | `boolean` | |
-| `int8` / `int16` | `integer` + `format: int32` | 范围用 `minimum` / `maximum`（**24 位整型已取消**，见 [`datatypes.md`](lang/datatypes.md §3） |
+| `int8` / `int16` | `integer` + `format: int32` | 范围用 `minimum` / `maximum`（**24 位整型已取消**，见 [`datatypes.md`](lang/datatypes.md) §3） |
 | `int32` | `integer` + `int32` | |
 | `int64` | `integer` + `int64`；**超出 JS 安全整数范围时序列化为 `string`** | ✔ 已裁（2026-09-24）：**精度优先**——TS 端不丢精度，三端序列化一致 |
 | `uint32` / `uint64` | `integer` + `int64`；**超界值同样用 `string`** | 同上 |
@@ -190,19 +190,19 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | `blob` / `byteArray` | `string` + **`contentEncoding: base64`** | **3.1 与 3.0 的差异**：规范原文"与 3.0 相反，`format` 对内容编码没有影响"；大文件走 `multipart/form-data` 不 base64 |
 | `json` / `jsonb` | 无类型约束（任意） | |
 | `clob` / `text` | `string`（不给 `maxLength`） | |
-| 可空 `?` | **`type: [T, "null"]`** | **3.1 的写法**：`nullable` 关键字已从规范移除（**实测：3.1 全文 `nullable` 出现 0 次**）；✔ **空值唯一 = `null`（2026-09-26）**：**JSON 里「缺这个键」与「键值为 `null`」是同一个空值**（两态、不是三态）；**TS 的 `undefined` 归同一空值、不进 m 语言**（宿主投影归一 —— [`datatypes.md`](lang/datatypes.md §1 ⏳ 块第 9 条） |
+| 可空 `?` | **`type: [T, "null"]`** | **3.1 的写法**：`nullable` 关键字已从规范移除（**实测：3.1 全文 `nullable` 出现 0 次**）；✔ **空值唯一 = `null`（2026-09-26）**：**JSON 里「缺这个键」与「键值为 `null`」是同一个空值**（两态、不是三态）；**TS 的 `undefined` 归同一空值、不进 m 语言**（宿主投影归一 —— [`datatypes.md`](lang/datatypes.md) §1 ⏳ 块第 9 条） |
 | 必填 | `required: [...]` | 与 Record 的必填同源 |
 | 默认值 | `default` | |
 | 枚举 `.me` | `enum: [...]` + `x-mmda-enum: <EnumName>` | 位标志枚举 → 待裁 |
 | 引用 `@Ref` / `REF x(...)` | `$ref: "#/components/schemas/<Record>"`（跨模块用相对 `$ref`） | **引用投影**（`REF User(userId,userName)`）→ 生成精简 schema，不返回整对象 |
-| **`@Ref` / 枚举的显示标签** | ~~`customProperties: { "$<字段名>": <标签> }`~~ → **⤴ 2026-09-26 取消**（**业务载荷不带呈现信息**） | **⤴ 修订（2026-09-26 作者：「设计时属性 label, description 我不想在网络中传输，浪费」「特别是 description」）** —— **原「✔ 2026-09-24 保留」作废**：① **实例数据面不带 `label` / `description` / `color` / `icon`**（枚举 = 成员名、`@Ref` = 外键值、`@One` = 嵌套对象）；② **`label` 走词条**（按 locale 分片）；**`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：颜色 / 图标**走不了词条**）；③ **`description` 不进 JSON / 不下发**（**另存 comments 层**，只进 `mmda doc` / IDE，见 [`meta-model.md`](lang/meta-model.md §6.3）；④ **不另开 `xxxLabel` 投影字段**（此条保留）。**✔ 2026-09-26 已裁**：① **`label` / `color` / `icon` 走词条（Model i18n）通道，按用户 locale 只下发一份** —— 作者：「**通常一个用户习惯用一种语言，下发那个 locale 即可**」，**不做多 locale 并存的元数据**；② **服务端组装作废**：旧实现 `assembleEnumProperties`（作者口语 `assembleEnums`）把枚举显示文本写进实体影子属性并打 `ASSEMBLE_ENUM` 标记 —— **再也不用**（`D:{java} EntityRepository.java:411`、`DomainService.java:330/343`，见 [`legacy/runtime-java.md`](legacy/runtime-java.md)）；③ **引用数据（`@Ref` / `@One`）的国际化 = 数据层的事**：作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **引用表按 locale 分行存储，查询按用户 locale 取那一行**，载荷里只有 FK / 嵌套对象，**不组装标签、不新增机制**（视图仍可自由声明字段，那不是本裁定的要求）。（详见 [`presentation.md`](lang/presentation.md §5「三通道分工」） |
+| **`@Ref` / 枚举的显示标签** | ~~`customProperties: { "$<字段名>": <标签> }`~~ → **⤴ 2026-09-26 取消**（**业务载荷不带呈现信息**） | **⤴ 修订（2026-09-26 作者：「设计时属性 label, description 我不想在网络中传输，浪费」「特别是 description」）** —— **原「✔ 2026-09-24 保留」作废**：① **实例数据面不带 `label` / `description` / `color` / `icon`**（枚举 = 成员名、`@Ref` = 外键值、`@One` = 嵌套对象）；② **`label` 走词条**（按 locale 分片）；**`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：颜色 / 图标**走不了词条**）；③ **`description` 不进 JSON / 不下发**（**另存 comments 层**，只进 `mmda doc` / IDE，见 [`meta-model.md`](lang/meta-model.md) §6.3）；④ **不另开 `xxxLabel` 投影字段**（此条保留）。**✔ 2026-09-26 已裁**：① **`label` / `color` / `icon` 走词条（Model i18n）通道，按用户 locale 只下发一份** —— 作者：「**通常一个用户习惯用一种语言，下发那个 locale 即可**」，**不做多 locale 并存的元数据**；② **服务端组装作废**：旧实现 `assembleEnumProperties`（作者口语 `assembleEnums`）把枚举显示文本写进实体影子属性并打 `ASSEMBLE_ENUM` 标记 —— **再也不用**（`D:{java} EntityRepository.java:411`、`DomainService.java:330/343`，见 [`legacy/runtime-java.md`](legacy/runtime-java.md)）；③ **引用数据（`@Ref` / `@One`）的国际化 = 数据层的事**：作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **引用表按 locale 分行存储，查询按用户 locale 取那一行**，载荷里只有 FK / 嵌套对象，**不组装标签、不新增机制**（视图仍可自由声明字段，那不是本裁定的要求）。（详见 [`presentation.md`](lang/presentation.md) §5「三通道分工」） |
 | 数组 | `array` + `items` | |
 | **视图投影** | 每视图独立 schema（`WorkOrder_index` / `WorkOrder_editor` / …）；`details` 视图全 `readOnly: true` | **不造 DTO**（§1.2） |
 | 隐藏 / 只读字段 | 隐藏字段**根本不投影**；只读字段出 `readOnly: true` | 与 `MetaUi` 同一套可见性规则 |
 | STM 状态机 | 有子类型时 `oneOf` + `discriminator`；**非法转移不进 schema**，进 409 的响应描述 | |
 | 多租户 / 行级数据范围 | **不进 schema**，用 `x-mmda-scope` | schema 只描述形状，不描述可见性 |
 
-> **另一条出口 —— FlatBuffers IR（✔ 2026-09-26 作者：「性能和效率优先」）**：**本节的表是 JSON / OAS 投影（可读性优先）**：`decimal` / `money` → `string`、`Timestamp` → `date-time`。**FlatBuffers 是另一条投影、口径不同**（性能 / 效率优先）：`decimal(p,s)` → **scaled `int64`**（`p ≤ 18`）、`DateTime` / `Timestamp` → **epoch `int64`**、可空 → **`table` vtable 存在位**、子表 → `vector of tables` —— 见 [`datatypes.md`](lang/datatypes.md **§11.5**。**两条投影共一个真源**（逻辑类型 + 8 轴）；**同一条 record 在两条出口上形态不同 = 设计如此，不是漂移** —— 但**每条的取值口径必须写进 Profile 显式声明**，不许默认。
+> **另一条出口 —— FlatBuffers IR（✔ 2026-09-26 作者：「性能和效率优先」）**：**本节的表是 JSON / OAS 投影（可读性优先）**：`decimal` / `money` → `string`、`Timestamp` → `date-time`。**FlatBuffers 是另一条投影、口径不同**（性能 / 效率优先）：`decimal(p,s)` → **scaled `int64`**（`p ≤ 18`）、`DateTime` / `Timestamp` → **epoch `int64`**、可空 → **`table` vtable 存在位**、子表 → `vector of tables` —— 见 [`datatypes.md`](lang/datatypes.md) **§11.5**。**两条投影共一个真源**（逻辑类型 + 8 轴）；**同一条 record 在两条出口上形态不同 = 设计如此，不是漂移** —— 但**每条的取值口径必须写进 Profile 显式声明**，不许默认。
 
 **`example` 的来源**：`.mt` 用例里的样本 + AI 造数（§3.9）→ `components.examples` 与端点级 `example`。**用例是派生物 ⇒ 例值也是派生物**。
 
@@ -332,7 +332,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
 | 1 | 暴露边界的默认值 | **默认 `internal`**，显式 `expose` 才对外（内部实现不会因为存在就变成契约） | §1.2、§1.1 |
-| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**✔ 已裁 2026-09-24（字形取 2b）：「复数形式」**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**：① **`/api` 入口前缀**（现状保留）；② **模块段小写**（`mes`）；③ **资源段 = 模型名原样 + 英语复数**（`WorkOrder` → `WorkOrders`）。**✔ 已裁 2026-09-24（2c 取 1A + 2A）**：**① 前缀不写死 = 模块 `moduleUrl` 配置**（作者原话「**实际上我在 module.moduleUrl 中配置了**」，真源 [`meta-model.md`](lang/meta-model.md §8）；**② 复数 = 遵循英文单词规则**（`+s`／`y → ies`／`s,x,z,ch,sh → es` 等常规变形），**前后端同一套实现、以现状为准、不引 `pathSegment` 手写覆盖**（作者原话「**复数形式遵循英文单词，前后端都有实现**」） | §3.4 |
+| 2 | 路径推导规则 | **`/<模块路径>/<资源>`**；**作者补充：「我们是 `/service/repository`」= 第一段是模块（service）、第二段是资源（repository / Record）**。**✔ 已裁 2026-09-24（字形取 2b）：「复数形式」**——**作者原话：「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」**：① **`/api` 入口前缀**（现状保留）；② **模块段小写**（`mes`）；③ **资源段 = 模型名原样 + 英语复数**（`WorkOrder` → `WorkOrders`）。**✔ 已裁 2026-09-24（2c 取 1A + 2A）**：**① 前缀不写死 = 模块 `moduleUrl` 配置**（作者原话「**实际上我在 module.moduleUrl 中配置了**」，真源 [`meta-model.md`](lang/meta-model.md) §8）；**② 复数 = 遵循英文单词规则**（`+s`／`y → ies`／`s,x,z,ch,sh → es` 等常规变形），**前后端同一套实现、以现状为准、不引 `pathSegment` 手写覆盖**（作者原话「**复数形式遵循英文单词，前后端都有实现**」） | §3.4 |
 | 3 | 稳定度标记语法与 `since` / `sunset` | **进语言**（`stable` / `beta` / `deprecated` + `since` / `sunset`；三端与网关都要读） | §1.2、§5 |
 | 4 | OpenAPI 版本与扩展字段白名单 | **3.1**；扩展字段**只允许 `x-mmda-*` 出**，`x-yapi-*` / `x-apifox-*` 由外部工具在导入时自加 | §3、§7 |
 | 5 | 命令面 | **独立子命令**（`mmda api export/diff/check` 不并入 `mmda generate`，便于 CI 分开跑） | §2、§4 |
@@ -342,4 +342,4 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | 9 | 基础模块固定名与 `sops` → 权限映射 | **沿用 `Base`**（语料名）；`READ` → **只出读端点**、`CRUD` → **全出** —— **作者此前「还没想清楚」的那部分随本条清掉** | §1.1、§3.6 |
 | 12 | `operationId` 命名规则 | **`moduleName_featureName_op`**（作者原话「我希望是 `moduleName_featureName_op`」）——ASCII、不含中文、同项目内唯一（`mmda check` 校验）；**SDK 与客户端代码依赖它，必须稳定**；**字形 = 模块名照抄模块段（小写）、Feature 名照抄模型名（Pascal）**，例 `mes_WorkOrder_create`（随 2c 一并定稿） | §3.3 |
 | 13 | scope 命名与授权粒度 | **按现状 = 模块权限 + Action 权限**（作者原话「这个我们已经实现，按照现状来，模块权限，Action 权限」）：**module 出读 / 写 scope，Action 出专属 scope，Feature 级不出 scope** | §3.6 |
-| 14 | `webhooks` 首版做不做 | **✔ 已裁 2026-09-24：取 B —— 首版不带 `webhooks`**。作者口径：「**webhooks `GET /events/mes/WorkOrders` 这样的习惯，我选择 B**」——对外事件**仍走拉取式端点**（`GET /events/<模块>/<资源复数>`），**生成的 OpenAPI 里不声明回调段**；`webhooks` 本体与「订阅 / 重试 / 签名」语义**留到 [`event_bus.md`](lang/event_bus.md §15 一起裁**，不进首版承诺 | §3.8、[`event_bus.md`](lang/event_bus.md §15 |
+| 14 | `webhooks` 首版做不做 | **✔ 已裁 2026-09-24：取 B —— 首版不带 `webhooks`**。作者口径：「**webhooks `GET /events/mes/WorkOrders` 这样的习惯，我选择 B**」——对外事件**仍走拉取式端点**（`GET /events/<模块>/<资源复数>`），**生成的 OpenAPI 里不声明回调段**；`webhooks` 本体与「订阅 / 重试 / 签名」语义**留到 [`event_bus.md`](lang/event_bus.md) §15 一起裁**，不进首版承诺 | §3.8、[`event_bus.md`](lang/event_bus.md) §15 |

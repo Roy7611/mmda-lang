@@ -57,15 +57,15 @@ Architect Phase 1 解析器只需实现以下子集：
 | 文档 | 内容 |
 |------|------|
 | [types.md](types.md) | 数据类型 |
-| [records.md](../../../lang/records.md | record、enum、view |
+| [records.md](../../../lang/records.md) | record、enum、view |
 | [behaviors.md](behaviors.md) | 状态、动作、事件注解 |
 | [expressions.md](expressions.md) | 表达式与模式匹配 |
 
 ## 参考示例
 
-完整 Order 示例见 [records.md](../../../lang/records.md。
+完整 Order 示例见 [records.md](../../../lang/records.md)。
 
 ## 相关
 
-- [../architect/meta-model.md](../../../lang/meta-model.md
+- [../architect/meta-model.md](../../../lang/meta-model.md)
 - [../ai/vibe-spec.md](../ai/vibe-spec.md)

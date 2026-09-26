@@ -400,4 +400,4 @@ events/**/*.mmda
 - [mmda-workflow.md](../../mmda-workflow.md) — 设计笔记 SSOT（M语言 示例）
 - [graph-files.md](graph-files.md) — `*.g` 图形投影格式
 - [diagrams.md](diagrams.md) — 图形语义与 SSOT 映射
-- [meta-model.md](../../../lang/meta-model.md — 逻辑元素定义
+- [meta-model.md](../../../lang/meta-model.md) — 逻辑元素定义

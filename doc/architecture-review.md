@@ -24,7 +24,7 @@
 | 数据所有权（架构师、DBA） | E-R 图 + 模块-对象绑定 | `biz/*.ma`、`data/models/**` | ARCH-104/105 |
 | 领域模型（设计师） | 记录模型 / 枚举 / 状态机 | `data/**` | ARCH-203/204/401 |
 | 数据流（设计师） | DFD / 节点图 / 数据映射图 | `flow/*.mf`（+ `*.mf.g`；跨模块流程另在 `flow/*.mb`） | ARCH-103/105 |
-| 权限与安全（架构师、审计） | 角色权限视图（**Role 与 Module 分解同级**，见 [`meta-model.md`](lang/meta-model.md §8.1） | `flow/roles/*.mr` | ARCH-304 |
+| 权限与安全（架构师、审计） | 角色权限视图（**Role 与 Module 分解同级**，见 [`meta-model.md`](lang/meta-model.md) §8.1） | `flow/roles/*.mr` | ARCH-304 |
 | 扩展与租户（架构师） | include / 扩展文件 | 项目清单 + `{tenant}/` 文件 | ARCH-302 |
 | 交付与目标端（架构师） | capability / Profile | Profile + capability 声明 | ARCH-305 |
 | 变更与演进（架构师、运维） | 变更日志 + 影响面 | `changelog/*.json` | ARCH-501/502 |
@@ -43,7 +43,7 @@
 | --- | --- | --- |
 | **ARCH-101** | 依赖单向：UI → Logic → Data，**禁止反向依赖** | A |
 | **ARCH-102** | **禁止循环依赖**（模块级与对象级都要查；对象级用 `@Ref`/`@One`/`@Many` + Converter 构成的有向图） | A |
-| **ARCH-103** | 禁止跨层跳过（UI 直接引用 Data 层对象），除非登记在白名单并写理由 —— **UI 层 = mmda-vue 前端项目**（[`presentation.md`](lang/presentation.md §5.1），故"UI 层"指 `packages/core` 的 metaui/ui 消费面 | A |
+| **ARCH-103** | 禁止跨层跳过（UI 直接引用 Data 层对象），除非登记在白名单并写理由 —— **UI 层 = mmda-vue 前端项目**（[`presentation.md`](lang/presentation.md) §5.1），故"UI 层"指 `packages/core` 的 metaui/ui 消费面 | A |
 | **ARCH-104** | **数据所有权唯一**：一个 Record 只被一个模块写 | A |
 | **ARCH-105** | 跨模块只走声明接口（不得直接改别人拥有的对象；引用必须走 `@Ref` 声明 + 权限） | A |
 | **ARCH-106** | 无孤立模块、无未归属 Feature；模块树无空壳 | A |
@@ -197,7 +197,7 @@ MCP 面：[`ai/tools.md`](ai/tools.md) 补 `mmda_arch_report`、`mmda_arch_gate`
 | [`workflows.md`](workflows.md) | 架构师 7 步的第 7 步门禁增加"架构评估通过"；L2/L3 变更的评估时点与它 §8 对齐 |
 | [`contracts-inventory.md`](contracts-inventory.md) | 现状盘点（60+ 概念 `file:line`）是**首次全量评估的输入**——它已经指出三处最危险的不一致 |
 | [`design-notes.md`](design-notes.md) | 架构师实操与 M语言 示例；本文只评"结构"，不重复"怎么做" |
-| [`project.md`](lang/project.md | 模块树、`include`/租户扩展、Profile 的存放位置 |
+| [`project.md`](lang/project.md) | 模块树、`include`/租户扩展、Profile 的存放位置 |
 
 ---
 

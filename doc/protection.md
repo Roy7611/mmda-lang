@@ -234,6 +234,6 @@ rg -n "启发式|heuristic|cost_model|weights" -g '!*.dll' -g '!*.so' D:/2026/ja
 
 - [`targets.md`](targets.md) — 三端契约与 capability 机制（§3.1 算法宿主）
 - [`contracts-inventory.md`](contracts-inventory.md) — 三端现有能力盘点
-- [`statements.md`](lang/statements.md — `@Action` 与状态机（native 节点的落点）
+- [`statements.md`](lang/statements.md) — `@Action` 与状态机（native 节点的落点）
 - [`errata.md`](errata.md) — 语法待裁项 11（native 节点声明）
 - [`..\PLAN.md`](..\PLAN.md) — A2（Rust + C ABI/WASM）、B5（FlatBuffers）是本文的前提

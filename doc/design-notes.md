@@ -778,7 +778,7 @@ gateway NotifyContractSigned ExclusiveGateway {
 
 ## 文件目录
 
-> **正式规范**：[doc/lang/project.md](lang/project.md（formatVersion 2.0）。以下为 SSOT 设计笔记摘要。
+> **正式规范**：[doc/lang/project.md](lang/project.md)（formatVersion 2.0）。以下为 SSOT 设计笔记摘要。
 
 mmda 项目目录：
 

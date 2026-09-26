@@ -6,13 +6,13 @@
 
 | 术语 | 英文 | 说明 |
 | --- | --- | --- |
-| 元模型 | Meta-Model | 描述系统结构的模型，语言无关；见 [meta-model.md](lang/meta-model.md |
+| 元模型 | Meta-Model | 描述系统结构的模型，语言无关；见 [meta-model.md](lang/meta-model.md) |
 | 元对象 | MetaObject / Record | 实体或视图的逻辑定义 |
 | 元列 | MetaCol / Field | 字段：类型、约束、关系引用 |
 | 元关系 | MetaRelation | 实体间一对多等导航关系 |
-| 显示标签 | `label` | 元数据里「给人看的标题」的**唯一属性名与 JSON 键**（✔ 2026-09-25 作者裁 B；**旧实现列名 `displayLabel`**）；枚举成员同叫 `label`，**字符串表示第 3 段的段名也是 `label`**（⤴ 2026-09-26 作者：「**text => label**」；旧实现里叫 `text`）；见 [meta-model.md](lang/meta-model.md §6 |
-| 元数据切片 | `locale` | **元数据 JSON 顶层字段**：**一份 JSON = 一个 locale** —— `label` / 成员 `label` 都是该 locale 的**最终值**（缺译文回落项目 `defaultLocale`）；**词条（Model i18n）通道按它分片、客户端按它缓存**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）；串的第 3 段 `label` 则是 **locale 无关形态**、存项目 `defaultLocale` 标签（⤴ 作者：「**2 defaultLocale**」）；见 [meta-model.md](lang/meta-model.md §6.2 |
-| 文档注释 | `description` / comments | 设计源的文档信息（`/// <label> : <description>` 的后半段）：**不进 JSON、不进业务载荷**，同 SQL `COMMENT ON` 的语义**另存 comments 层**（**✔ 载体 = A**：生成 DDL 时落数据库 `COMMENT ON`，B 不采用；⤴ 第一百一十八轮作者：「**1A**」）；见 [meta-model.md](lang/meta-model.md §6.3 |
+| 显示标签 | `label` | 元数据里「给人看的标题」的**唯一属性名与 JSON 键**（✔ 2026-09-25 作者裁 B；**旧实现列名 `displayLabel`**）；枚举成员同叫 `label`，**字符串表示第 3 段的段名也是 `label`**（⤴ 2026-09-26 作者：「**text => label**」；旧实现里叫 `text`）；见 [meta-model.md](lang/meta-model.md) §6 |
+| 元数据切片 | `locale` | **元数据 JSON 顶层字段**：**一份 JSON = 一个 locale** —— `label` / 成员 `label` 都是该 locale 的**最终值**（缺译文回落项目 `defaultLocale`）；**词条（Model i18n）通道按它分片、客户端按它缓存**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）；串的第 3 段 `label` 则是 **locale 无关形态**、存项目 `defaultLocale` 标签（⤴ 作者：「**2 defaultLocale**」）；见 [meta-model.md](lang/meta-model.md) §6.2 |
+| 文档注释 | `description` / comments | 设计源的文档信息（`/// <label> : <description>` 的后半段）：**不进 JSON、不进业务载荷**，同 SQL `COMMENT ON` 的语义**另存 comments 层**（**✔ 载体 = A**：生成 DDL 时落数据库 `COMMENT ON`，B 不采用；⤴ 第一百一十八轮作者：「**1A**」）；见 [meta-model.md](lang/meta-model.md) §6.3 |
 | 子系统 | Subsystem | 业务域顶层划分，如 MES、WMS |
 | 模块 | Module | 子系统下的功能分组 |
 | 功能 | Feature | 可独立交付的功能单元，通常绑定一个 Record |
@@ -30,7 +30,7 @@
 | --- | --- |
 | m 语言 | 元模型文本语法；Monaco 语言 id `m-lang`，MIME `text/x-m-lang` |
 | M 语言分片 | `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mb` `.mi` —— 按类型的语言文件 |
-| MMDA 项目 | SSOT：根 `{projectCode}.mmda` 清单 + `biz/` `data/` `flow/` `ui/`；见 [project.md](lang/project.md |
+| MMDA 项目 | SSOT：根 `{projectCode}.mmda` 清单 + `biz/` `data/` `flow/` `ui/`；见 [project.md](lang/project.md) |
 | 项目清单 | 根目录 `{projectCode}.mmda`（JSON），非语言模型 |
 | 工作区 | 展开目录，日常编辑与 git/svn（推荐形态） |
 | 归档包 | `.mmdax` —— ZIP 容器，与工作区路径 1:1，便于分发 |
@@ -56,15 +56,15 @@
 
 ### 3.1 事件与集成（唯一命名，✔ 2026-09-24 裁）
 
-> **本节是命名真源**：其他文档一律以此为准；[`event_bus.md`](lang/event_bus.md 只讲这些概念**在流上站哪个位置**。
+> **本节是命名真源**：其他文档一律以此为准；[`event_bus.md`](lang/event_bus.md) 只讲这些概念**在流上站哪个位置**。
 > **两条判据**：① 一个概念只留一个名字；② 同一个名字不许指两件事（发现撞车就改，见文末）。
 > **取舍原则（作者 2026-09-24 原话）**：认同 **Validator / Converter / Filter / Aggregator / Endpoint / Channel** 与 **EventSource**；**「我不用 Transformer，免得与那个 AI 的 Transformer 架构混淆」**。
 
 | 位置 | 统一名 | 定义 | **禁用别名（曾混用/易误解）** |
 | --- | --- | --- | --- |
 | 流的入口 | **EventSource（事件源）** | 产生事件/数据的源头；实现按 `kind` 区分：设备源 · 定时源（Tick）· 回调源（Webhook）· 库变更源（CDC/轮询）· 文件源 · 消息源 · 进程内事件源 | ~~Source~~ · ~~Input~~ · ~~Inbound Adapter~~ · ~~Trigger（降为 EventSource 的配置项 `on`）~~ |
-| 流的出口 | **EventSink（数据汇）**（**✔ 2026-09-24 裁：正式名由 `Sink` 改为 `EventSink`，与 `EventSource` 对称，见 [`event_bus.md`](lang/event_bus.md §15-8**） | 投递方式**三种（属性，不是三个概念）**：**写入 Write · 推送 Push · 调用 Call**。**用法纪律**：契约、生成物、正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字） | ~~Output~~ · ~~Target~~ · ~~Outbound Adapter~~ |
-| 连接单元 | **Endpoint（端点）** | 一条连接的**配置单元**：协议 / 地址 / 凭据引用 / 幂等键 / 重试 / 限流 / 保留期；分**入端点**与**出端点**。**✔ 2026-09-24 补定义**：**端点 = API + 集成定义**——在 API 之上再加**数据转化（Converter / DataMapper 映射）、过滤（Filter / Validator）、投递方式（Write / Push / Call）、触发与重试、对账**；**不改 API 的业务语义**（作者原话「端点是要在 API 的基础上增加定义数据的转化、过滤规则的」，[`event_bus.md`](lang/event_bus.md §6 / §15-9） | ~~Adapter（Channel Adapter）~~ |
+| 流的出口 | **EventSink（数据汇）**（**✔ 2026-09-24 裁：正式名由 `Sink` 改为 `EventSink`，与 `EventSource` 对称，见 [`event_bus.md`](lang/event_bus.md) §15-8**） | 投递方式**三种（属性，不是三个概念）**：**写入 Write · 推送 Push · 调用 Call**。**用法纪律**：契约、生成物、正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字） | ~~Output~~ · ~~Target~~ · ~~Outbound Adapter~~ |
+| 连接单元 | **Endpoint（端点）** | 一条连接的**配置单元**：协议 / 地址 / 凭据引用 / 幂等键 / 重试 / 限流 / 保留期；分**入端点**与**出端点**。**✔ 2026-09-24 补定义**：**端点 = API + 集成定义**——在 API 之上再加**数据转化（Converter / DataMapper 映射）、过滤（Filter / Validator）、投递方式（Write / Push / Call）、触发与重试、对账**；**不改 API 的业务语义**（作者原话「端点是要在 API 的基础上增加定义数据的转化、过滤规则的」，[`event_bus.md`](lang/event_bus.md) §6 / §15-9） | ~~Adapter（Channel Adapter）~~ |
 | 连接实现 | **Connector（连接器）** | 端点的**实现**（内置或插件提供：Kafka · RabbitMQ · OPC-UA · 文件 · HTTP …） | —（与 Endpoint 别混：**配置 vs 实现**） |
 | 传输 | **Channel（通道）** | 端点与处理器之间的传输；投递语义 = **点对点（队列）/ 发布订阅（主题）**；`transport` = `memory` · `redis` · `rabbitmq` · `kafka` · `db`（**跨进程/跨系统集成走消息平台**） | ~~Queue / Topic~~（只作投递语义的修饰，不作概念名） |
 | 处理（上位词） | **Processor（处理器）** | 流中间节点的统称 | ~~Transformation~~ · ~~Transform~~ · ~~Map~~ · ~~Compute（并入 Converter）~~ |
@@ -77,10 +77,10 @@
 | 配置面 | **DataMapper（数据映射器）** | 字段级映射 + 校验/转换/计算规则的**声明处**（数据映射图）；**不是流上的节点** | ~~Mapping Engine~~ · ~~ETL 映射器~~ |
 | 编排 | **DataFlow（数据流）** | 数据的流转图（节点图 / 数据流图 / 数据映射图）；**与 ModuleFlow（人的审批流转）严格区分** | ~~Workflow~~（那是 ModuleFlow） · ~~ETL Job~~ |
 | 事件面角色 | **Publisher / Subscriber（发布者 / 订阅者）** | MMDA 文档的**统一用词**（业务语义，`subscribe` 就是它） | ~~Producer / Consumer~~（**仅**描述外部系统或中间件时用） |
-| 代码实现 | **Handler（处理器实现）** | KEEP 区里真正写代码的地方；订阅生成的接口名沿用 `handler Xxx`（[`events.md`](lang/events.md §3） | ~~ProcessorImpl~~ |
+| 代码实现 | **Handler（处理器实现）** | KEEP 区里真正写代码的地方；订阅生成的接口名沿用 `handler Xxx`（[`events.md`](lang/events.md) §3） | ~~ProcessorImpl~~ |
 | 可靠性机制 | **Outbox（事务性发件箱）** · **幂等键 `eventId`** · **失败队列（Dead Letter）** · **重放（Replay）** | 机制名，不是节点 | ~~消息表~~ · ~~重试表~~ |
 
-> ⚠️ **两处撞车（✔ 2026-09-24 均已裁，见 [`event_bus.md`](lang/event_bus.md §15-8/9）**：① **「端点」**——[`api.md`](api.md) 里指 **HTTP 接口**（由 module 推导），本文指**集成连接点**；**已裁规则（§15-9 取 A）**：**接口一律写「API / 接口」，集成连接一律写「端点」**（要强调时写「集成端点」）。② **「触发器」**——`@trigger`（记录级数据库触发器，[`records.md`](lang/records.md）与「事件源」同词；规则：`@trigger` 保留，**Trigger 不再作独立概念名**。
+> ⚠️ **两处撞车（✔ 2026-09-24 均已裁，见 [`event_bus.md`](lang/event_bus.md) §15-8/9）**：① **「端点」**——[`api.md`](api.md) 里指 **HTTP 接口**（由 module 推导），本文指**集成连接点**；**已裁规则（§15-9 取 A）**：**接口一律写「API / 接口」，集成连接一律写「端点」**（要强调时写「集成端点」）。② **「触发器」**——`@trigger`（记录级数据库触发器，[`records.md`](lang/records.md)）与「事件源」同词；规则：`@trigger` 保留，**Trigger 不再作独立概念名**。
 
 ### 3.2 易混淆概念辨析（四对 + `stream`，✔ 2026-09-24 裁）
 
@@ -93,7 +93,7 @@
 | 视角 | **业务**：这个事件对**谁可见** | **传输**：这条消息**写给谁** |
 | 基数 | **一对多**——**订阅关系决定可见范围** | **一对一**——一条消息被一个消费者取走（多个消费者是**分工**，不是广播） |
 | 角色 | **Publisher / Subscriber** | **Producer / Consumer** |
-| 有无业务语义 | Subscriber **有**：订阅了哪个事件、交给哪个 Handler（[`events.md`](lang/events.md §3） | Consumer **可以没有**：搬运、审计、转发也算 |
+| 有无业务语义 | Subscriber **有**：订阅了哪个事件、交给哪个 Handler（[`events.md`](lang/events.md) §3） | Consumer **可以没有**：搬运、审计、转发也算 |
 | 我们怎么用 | **文档统一用这一组**（语言层的 `subscribe` 就是它） | **只在描述中间件（Kafka / RabbitMQ / Redis）的 API 与配置时用** |
 
 **不变量**：**一个事件 → N 条消息 → N 个订阅者**（同一事件可投影成多条消息：不同协议、不同载荷）；**每个订阅者的消费互相独立**——一个订阅者慢、甚至没有，都不影响别人，事件照样成立。
@@ -122,8 +122,8 @@
 
 **不变量（请背下来）**：**Outbox 保「不丢」，Inbox 保「不重」**。
 
-- **Outbox（事务性发件箱）** = 业务事务里**同事务**写一行待发记录，提交后由投递器发出（[`event_bus.md`](lang/event_bus.md §9.2）；
-- **Inbox（去重表）** = 收到消息时按 **`eventId`** 落一行，重复投递直接丢弃（幂等）——它是「**至少一次 + 幂等 = 业务上的 exactly-once**」的另一半（[`event_bus.md`](lang/event_bus.md §9.3）。
+- **Outbox（事务性发件箱）** = 业务事务里**同事务**写一行待发记录，提交后由投递器发出（[`event_bus.md`](lang/event_bus.md) §9.2）；
+- **Inbox（去重表）** = 收到消息时按 **`eventId`** 落一行，重复投递直接丢弃（幂等）——它是「**至少一次 + 幂等 = 业务上的 exactly-once**」的另一半（[`event_bus.md`](lang/event_bus.md) §9.3）。
 
 **命名保留**：`Inbox` / `Outbox` 是**行业固定词**（Transactional Outbox Pattern），**不许改成 `SendBox` / `ReceiveBox` 之类自造词**；与邮件客户端的「收件箱 / 发件箱」**同义**，不构成撞车。
 
@@ -162,7 +162,7 @@
 | moduleType | Module 层级：`0` Subsystem（`M`）· `1` Module（`M.01`）· `2` Feature（`M.03.001`） |
 | relationType | `1` HAS_ONE · `2` HAS_MANY |
 | FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitVector）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 |
-| **位向量** | **`BitVector(n)`**（**规范名**，✔ 2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）；**别名 = `BitSet` / `BitSet(n)` / `BitArray`**（输入兼容，`mmda fmt` 归一）、**后缀式 `BitVector8`…`BitVector64`** ≡ `BitVector(8)`…`BitVector(64)`。`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128）；真源 `DataType.BIT_VECTOR`(129)；见 [`datatypes.md`](lang/datatypes.md §7 |
+| **位向量** | **`BitVector(n)`**（**规范名**，✔ 2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）；**别名 = `BitSet` / `BitSet(n)` / `BitArray`**（输入兼容，`mmda fmt` 归一）、**后缀式 `BitVector8`…`BitVector64`** ≡ `BitVector(8)`…`BitVector(64)`。`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128）；真源 `DataType.BIT_VECTOR`(129)；见 [`datatypes.md`](lang/datatypes.md) §7 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
 | `.m` | **纯脚本文件**的扩展名（✔ 2026-09-25）：模型之外的脚本程序（拦截器 / 钩子体 / 可复用函数），**与它服务的对象同目录**，可用 `import` 引到别的文件里复用；模型仍用分片族（`.mm` / `.me` / `.ms` …） |
@@ -172,8 +172,8 @@
 | `@Icon("alias")` | **枚举成员的图标别名**（✔ 2026-09-25）：逻辑别名（如 `"cancel"`）—— **完整别名**（显式写的即最终别名，不叠前缀）；**开放**，语义词由**开发人员自定义**，语言层只校验是字符串；**不绑定图标库**，映射在 **UI 层**（主题 / 皮肤）；**没映射上顶多不显示**（可选 warning，不报错） |
 | `@Partitioned` / `partitioned` | **分区主键**（✔ 2026-09-25 由 `@PartitionID` 改名）：**字段级行尾 `partitioned`**（不带范围）／ **注解 `@Partitioned [min,max]`**（带段范围）—— 与元对象属性 `MetaObject.partitioned` 同名；一个对象只能有一个 |
 | 基础表（base table） | **UNION 进某个视图的那几张表**（视图的组成表）—— 「标识共享组」即一个视图的基础表集合；SQL 现成词，不用「成员表 / 来源表」 |
-| 标识共享（Identity Sharing） | **一组要 UNION 成同一个视图的表，在 realId 空间里各领一个互不重叠的段**（`@Partitioned [min,max]` 声明），使 UNION 后的主键天然不冲突（✔ 2026-09-25 作者说明；段划分与六个组见 [`records.md`](lang/records.md §2.3） |
-| `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@Partitioned [min,max]` + `uint64 identity`**，见 [`datatypes.md`](lang/datatypes.md §5 |
+| 标识共享（Identity Sharing） | **一组要 UNION 成同一个视图的表，在 realId 空间里各领一个互不重叠的段**（`@Partitioned [min,max]` 声明），使 UNION 后的主键天然不冲突（✔ 2026-09-25 作者说明；段划分与六个组见 [`records.md`](lang/records.md) §2.3） |
+| `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@Partitioned [min,max]` + `uint64 identity`**，见 [`datatypes.md`](lang/datatypes.md) §5 |
 | customProperties | API 中 REF/ENUM 的显示标签扩展 |
 | MetaUiField | UI 呈现：formatter、editor、renderer |
 | UiLogic | 前端模块交互逻辑（beforeEdit 等钩子） |

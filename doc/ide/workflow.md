@@ -48,7 +48,7 @@ flowchart LR
 | `model` | 绑定的 Record；有 model 则打开其 STM |
 | `ui` | 可选定制：index / editor / details / search / report（在 **交互设计** 步骤配置） |
 
-点击树节点 → **属性面板** 编辑上述字段。详见 [meta-model.md](../lang/meta-model.md 与根目录设计笔记中的 TypeScript 示例。
+点击树节点 → **属性面板** 编辑上述字段。详见 [meta-model.md](../lang/meta-model.md) 与根目录设计笔记中的 TypeScript 示例。
 
 ## 3. 数据架构
 
@@ -80,7 +80,7 @@ flowchart LR
 - **auth module**：模块访问；**actions** 子句：Action 级授权
 - **scope**：OWNER / WORKGROUP / DEPARTMENT / ALL
 
-实体通过 `IAuthorizable` 约定 `creatorId`、`ownerId` 等字段支撑数据范围。资产目录：`flow/roles/*.mr`（见 [doc/lang/project.md](../lang/project.md）。
+实体通过 `IAuthorizable` 约定 `creatorId`、`ownerId` 等字段支撑数据范围。资产目录：`flow/roles/*.mr`（见 [doc/lang/project.md](../lang/project.md)）。
 
 ### 4.2 数据流与单对象行为
 
@@ -132,8 +132,8 @@ BPMN 术语对应：顺序流 `->`、消息流 `-->`；活动分 User / Manual /
 
 ## 7. 相关文档
 
-- [meta-model.md](../lang/meta-model.md
+- [meta-model.md](../lang/meta-model.md)
 - [diagrams.md](diagrams.md)
-- [language/behaviors.md](../lang/statements.md
-- [events/architecture.md](../lang/events.md
-- [project-format.md](../lang/project.md
+- [language/behaviors.md](../lang/statements.md)
+- [events/architecture.md](../lang/events.md)
+- [project-format.md](../lang/project.md)

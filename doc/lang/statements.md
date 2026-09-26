@@ -71,7 +71,7 @@ var c = a as Point?;     // as 转换；尾无 ? 则失败抛异常
 
 ### 空值（`null`）
 
-- **只有一个空值 = `null`**（= SQL `NULL`）；**TS 的 `undefined` 视为同一空值、不进 m 语言**（[`datatypes.md`](datatypes.md §1）；
+- **只有一个空值 = `null`**（= SQL `NULL`）；**TS 的 `undefined` 视为同一空值、不进 m 语言**（[`datatypes.md`](datatypes.md) §1）；
 - **比较**：`is null` / `is not null`（SQL 风格）；**`= null` / `<> null` = 校验期 error**（SQL 里最常见的一类静默错误，工具必须拦）；
 - **三值逻辑沿用 SQL**：`1 = null` → **UNKNOWN**（不是 `false`）；`if` / `switch when` 条件遇 UNKNOWN 视为**不成立**（与 SQL `WHERE` 同口径）；
 - ✔ **兜底函数（2026-09-26 定稿 —— 作者：「可以」）**：**`coalesce(a, b, …)` = 规范形态**（SQL 标准多参、≥ 2 参，取**第一个非 `null` 值**）；**`ifnull(a, b)` = 二元等价写法**（语料实测 `IFNULL(costPrice,0)`，保留；**两者只归一大小写、不互改写法** —— 语料里 `IFNULL` 在用的地方就让它继续用）；
@@ -313,7 +313,7 @@ flows:
 
 ## 6. 相关
 
-- [records.md](records.md — 对象与字段
-- [events.md](events.md — 事件声明与事件驱动架构
-- [meta-model.md](meta-model.md — Action / FlowEdge 元模型
+- [records.md](records.md) — 对象与字段
+- [events.md](events.md) — 事件声明与事件驱动架构
+- [meta-model.md](meta-model.md) — Action / FlowEdge 元模型
 - [errata.md](../errata.md) — 待裁决

@@ -1,6 +1,6 @@
 # 图形投影文件（`*.g`）
 
-> **formatVersion 1.0** · 与 [project-format.md](../lang/project.md、[diagrams.md](diagrams.md)、[diagram-adapters.md](diagram-adapters.md) 配合使用
+> **formatVersion 1.0** · 与 [project-format.md](../lang/project.md)、[diagrams.md](diagrams.md)、[diagram-adapters.md](diagram-adapters.md) 配合使用
 
 ## 1. 设计原则
 
@@ -195,7 +195,7 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 
 ## 4.5 多视图：数据流 `.mf.g`（BPMN 已独立成 `.mb`）
 
-**✔ 2026-09-24 已裁**（[`../event_bus.md`](../lang/event_bus.md §15-3）：**数据流 = `.mf`**（一个文件一份数据流，其 `.g` 多 sheet）；**跨模块流程（BPMN）独立为 `.mb` + `.mb.g`**（单视图 `mb-bpmn`）。
+**✔ 2026-09-24 已裁**（[`../event_bus.md`](../lang/event_bus.md) §15-3）：**数据流 = `.mf`**（一个文件一份数据流，其 `.g` 多 sheet）；**跨模块流程（BPMN）独立为 `.mb` + `.mb.g`**（单视图 `mb-bpmn`）。
 
 一个 `flow/crm.mf` 对应一个 `flow/crm.mf.g`，内含多个 **view**（sheet）——节点图 / 数据流图 / 数据映射图：
 
@@ -226,7 +226,7 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 | `mb-bpmn` | `.mb` | `.mb.g` | 跨模块流程（BPMN） |
 | — | `.mi` | — | 内置 UI 设计器，无 `.g` |
 
-> ✔ **已裁（2026-09-24）**：数据流编排的三张图（**节点图 / 数据流图 / 数据映射图**）就是 `mf-flow` / `mf-dfd` / `mf-map` 三个 view 种类，落在 `.mf` 的 `*.mf.g` 上；**跨模块流程（BPMN）另立 `.mb`**（`mb-bpmn`）——作者原话「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」，见 [`../event_bus.md`](../lang/event_bus.md §15-3 与 [`../project.md`](../lang/project.md §1.2。
+> ✔ **已裁（2026-09-24）**：数据流编排的三张图（**节点图 / 数据流图 / 数据映射图**）就是 `mf-flow` / `mf-dfd` / `mf-map` 三个 view 种类，落在 `.mf` 的 `*.mf.g` 上；**跨模块流程（BPMN）另立 `.mb`**（`mb-bpmn`）——作者原话「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」，见 [`../event_bus.md`](../lang/event_bus.md) §15-3 与 [`../project.md`](../lang/project.md) §1.2。
 
 ## 7. 插件式架构
 
@@ -360,7 +360,7 @@ apps/architect-ui/src/plugins/
 
 ## 10. 相关文档
 
-- [project-format.md](../lang/project.md — 目录与扩展名
+- [project-format.md](../lang/project.md) — 目录与扩展名
 - [diagrams.md](diagrams.md) — E-R / STM / DFD 语义映射
 - [diagram-adapters.md](diagram-adapters.md) — 渲染引擎适配
 - [plugins.md](plugins.md) — 插件 API

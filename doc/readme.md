@@ -1,7 +1,7 @@
 # m 语言规范（总览）
 
 > 本文是语言规范的**入口与设计原则**；语法细则在分篇文档里，不要在这里堆细则。
-> 分篇：[datatypes.md](lang/datatypes.md（类型）、[records.md](lang/records.md（对象）、[statements.md](lang/statements.md（表达式与行为）、[events.md](lang/events.md（事件）、[event_bus.md](lang/event_bus.md（事件总线与集成编排）、[presentation.md](lang/presentation.md（呈现）、[meta-model.md](lang/meta-model.md（元模型）、[project.md](lang/project.md（项目格式）。
+> 分篇：[datatypes.md](lang/datatypes.md)（类型）、[records.md](lang/records.md)（对象）、[statements.md](lang/statements.md)（表达式与行为）、[events.md](lang/events.md)（事件）、[event_bus.md](lang/event_bus.md)（事件总线与集成编排）、[presentation.md](lang/presentation.md)（呈现）、[meta-model.md](lang/meta-model.md)（元模型）、[project.md](lang/project.md)（项目格式）。
 > 未裁决的口径见 [errata.md](errata.md)；工具与 IDE 见 [index.md](index.md#工具与-ide)。
 > **愿景与四层目标（为什么做 m 与 MMDA：商业 / 技术 / 用户 / 架构）见 [vision.md](vision.md)**；本文只管**语言本身**。
 > **运维与可观测性（DevOps 流水线、监控出口、配置管理、应急处理）见 [operations.md](operations.md)**。
@@ -20,7 +20,7 @@
 - **更靠近实现**：支持数据库迁移、多语言转译（生成 Java / C# / TS 等）；
 - **Vibe & Spec 编程**：设计好直接交给 AI 实现。
 
-**边界（重要）**：m 是**声明式 DSL + 受限的纯函数表达式层**，不是通用编程语言。业务逻辑仍由工程师或 AI 用 Java / C# / TS 在 KEEP 区实现——这一条与「架构阶段只定义接口」是同一个决定（见 [events.md](lang/events.md 的「动作（Action）」一节）。
+**边界（重要）**：m 是**声明式 DSL + 受限的纯函数表达式层**，不是通用编程语言。业务逻辑仍由工程师或 AI 用 Java / C# / TS 在 KEEP 区实现——这一条与「架构阶段只定义接口」是同一个决定（见 [events.md](lang/events.md) 的「动作（Action）」一节）。
 
 ## 2. 设计原则
 
@@ -37,7 +37,7 @@
 ```
 L1 业务架构   Subsystem / Module / Feature        `models/modules/`（需求与角色在 `intents/`）
 L2 领域模型   Record / Field / Relation / Enum / View / STM   `models/objects|enums|stms/`
-L3 事件与集成 Event / Channel / Subscriber         `models/flows/`、事件声明（总线与编排见 [event_bus.md](lang/event_bus.md）
+L3 事件与集成 Event / Channel / Subscriber         `models/flows/`、事件声明（总线与编排见 [event_bus.md](lang/event_bus.md)）
 ```
 
 ## 4. 最小全貌示例
@@ -80,7 +80,7 @@ enum OrderStatus : int {
 
 ## 5. 吸收其他语言的什么，为什么
 
-我们喜欢 `Java`、`C#`、`Rust`、`Go`、`Dart` 和 `TS`，但追求**简单、自然**的表达方式。以下是取舍的理由（语法细则见 [statements.md](lang/statements.md）：
+我们喜欢 `Java`、`C#`、`Rust`、`Go`、`Dart` 和 `TS`，但追求**简单、自然**的表达方式。以下是取舍的理由（语法细则见 [statements.md](lang/statements.md)）：
 
 | 主题 | 采纳 | 理由 |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ enum OrderStatus : int {
 | 记录 | `record` / `tuple` / `struct`，**不用 `class`** | 对象是库/文件中的实体，不是内存 OO 类；字段默认可写，不写样板 getter/setter |
 | Map | 视为 `record<K,V>`（二元 tuple，首元素为 key） | 一个概念一个主人，不为 Map 另造类型 |
 | 箭头 | `=>` 表达 lambda/映射；`->` **只**表达状态转移 | 两种语义分家，读代码时不用猜 |
-| 模式匹配 | C# 的 `switch` 表达式 + `when`（**语料另有 SQL 风格 `case when … end`，两者并存**） | 逗号表示「停顿但未结束」，贴近自然语言；`case` 家族为**迁移兼容**保留（字档待裁，见 [statements.md](lang/statements.md §2） |
+| 模式匹配 | C# 的 `switch` 表达式 + `when`（**语料另有 SQL 风格 `case when … end`，两者并存**） | 逗号表示「停顿但未结束」，贴近自然语言；`case` 家族为**迁移兼容**保留（字档待裁，见 [statements.md](lang/statements.md) §2） |
 | 类型判断 | `is`（同时承担 `typeof`/`instanceof`）、`as`（转换） | 比 `instanceof` + 强转简洁 |
 | 引用传递 | 只用 `&` | `*` 传参歧义太大 |
 | 文档 | `///` + Markdown，区节用 `@param`/`@remarks` | 不自造文档标记；`[title](url)`、`[func]` 的表达最自然 |
@@ -107,7 +107,7 @@ enum OrderStatus : int {
     └── delivery/              S4 交付：profile / deploy
         ↕ parse / emit
     元模型 AST / IR（语言无关）
-> **布局口径（✔ 2026-09-25）**：**目录自由、四根为默认**；**语言文件统一 `*.m`**（partType 由**正文首关键字**判定，路径与后缀不参与）；语料旧布局（`data/models/*.mm` / `data/enums/*.me` / `data/stms/*.ms` / `flow/*.mf` / `ui/**/*.mi`）见 [project.md](lang/project.md §11 迁移。
+> **布局口径（✔ 2026-09-25）**：**目录自由、四根为默认**；**语言文件统一 `*.m`**（partType 由**正文首关键字**判定，路径与后缀不参与）；语料旧布局（`data/models/*.mm` / `data/enums/*.me` / `data/stms/*.ms` / `flow/*.mf` / `ui/**/*.mi`）见 [project.md](lang/project.md) §11 迁移。
         ↕
     IDE 图形视图 · 数据库 · DDL · 代码骨架 · 文档
 ```
@@ -133,5 +133,5 @@ enum OrderStatus : int {
 
 - [index.md](index.md) — 全部文档索引
 - [errata.md](errata.md) — 待裁决口径（**写解析器前必读**）
-- [meta-model.md](lang/meta-model.md · [project.md](lang/project.md
+- [meta-model.md](lang/meta-model.md) · [project.md](lang/project.md)
 - `..\PLAN.md` — 落地计划（决策、阶段、验收）

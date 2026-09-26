@@ -1,7 +1,7 @@
 # 命名约定（标识符与生成代码）
 
 > 版本 0.1 · 2026-09-24 · 真源：**命名约定**（语言内标识符 + 三端生成代码 + 跨端契约名）
-> **与相邻文档的分工**：[`glossary.md`](glossary.md) 管「**词**」（同一概念只留一个名字）；**本文管「标识符怎么写」**。[`records.md`](lang/records.md 管字段语法、[`project.md`](lang/project.md 管文件与目录、[`targets.md`](targets.md) 管各端能力、[`api.md`](api.md) 管 API 契约、[`operations.md`](operations.md) §3.1 管指标名、[`ide/i18n.md`](ide/i18n.md) 管 i18n key。
+> **与相邻文档的分工**：[`glossary.md`](glossary.md) 管「**词**」（同一概念只留一个名字）；**本文管「标识符怎么写」**。[`records.md`](lang/records.md) 管字段语法、[`project.md`](lang/project.md) 管文件与目录、[`targets.md`](targets.md) 管各端能力、[`api.md`](api.md) 管 API 契约、[`operations.md`](operations.md) §3.1 管指标名、[`ide/i18n.md`](ide/i18n.md) 管 i18n key。
 > **既有散落口径收拢于本文**：`records.md`（字段 camelCase）、`project.md`（类型 PascalCase）、`templates/conventions.template.md`、`ai/vibe-spec.md`——**以本文为准**，那几处保留为指针。
 
 **作者口径（原话，2026-09-24）**：
@@ -42,7 +42,7 @@
 | **字段 / 属性** | **camelCase（小写开头）** | `materialCode` · `createdAt` · `isDeleted` | **含 C# 属性**（代价见 §3.2） |
 | **枚举成员** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `OrderStatus.DRAFT` · `OrderStatus.RELEASED` · `YesNo.YES` | 成员名进载荷 → 属**契约名**，**三端一致**（✔ 2026-09-24 作者补充） |
 | **常量** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `MAX_RETRY_COUNT` · `DEFAULT_PAGE_SIZE` | **三端一致**（不随各端习惯，✔ 2026-09-24 作者补充） |
-| **生成的 Handler 接口** | **`I` + 事件名 + `Handler`** | `event GoodsArrived` → 接口 `IGoodsArrivedHandler`，KEEP 区实现 `GoodsArrivedHandler` | [`events.md`](lang/events.md §3 的接口名由此统一（原记「由 Profile 模板决定」→ 模板可定缀合，**不得违反本文 §1**） |
+| **生成的 Handler 接口** | **`I` + 事件名 + `Handler`** | `event GoodsArrived` → 接口 `IGoodsArrivedHandler`，KEEP 区实现 `GoodsArrivedHandler` | [`events.md`](lang/events.md) §3 的接口名由此统一（原记「由 Profile 模板决定」→ 模板可定缀合，**不得违反本文 §1**） |
 | **数据库标识符** | **与模型同名，不转写**：表 / 视图 = **类名 PascalCase** · 列 = **属性名 camelCase** | `Record Material` → 表 `Material`、列 `materialCode`；`View MaterialStock` → 视图 `MaterialStock` | ✔ 2026-09-24 作者裁（原话「**sql 字段命名同属性，表名同类名，视图也是和表一样，便于 orm 的一致性**」）；**引号与前置条件见 §3.3** |
 
 **为什么禁止 `Impl`**（写清理由，别只留禁令）：
@@ -66,14 +66,14 @@
 | 字段 / 属性名 | camelCase，与声明同名 | 同上 | 同上 |
 | 枚举成员 | **`UPPER_SNAKE`**（按名序列化时，载荷里就是 `DRAFT` 这样的字符串） | 同上 | 同上 |
 | 常量 | **`UPPER_SNAKE`**（三端一致） | 同上 | 同上 |
-| **事件名** | PascalCase，与 `event` 声明同名 | [`events.md`](lang/events.md | 三端事件名对账 |
-| **消息头** | camelCase | [`event_bus.md`](lang/event_bus.md §1（`eventId` · `occurredAt` · `tenant` · `traceId`） | 头字段对账 |
+| **事件名** | PascalCase，与 `event` 声明同名 | [`events.md`](lang/events.md) | 三端事件名对账 |
+| **消息头** | camelCase | [`event_bus.md`](lang/event_bus.md) §1（`eventId` · `occurredAt` · `tenant` · `traceId`） | 头字段对账 |
 | **JSON 字段（载荷）** | **= 字段 / 属性名原样（camelCase），不做二次转换** | 序列化契约（[`api.md`](api.md)） | 契约测试 |
 | **API 路径与 `operationId`** | 属 [`api.md`](api.md) §8.2-②⑫——**✔ 已裁 2026-09-24**：路径 = **`/api/<模块小写>/<模型名复数>`**（作者口径：「我们是 `/service/repository`」+「我现在 api 是：`GET /api/mes/WorkOrders` 复数形式」）、`operationId` = **`moduleName_featureName_op`**（例 `mes_WorkOrder_create`）；**⚠️ 仍开放：`/api` 前缀写死还是 Profile 可配、复数变形规则（`api.md` §8.2-2c）**；本文明令：**路径段与 `operationId` 也不许出现 `Impl`** | [`api.md`](api.md) | 契约测试 |
 | **指标名** | `mmda_<域>_<对象>_<计量>`（已在 [`operations.md`](operations.md) §3.1） | 自动打点 | 指标名清单对账 |
 | **i18n key** | 见 [`ide/i18n.md`](ide/i18n.md)（Shell 与模型双层 key） | 设计器 | — |
-| **模块 / 权限码 / 端点 id** | 沿用既有（`M.01` · `B` · 端点 id）——见 [`project.md`](lang/project.md、[`event_bus.md`](lang/event_bus.md §6 | — | 装载期冲突检测已有 |
-| **元数据属性名 / JSON 键**（`Meta*`） | camelCase、**与语言侧名一致**；**「显示标签」统一 `label`**（**旧实现列名 `displayLabel` 仅作历史对照**，✔ 2026-09-25 作者裁 B） | [`meta-model.md`](lang/meta-model.md §6 | 元数据类与 JSON 键对账（[`targets.md`](targets.md) §5） |
+| **模块 / 权限码 / 端点 id** | 沿用既有（`M.01` · `B` · 端点 id）——见 [`project.md`](lang/project.md)、[`event_bus.md`](lang/event_bus.md) §6 | — | 装载期冲突检测已有 |
+| **元数据属性名 / JSON 键**（`Meta*`） | camelCase、**与语言侧名一致**；**「显示标签」统一 `label`**（**旧实现列名 `displayLabel` 仅作历史对照**，✔ 2026-09-25 作者裁 B） | [`meta-model.md`](lang/meta-model.md) §6 | 元数据类与 JSON 键对账（[`targets.md`](targets.md) §5） |
 | **数据库标识符（表 / 视图 / 列）** | **= 模型名逐字一致**（表与视图 PascalCase、列 camelCase，**不转写、不加前缀**） | 内核 IR → DDL 生成器（各方言） | **生成 DDL 的标识符逐字对账**（§3.3、[`targets.md`](targets.md) §5） |
 
 ---
@@ -87,7 +87,7 @@
 | 方法名 | `camelCase` | `PascalCase` | `camelCase` | 各端惯例（作者原话「其他尊重习惯」） |
 | 常量 | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **三端统一，不随各端习惯**（✔ 2026-09-24 作者补充） |
 | 包 / 命名空间 | `com.x.y`（小写点分） | `X.Y`（Pascal 点分） | 模块路径 | 不进契约 |
-| 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](lang/project.md（`*.mm` 一对象一文件） |
+| 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](lang/project.md)（`*.mm` 一对象一文件） |
 | 局部变量 / 参数 | `camelCase` | `camelCase` | `camelCase` | — |
 | 泛型参数 | `T` / `TKey` | 同 Java | 同 Java | — |
 | **前端 / Flutter 本地名**（组件名 · 文件名 · CSS class · 静态资源名） | **允许 `kebab-case` / `snake_case`**（含 `-`、`_`） | 同（Dart 文件名本就走 `snake_case`） | 同 | ✔ 2026-09-24 作者裁：**尊重他们的习惯**（组件名、CSS BEM），细则见 §3.4 |
@@ -161,7 +161,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 
 **边界（写死，别越界）**：
 
-- **这些名字都不进契约**——[`presentation.md`](lang/presentation.md §5 已裁「**`MetaUi` 里不许出现框架专属概念（组件名、CSS、事件名）**」；因此**换皮肤、改组件名、改 CSS 不算契约破坏**（与 [`vision.md`](vision.md) 的「换皮肤不构成第二套 UI 契约」一致）。
+- **这些名字都不进契约**——[`presentation.md`](lang/presentation.md) §5 已裁「**`MetaUi` 里不许出现框架专属概念（组件名、CSS、事件名）**」；因此**换皮肤、改组件名、改 CSS 不算契约破坏**（与 [`vision.md`](vision.md) 的「换皮肤不构成第二套 UI 契约」一致）。
 - **`MetaUi` 与载荷里的名字仍按 §1 / §2**：`View` 名、字段名、事件名、i18n key、API 路径段与 `operationId`、指标名**一律 Pascal / camel / `UPPER_SNAKE`**，不因为前端放宽而改变。
 - **语言级标识符不放松**：**Dart 的类名仍 PascalCase、成员仍 camelCase**（Dart 官方风格本就如此）；放宽只限**文件名 / 组件标签 / CSS class / 资源名**这类"外部命名"。
 - **为什么不强推 Pascal**：这些名字由**工具链**消费（Vue SFC 解析与按需加载、CSS 处理、Dart 包资源解析、CDN 路径），跟生态打架没有收益；而**契约面在后端**（只有 `MetaUi`），放宽不会造成跨端漂移。
@@ -172,7 +172,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 
 - **三端生成器（[`PLAN.md`](..\PLAN.md) P6）必须按本文产出标识符**；§1 / §2 的契约名**不许有端开关**（否则契约会漂）；
 - **Profile 能改的只有 §3 清单**（方法名、包、文件名这类本地风格）+ 模板的**缀合方式**；**不能改 `I` 前缀与「禁 `Impl`」，也不能改常量与枚举成员的 `UPPER_SNAKE`（属 §1）**；
-- [`statements.md`](lang/statements.md 原记「接口名由 Profile 模板决定」→ **补充**：模板可定缀合，**不得违反 [`naming.md`](naming.md) §1**；
+- [`statements.md`](lang/statements.md) 原记「接口名由 Profile 模板决定」→ **补充**：模板可定缀合，**不得违反 [`naming.md`](naming.md) §1**；
 - 一致性测试（**P9**）**增一项：标识符一致性**——三端产物的类型名 / 属性名 / 事件名 / 消息头名**逐字对账**，进 L3 套件（与 [`targets.md`](targets.md) §5 同口径）。
 
 ---
@@ -209,10 +209,10 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 ## 7. 相关
 
 - 术语唯一命名：[`glossary.md`](glossary.md) §3.1（词）· §3.2（易混淆辨析）
-- 字段语法与命名：[`records.md`](lang/records.md §1.1
-- 文件与目录命名：[`project.md`](lang/project.md（一对象一文件、文件名 = 主符号名）
+- 字段语法与命名：[`records.md`](lang/records.md) §1.1
+- 文件与目录命名：[`project.md`](lang/project.md)（一对象一文件、文件名 = 主符号名）
 - 三端契约与一致性口径：[`targets.md`](targets.md) §2、§5
 - API 路径与 `operationId`：[`api.md`](api.md) §8.2-②⑫（**✔ 已裁**：路径 = `/api/<模块小写>/<模型名复数>`、`operationId` = `moduleName_featureName_op`；**`/api` 前缀与复数变形细则仍开放，见 §8.2-2c**）
 - 指标名：[`operations.md`](operations.md) §3.1
-- 事件与消息头：[`events.md`](lang/events.md §3、[`event_bus.md`](lang/event_bus.md §1
+- 事件与消息头：[`events.md`](lang/events.md) §3、[`event_bus.md`](lang/event_bus.md) §1
 - 阶段落点：[`PLAN.md`](..\PLAN.md) §4（P6 生成器 / P9 一致性套件）

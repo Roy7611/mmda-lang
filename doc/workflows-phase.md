@@ -1,8 +1,8 @@
 # 开发阶段模型
 
 > **这份文档解决什么**：把「MMDA 的开发分几个阶段」一次说清，并收敛三处现存口径——[`guide/quickstart.md`](guide/quickstart.md) §0（六段：需求→设计→原型→逻辑→测试→交付）、[`quality.md`](quality.md) §5（八阶段：需求→架构→设计→编码→测试→验收→运维→退役）、[`PLAN.md`](../PLAN.md)（里程碑 P0–P10）。
-> **状态**：**草案 · 工作稿（2026-09-25 作者裁定四阶段主干 + 运维定位 + 迭代可追溯/回滚）**。四阶段口径已被引用于 [`requirements.md`](requirements.md) §2.2、[`testing.md`](testing.md) §0.1 / §0.2、[`project.md`](lang/project.md §1（四根目录）、[`quality.md`](quality.md) §5、[`guide/quickstart.md`](guide/quickstart.md) §0。
-> **边界**：本文只谈**阶段**。扩展名统一（`*.m`）、目录自由与四根目录、JSON → M 语言格式是**下游决定**，住 [`project.md`](lang/project.md §1 / §11。
+> **状态**：**草案 · 工作稿（2026-09-25 作者裁定四阶段主干 + 运维定位 + 迭代可追溯/回滚）**。四阶段口径已被引用于 [`requirements.md`](requirements.md) §2.2、[`testing.md`](testing.md) §0.1 / §0.2、[`project.md`](lang/project.md) §1（四根目录）、[`quality.md`](quality.md) §5、[`guide/quickstart.md`](guide/quickstart.md) §0。
+> **边界**：本文只谈**阶段**。扩展名统一（`*.m`）、目录自由与四根目录、JSON → M 语言格式是**下游决定**，住 [`project.md`](lang/project.md) §1 / §11。
 
 ---
 
@@ -44,7 +44,7 @@
 | # | 改变 | 本仓已裁口径（证据） | 对阶段模型的后果 |
 | --- | --- | --- | --- |
 | 1 | **实现不再稀缺，验证才是稀缺**——AI 能产出实现，也能产出「看起来对的实现与用例」 | AI 断言必须双签；**变异存活率是最终裁判**（[`testing.md`](testing.md) §7）；用例从声明**机械生成**（同文 §3） | **验收成为独立阶段 S3**：机械部分散在每阶段出口，**人的判定集中在 S3**（[`testing.md`](testing.md) §0.1） |
-| 2 | **规格成为真源，消费者从「人」变成「人 + Agent」** | `.cursor/rules` + `conventions.md` 承载 AI 允许/禁止清单；[`ai/vibe-spec.md`](ai/vibe-spec.md) | 阶段产物的形态从**文档**变成**声明**（可解析、可 diff、可生成）——这也是「一种后缀 `*.m`」的动机（[`project.md`](lang/project.md §1） |
+| 2 | **规格成为真源，消费者从「人」变成「人 + Agent」** | `.cursor/rules` + `conventions.md` 承载 AI 允许/禁止清单；[`ai/vibe-spec.md`](ai/vibe-spec.md) | 阶段产物的形态从**文档**变成**声明**（可解析、可 diff、可生成）——这也是「一种后缀 `*.m`」的动机（[`project.md`](lang/project.md) §1） |
 | 3 | **文档、图、DDL、接口、元数据全部不再手写** | `mmda doc` / `mmda diagram` **只出不进**；DB 是产物/缓存 | **「文档阶段」消失**：文档与图并入**投影腿**（每阶段的副产品） |
 | 4 | **人审的粒度从「读代码」变成「审声明 + 审影响面」** | `mmda diff --impact` 是人介入的触发点；三道闸（[`workflows.md`](workflows.md) §6.2） | 人只在**冻结点**与**破坏性变更**上介入，不逐行读产物 |
 
@@ -103,7 +103,7 @@
 | S1 意图 | **需求基线**（需求条目 + 可执行 UAT） | `requirements.md` §2.2；状态 `candidate → confirmed` |
 | S2 建模 | **契约快照**（IR / 接口签名 / DDL / 渲染描述） | `mmda snapshot`（[`testing.md`](testing.md) §5-③） |
 | S3 验收 | **用例基线**（`baseline/<版本>`，黄金用例集） | `mmda test --target …`；[`testing.md`](testing.md) §5 |
-| S4 交付 | **交付包 + 版本**（含交付清单与校验和） | `mmda pack`；[`project.md`](lang/project.md §4 |
+| S4 交付 | **交付包 + 版本**（含交付清单与校验和） | `mmda pack`；[`project.md`](lang/project.md) §4 |
 
 **可追溯 = 一条链不断**：`REQ-x → 声明点 → 用例 → 生成物 → 交付包版本`（运维日志/报告接在尾部，作为**下一轮的输入**而不是本轮的证据）。每一环都已有可机检的追溯机制（[`testing.md`](testing.md) §0-2 / §6、[`quality.md`](quality.md) §5 追溯链）。
 
@@ -159,7 +159,7 @@
 | 2 | **退役 / 演进**：算运行回流腿的一种变更，还是独立阶段 | 建议留在运行回流腿（走变更分级），不另开阶段 |
 | 3 | **S2 内部的三顶帽子**（架构 / 设计 / 开发）在 IDE 里是否仍要分导航分区 | 建议**仍分导航分区**（人找东西顺），但**不设阶段门禁**（同属 S2，一次契约快照定生死） |
 | 4 | **旁证核实**：DORA 年度报告、METR 2025 RCT（个体产出变快、交付吞吐与稳定性未同步） | 建议核原文带版本后写入 §2；未核前不写进真源 |
-| 5 | **四根目录的推荐子目录**（`models/` 内部怎么分）与工具目录（`generated/` `changelog/` `doc/`）在「目录自由」下的地位 | 见 [`project.md`](lang/project.md §1.1 推荐布局 + §11 待裁 |
+| 5 | **四根目录的推荐子目录**（`models/` 内部怎么分）与工具目录（`generated/` `changelog/` `doc/`）在「目录自由」下的地位 | 见 [`project.md`](lang/project.md) §1.1 推荐布局 + §11 待裁 |
 | 6 | **迭代编号形态**：`I1` / `I2`，还是复用 `changelog/` 的 `seq` / 交付包版本号；迭代号与需求基线、用例基线、交付包版本的对应关系 | 建议**复用交付包版本号作为迭代号**（一轮迭代 = 一个交付包版本），需求/用例基线各带同一迭代号；不再新造 `I*` 编号 |
 | 7 | **回滚的默认粒度与执行面**：默认整体回滚还是阶段内回退；谁能发起回滚、回滚要不要走变更分级、回滚后 UAT 是否必须重签 | 建议默认**整体回滚**（重新发布上一版交付包）+ 阶段内回退走该阶段门禁；回滚**记入 `changelog/`**；回滚后**UAT 必须重签**（验收单对版本负责） |
 
@@ -167,7 +167,7 @@
 
 ## 7. 相关
 
-- [`project.md`](lang/project.md —— 目录自由 + 四根目录 + 语言文件统一 `*.m` + 迁移
+- [`project.md`](lang/project.md) —— 目录自由 + 四根目录 + 语言文件统一 `*.m` + 迁移
 - [`requirements.md`](requirements.md) —— S1：三层需求与需求基线（含可执行 UAT）
 - [`testing.md`](testing.md) —— S3：UAT 的地位、测试类型、用例库化
 - [`workflows.md`](workflows.md) —— 五类职责（帽子）、写入边界矩阵、三种模式、变更分级

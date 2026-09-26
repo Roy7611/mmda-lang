@@ -1,7 +1,7 @@
 # 质量模型与自动评估（Quality Model）
 
 > **这份文档要解决什么**：验收标准不能只有"用例跑绿了"。要覆盖软件质量的方方面面、并且**尽量自动评估**，就得有个骨架——用 **ISO/IEC 25010**（SQuaRE 的产品质量模型）当骨架，把每个质量特性**映射到 MMDA 里真正能算出来的信号**，并诚实标注哪些能自动、哪些只能人评。
-> 状态：草案（2026-09-24）· 与 [`testing.md`](testing.md)（用例与验收）、[`workflows.md`](workflows.md)（职责 / 变更分级 / 签字）、[`targets.md`](targets.md)（capability）、[`presentation.md`](lang/presentation.md（渲染描述）联动。
+> 状态：草案（2026-09-24）· 与 [`testing.md`](testing.md)（用例与验收）、[`workflows.md`](workflows.md)（职责 / 变更分级 / 签字）、[`targets.md`](targets.md)（capability）、[`presentation.md`](lang/presentation.md)（渲染描述）联动。
 > 标准依据：ISO/IEC 25010:2011（8 特性）→ **2023 版（9 特性）**：`usability → interaction capability`、`portability → flexibility`、**新增 `safety`**，子特性上新增 `inclusivity` / `self-descriptiveness`（交互能力）、`resistance`（安全性）、`scalability`（灵活性），`maturity → faultlessness`、`UI aesthetics → user engagement`、`accessibility` 拆为 `inclusivity + user assistance`（来源见文末 §8）。
 
 ---
@@ -70,7 +70,7 @@
 
 | 子特性 | 信号 | 等级 |
 | --- | --- | --- |
-| 可辨识性 / 自描述性 | i18n 词条无缺失；标签、placeholder、tooltip、校验提示齐全；字段顺序与分组已声明（[`presentation.md`](lang/presentation.md §5.1 `MetaUi` 描述）——**渲染载体唯一 = mmda-vue** | A |
+| 可辨识性 / 自描述性 | i18n 词条无缺失；标签、placeholder、tooltip、校验提示齐全；字段顺序与分组已声明（[`presentation.md`](lang/presentation.md) §5.1 `MetaUi` 描述）——**渲染载体唯一 = mmda-vue** | A |
 | **用户差错防护** | 破坏性动作有二次确认声明；不可逆状态迁移显式声明；必填校验同时有服务端与呈现侧描述 | A |
 | 包容性 | 多语言词条完整度；主题/无障碍属性（如 alt、尺寸单位）声明检查 | B |
 | 可学习性 / 可操作性 | 中文验收单可读性抽查 + 业务人员确认 | D（AI 出报告） |
@@ -81,7 +81,7 @@
 | 子特性 | 信号 | 等级 |
 | --- | --- | --- |
 | 无故障性（faultlessness） | 用例通过率 + 缺陷密度（每千行模型变更引入缺陷数，[`testing.md`](testing.md) §4.2-6） | B |
-| 容错 | 事件幂等/重放声明、事务边界声明、非法迁移被拒有反例（[`events.md`](lang/events.md） | A / B |
+| 容错 | 事件幂等/重放声明、事务边界声明、非法迁移被拒有反例（[`events.md`](lang/events.md)） | A / B |
 | 可用性 / 可恢复性 | 故障注入与演练（**默认门槛：可用性 ≥ 99.9%、MTTF ≥ 10 天、MTTR ≤ 30 分钟、MTBF ≥ 10 天/次，见 §2.2**） | C |
 
 ### 1.6 安全性 Security
@@ -194,7 +194,7 @@
 | 网关 / HTTP | 响应时间、TTFB、RPS、错误率、吞吐量、并发 |
 | 宿主资源 | CPU 利用率、内存利用率、连接池 |
 | 业务与前端 | 用户交易、通过/失败交易、会话数、平均 / 峰值加载时间 |
-| **总线 / 集成**（[`event_bus.md`](lang/event_bus.md §12.1） | **入**：接收速率、解码失败率、迟到率、积压；**流**：节点级失败率、算子状态大小、检查点耗时；**出**：投递成功率、端到端时延 P50/P95/P99、外部端点响应时间、重试次数；**可靠**：失败队列长度、重放次数、幂等命中数、对账差异数；**租户**：按租户吞吐与配额 |
+| **总线 / 集成**（[`event_bus.md`](lang/event_bus.md) §12.1） | **入**：接收速率、解码失败率、迟到率、积压；**流**：节点级失败率、算子状态大小、检查点耗时；**出**：投递成功率、端到端时延 P50/P95/P99、外部端点响应时间、重试次数；**可靠**：失败队列长度、重放次数、幂等命中数、对账差异数；**租户**：按租户吞吐与配额 |
 
 两条可判定的边界：
 
@@ -298,7 +298,7 @@ review 的目标从"人读代码"变成「**机器能判的机器判、AI 能证
 | --- | --- |
 | [`testing.md`](testing.md) | 它的用例、覆盖率、变异、用例质量分**是本文九维里的信号来源**；本文管"面"，它管"点" |
 | [`workflows.md`](workflows.md) | §4 的 review 分层与它的 §8 变更分级、§1.3 签字矩阵对齐 |
-| [`presentation.md`](lang/presentation.md | 交互能力的 A 类信号来自它的渲染描述与 UiField |
+| [`presentation.md`](lang/presentation.md) | 交互能力的 A 类信号来自它的渲染描述与 UiField |
 | [`targets.md`](targets.md) | 兼容性/互操作信号来自 capability 矩阵 |
 | [`protection.md`](protection.md) | 安全性里的"算法不可读"属于保密性的一部分 |
 | [`architecture-review.md`](architecture-review.md) | 可维护性 / 灵活性里的**结构**部分在那里展开（分层、循环、数据所有权、Martin 度量、SOLID 操作化）；其结论并入本文 §3 的质量报告 |

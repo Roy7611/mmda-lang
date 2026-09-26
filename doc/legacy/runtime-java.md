@@ -21,7 +21,7 @@ EntityService → EntityRepository → SQL（由元模型组装） → Database
 | ISqlQueryBuilder | 查询、分页、关联、过滤 |
 | ISqlCommandBuilder | INSERT/UPDATE/DELETE |
 
-支持 MySQL、SQL Server、PostgreSQL 等方言；类型映射见 [language/types.md](../lang/datatypes.md 与 MetaDataType 表。
+支持 MySQL、SQL Server、PostgreSQL 等方言；类型映射见 [language/types.md](../lang/datatypes.md) 与 MetaDataType 表。
 
 ## 与 Codegen 的关系
 
@@ -59,9 +59,9 @@ EntityService → EntityRepository → SQL（由元模型组装） → Database
 | `DomainService.assembleSingle` / `assemble` | `mmda-core-services/.../DomainService.java:330` / `:343` | `assembleEnumProperties(assembleRefProperties(assembleOne(AndMany)))` —— 枚举 + 引用 + 一对一/一对多**全组装** |
 | `Repository.assembleEnumProperties` | `.../repository/Repository.java:117` | 接口声明（生成器 `JavaReactiveRepositoryCodeBuilder.java:250/327` 直接把它编进 Repository 实现） |
 
-⇒ **新设计取消**（✔ 2026-09-26 作者：「**再也不用 assembleEnums 了，通常一个用户习惯用一种语言，下发那个 locale 即可**」）：**`label` 走词条**（**按 locale 分片**：一次一份、任意 locale、客户端按 locale 缓存 —— ⤴ 作者修订：「我在 indexedDb 里是分 locale 的，前端支持语言切换」）、**`color` / `icon` 随元数据**（⤴ 三次修订：「**color, icon 走不了词条**」—— 语言无关、一次下发）、**`description` 另存 comments 层**（不进 JSON，⤴ 「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）、**引用数据走数据层 locale 分行**（见 [presentation.md](../lang/presentation.md §5、[api.md](../api.md) §3.5）。
+⇒ **新设计取消**（✔ 2026-09-26 作者：「**再也不用 assembleEnums 了，通常一个用户习惯用一种语言，下发那个 locale 即可**」）：**`label` 走词条**（**按 locale 分片**：一次一份、任意 locale、客户端按 locale 缓存 —— ⤴ 作者修订：「我在 indexedDb 里是分 locale 的，前端支持语言切换」）、**`color` / `icon` 随元数据**（⤴ 三次修订：「**color, icon 走不了词条**」—— 语言无关、一次下发）、**`description` 另存 comments 层**（不进 JSON，⤴ 「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）、**引用数据走数据层 locale 分行**（见 [presentation.md](../lang/presentation.md) §5、[api.md](../api.md) §3.5）。
 
-REF 适合小表、可缓存；HAS_ONE 适合完整导航。见 [meta-model.md](../lang/meta-model.md。
+REF 适合小表、可缓存；HAS_ONE 适合完整导航。见 [meta-model.md](../lang/meta-model.md)。
 
 ## UiLogic 钩子（Vue 参考实现）
 
@@ -75,7 +75,7 @@ REF 适合小表、可缓存；HAS_ONE 适合完整导航。见 [meta-model.md](
 
 API：`lockIf`、`hideIf`、`requiredIf`、`onChange`、`onValidate`。
 
-视图级替换（默认呈现不够时）：`setCustomEditor(...)` / `setCustomRenderer(...)`——替换生成的标准编辑控件 / 只读呈现控件，属于**皮肤内部的自由**（[presentation.md](../lang/presentation.md §5.1）。
+视图级替换（默认呈现不够时）：`setCustomEditor(...)` / `setCustomRenderer(...)`——替换生成的标准编辑控件 / 只读呈现控件，属于**皮肤内部的自由**（[presentation.md](../lang/presentation.md) §5.1）。
 
 ## 缓存
 

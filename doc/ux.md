@@ -1,7 +1,7 @@
 # 用户体验（UX）
 
 > 版本 **0.1** · 2026-09-24
-> **真源归属**：本文管**体验目标与可判定判据**；**不管 UI 契约**（[presentation.md](lang/presentation.md §5.1）、**不管质量度量与门禁**（[quality.md](quality.md) §1.4 / §2）、**不管前端命名**（[naming.md](naming.md) §3.4）。
+> **真源归属**：本文管**体验目标与可判定判据**；**不管 UI 契约**（[presentation.md](lang/presentation.md) §5.1）、**不管质量度量与门禁**（[quality.md](quality.md) §1.4 / §2）、**不管前端命名**（[naming.md](naming.md) §3.4）。
 > **材料来源**：作者的 `D:\项目\UX`（`学习笔记.docx` 2,092 字 / 31 段 + 6 张图；`UX 广义.webp` / `UX 狭义.webp`；`设计心理学.pdf` 247 页扫描件）。**源材料不进仓**——理由与边界见 §9。
 > **已裁前提（不重开）**：唯一 UI 通道 = `MetaUi` → mmda-vue；前端本地命名放宽；客户端监控首版只做 Web。
 
@@ -18,8 +18,8 @@
 
 | ❌ 不做 | 理由 |
 | --- | --- |
-| **不在语言层新增体验关键字** | 与既有裁决同口径（[runtime.md](runtime.md) §7、[event_bus.md](lang/event_bus.md §1.3「语言层零新增」）；体验信息都能从既有声明推导 |
-| **不做第二套 UI 契约** | [presentation.md](lang/presentation.md §5.1 已裁：唯一通道 = `MetaUi` → mmda-vue |
+| **不在语言层新增体验关键字** | 与既有裁决同口径（[runtime.md](runtime.md) §7、[event_bus.md](lang/event_bus.md) §1.3「语言层零新增」）；体验信息都能从既有声明推导 |
+| **不做第二套 UI 契约** | [presentation.md](lang/presentation.md) §5.1 已裁：唯一通道 = `MetaUi` → mmda-vue |
 | **不给审美设硬门禁** | 审美与产品判断属 **D 类**（只能人评，见 [quality.md](quality.md) §1.2）；把 D 类当门禁会拖累 A 类判定 |
 | **不把源材料（书 / 第三方图）搬进仓** | 版权，见 §9 |
 | **不引入 UX 专有量纲** | 度量与分级沿用 [quality.md](quality.md) 的 A/B/C/D 与三层度量，**不另造一套** |
@@ -44,14 +44,14 @@
 | 层 | 自述 | 在我们这里由谁负责 | 在哪判定 |
 | --- | --- | --- | --- |
 | **Utility 有用** | It is useful to me. It meets my needs. | **元数据与用例的覆盖面**（需求 → `Record`/`Action`/`Role`） | [requirements.md](requirements.md) 追溯链、[testing.md](testing.md) 覆盖率 |
-| **Usability 可用** | I am able to use the product easily. | **生成物的默认行为**（五视图、字段可见性、校验与错误恢复） | [presentation.md](lang/presentation.md §2、[quality.md](quality.md) §1.4 |
-| **Desirability 合意** | I like the way the product looks and feels. | **皮肤（`vui*` / `rui*`）与主题**——前端自由 | [presentation.md](lang/presentation.md §5.1 界限 2 |
+| **Usability 可用** | I am able to use the product easily. | **生成物的默认行为**（五视图、字段可见性、校验与错误恢复） | [presentation.md](lang/presentation.md) §2、[quality.md](quality.md) §1.4 |
+| **Desirability 合意** | I like the way the product looks and feels. | **皮肤（`vui*` / `rui*`）与主题**——前端自由 | [presentation.md](lang/presentation.md) §5.1 界限 2 |
 | **Brand Experience 品牌体验** | My overall feeling about the brand/product is good. | **同一份真源带来的产品一致性** | [targets.md](targets.md) §5 跨端一致性测试 |
 
 **两条推论（可直接用的判据）**：
 
 1. **四层是包含关系**：内层不成立，外层无意义——**生成器必须先把 Utility / Usability 做对**（功能与字段齐全、校验与错误消息齐全、状态反馈齐全），Desirability 才交给皮肤。首版不承诺「好看」，承诺「有用 + 可用」。
-2. **品牌体验不靠统一 UI 库，靠统一真源**：skin 可以换（[presentation.md](lang/presentation.md §5.1），但字段名、枚举标签、视图语义、错误消息、动作命名**只有一份**（[naming.md](naming.md) §2 契约名清单）——**一致性来自元数据，不来自组件库**。这也是「不做第二套 UI 契约」的体验侧理由。
+2. **品牌体验不靠统一 UI 库，靠统一真源**：skin 可以换（[presentation.md](lang/presentation.md) §5.1），但字段名、枚举标签、视图语义、错误消息、动作命名**只有一份**（[naming.md](naming.md) §2 契约名清单）——**一致性来自元数据，不来自组件库**。这也是「不做第二套 UI 契约」的体验侧理由。
 
 ---
 
@@ -62,10 +62,10 @@
 | 概念 | 通俗说法 | MMDA 里对应什么（判据） |
 | --- | --- | --- |
 | **示能 Affordance + 意符 Signifier** | 一个东西「看起来能怎么用」与「实际能怎么用」必须一致 | 字段**能不能改**只由声明决定（`readOnly` / `hidden` / `lockIf`）；**皮肤不许自行改变可编辑性**——「看着能改其实改不了」是最经典的事故 |
-| **映射 Mapping** | 控制与结果的位置/顺序要自然对应 | 字段顺序与分组 = `groupLabel`（[presentation.md](lang/presentation.md §3）+ 关系布局顺序 `relationIdx`（[meta-model.md](lang/meta-model.md） |
-| **反馈 Feedback** | 每个动作后必须有可见变化 | `Action` 元数据 + 事件链（[event_bus.md](lang/event_bus.md）；运行期看 [operations.md](operations.md) §3 的 `traceId`/`eventId`/`correlationId` |
+| **映射 Mapping** | 控制与结果的位置/顺序要自然对应 | 字段顺序与分组 = `groupLabel`（[presentation.md](lang/presentation.md) §3）+ 关系布局顺序 `relationIdx`（[meta-model.md](lang/meta-model.md)） |
+| **反馈 Feedback** | 每个动作后必须有可见变化 | `Action` 元数据 + 事件链（[event_bus.md](lang/event_bus.md)）；运行期看 [operations.md](operations.md) §3 的 `traceId`/`eventId`/`correlationId` |
 | **概念模型 Conceptual model** | 用户脑中的模型要与系统模型一致 | 术语唯一（[glossary.md](glossary.md) §3.1/§3.2）；**一个概念一个主人** |
-| **人的差错 Human error** | 差错多是设计造成的，不是人笨 | **错误预防优于错误提示**：必填/范围/唯一/非法状态迁移在**声明层**表达（[records.md](lang/records.md、[statements.md](lang/statements.md、`.ms`），让生成物**默认可拦**；提示文案只是兜底 |
+| **人的差错 Human error** | 差错多是设计造成的，不是人笨 | **错误预防优于错误提示**：必填/范围/唯一/非法状态迁移在**声明层**表达（[records.md](lang/records.md)、[statements.md](lang/statements.md)、`.ms`），让生成物**默认可拦**；提示文案只是兜底 |
 
 **归因原则（来自《设计心理学》序里的核电事故研究）**：诺曼写三哩岛核电站事故——事故责任**不在操作员，而在控制室的设计**（仪表盘不合理，像是**有意**诱发操作错误）。**工程对应**：把「用户点错了 / 填错了」当成**设计缺陷**追一遍——视图是否给了歧义、流程是否可逆、权限是否清楚；与 [operations.md](operations.md) 的**告警四项规范**（现象 / 影响面 / 第一个排查动作 / 可行动作）是同一种精神：**让人能做对的事，而不是怪人做错。**
 
@@ -77,16 +77,16 @@
 
 | # | 原则 | 在 MMDA 生成物里的体现 | 主要判据落点 | 等级 |
 | --- | --- | --- | --- | --- |
-| 1 | 状态可见（Visibility of system status） | 动作后有状态变化与提示；列表页用 `fixedFilter` 做**状态页签**；单据状态列不隐藏 | `Action` 元数据、[meta-model.md](lang/meta-model.md `fixedFilter`、[event_bus.md](lang/event_bus.md 通知器 | A |
-| 2 | 环境贴切（Match between system and the real world） | 界面用**业务词**：`label`、枚举标签、i18n 词条齐全（不用数据库缩写、不用拼音） | [presentation.md](lang/presentation.md §5 i18n、[naming.md](naming.md) §2（i18n key） | A |
+| 1 | 状态可见（Visibility of system status） | 动作后有状态变化与提示；列表页用 `fixedFilter` 做**状态页签**；单据状态列不隐藏 | `Action` 元数据、[meta-model.md](lang/meta-model.md) `fixedFilter`、[event_bus.md](lang/event_bus.md) 通知器 | A |
+| 2 | 环境贴切（Match between system and the real world） | 界面用**业务词**：`label`、枚举标签、i18n 词条齐全（不用数据库缩写、不用拼音） | [presentation.md](lang/presentation.md) §5 i18n、[naming.md](naming.md) §2（i18n key） | A |
 | 3 | 用户可控（User control and freedom） | 破坏性动作**二次确认**；流程可逆（STM 允许回退的状态迁移）；草稿态 | [quality.md](quality.md) §1.4「用户差错防护」、`.ms` 状态机 | A / B |
-| 4 | 一致性（Consistency and standards） | 同一动作跨模块同名、同一含义同一标签；日期/小数格式统一（`formatter` = `D` / `N3`） | [naming.md](naming.md) §1/§2、[presentation.md](lang/presentation.md §2 | A |
-| 5 | 防错（Error prevention） | 约束写在**声明层**（必填、范围、唯一、长度）→ 生成物两侧（前端 + 服务端）**同时**拦截 | [records.md](lang/records.md 约束、[api.md](api.md) §3.5 | A |
-| 6 | 识别优于记忆（Recognition rather than recall） | 引用字段给**下拉 / `searchBox`**（别让用户手输 ID）；枚举给标签；空值给 `nullDisplayText` | [presentation.md](lang/presentation.md §4、§2 | A |
-| 7 | 灵活高效（Flexibility and efficiency of use） | 默认值（`.mm` 的 `default` / 库侧 `DF_`）、批量动作、保存的查询条件（`search` 视图） | [naming.md](naming.md) §3.3、[presentation.md](lang/presentation.md §1 | B |
-| 8 | 优美简约（Aesthetic and minimalist design） | 列表**列数与分组有上限意识**（`listed` / `groupLabel`）；隐藏字段**根本不投影**进载荷 | [api.md](api.md) §3.5、[meta-model.md](lang/meta-model.md | B |
+| 4 | 一致性（Consistency and standards） | 同一动作跨模块同名、同一含义同一标签；日期/小数格式统一（`formatter` = `D` / `N3`） | [naming.md](naming.md) §1/§2、[presentation.md](lang/presentation.md) §2 | A |
+| 5 | 防错（Error prevention） | 约束写在**声明层**（必填、范围、唯一、长度）→ 生成物两侧（前端 + 服务端）**同时**拦截 | [records.md](lang/records.md) 约束、[api.md](api.md) §3.5 | A |
+| 6 | 识别优于记忆（Recognition rather than recall） | 引用字段给**下拉 / `searchBox`**（别让用户手输 ID）；枚举给标签；空值给 `nullDisplayText` | [presentation.md](lang/presentation.md) §4、§2 | A |
+| 7 | 灵活高效（Flexibility and efficiency of use） | 默认值（`.mm` 的 `default` / 库侧 `DF_`）、批量动作、保存的查询条件（`search` 视图） | [naming.md](naming.md) §3.3、[presentation.md](lang/presentation.md) §1 | B |
+| 8 | 优美简约（Aesthetic and minimalist design） | 列表**列数与分组有上限意识**（`listed` / `groupLabel`）；隐藏字段**根本不投影**进载荷 | [api.md](api.md) §3.5、[meta-model.md](lang/meta-model.md) | B |
 | 9 | 容错（Help users recognize, diagnose, and recover from errors） | 错误消息 = **模板 + 字段级 `validationRules`**，且**服务端与呈现侧同源**（同一约束生成两处，不手写两份） | 本表 #5、[quality.md](quality.md) §1.4 | A |
-| 10 | 人性化帮助（Help and documentation） | `tooltip` / `placeholder` / `///` 文档 → 帮助面板与 API 文档**同源** | [presentation.md](lang/presentation.md §2、[api.md](api.md) | B |
+| 10 | 人性化帮助（Help and documentation） | `tooltip` / `placeholder` / `///` 文档 → 帮助面板与 API 文档**同源** | [presentation.md](lang/presentation.md) §2、[api.md](api.md) | B |
 
 > **这张表的用法**：#1/#2/#4/#5/#6/#9 是 **A 类**（能从声明机械判定，能进 `mmda check` 信号集）；#7/#8/#10 是 **B 类**（半自动，出清单由人确认）；**没有一条是 D 类**——凡是「只能靠感觉」的，本文一律不写进这张表（审美走 §2 的 Desirability 层，归皮肤）。
 > **生效强度（✔ 已裁 2026-09-24，作者取 B）**：**A 类子集进 `mmda check`，出 warning、不阻断、不进 `mmda quality gate`**（与 [naming.md](naming.md) §5 的命名检查同档）。
@@ -149,7 +149,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 笔记原话：「如果说产品设计是解决单一触点的问题，服务设计则是要关注包含多个触点的整个服务流程」「要像做服务一样做产品，从真实的生活场景出发，分析用户接触产品的整个旅程中的痛点并发掘设计机会」。
 
-- **现状已覆盖的可执行部分**：`Role`（谁）+ 流程建模（`*.mf`）+ 事件链（[event_bus.md](lang/event_bus.md）+ 五层监控（[operations.md](operations.md) §1）。
+- **现状已覆盖的可执行部分**：`Role`（谁）+ 流程建模（`*.mf`）+ 事件链（[event_bus.md](lang/event_bus.md)）+ 五层监控（[operations.md](operations.md) §1）。
 - **不做**：**不新增 `journey` / `touchpoint` 一类元模型元素**——语言层零新增是既有裁决，且「旅程」目前是**分析工具**（画给人看），不是可执行契约；要画就画在设计器插件或外部工具里（只读产物，不进真源，口径同 [ide/plugins.md](ide/plugins.md)）。
 - 落点待定：见 §11-4。
 
@@ -163,14 +163,14 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 | 检查 | 判据 | 落点 |
 | --- | --- | --- |
-| **语义标签不缺** | 每个可编辑字段都有 `label`（i18n 词条无缺失，含非默认 locale） | [presentation.md](lang/presentation.md §5、[quality.md](quality.md) §1.4 |
-| **键盘可达与焦点顺序** | 焦点顺序 = 视图字段顺序（`groupLabel` 分组序号 + 字段声明顺序）——**顺序本身是契约，不是皮肤自由** | [presentation.md](lang/presentation.md §3 |
+| **语义标签不缺** | 每个可编辑字段都有 `label`（i18n 词条无缺失，含非默认 locale） | [presentation.md](lang/presentation.md) §5、[quality.md](quality.md) §1.4 |
+| **键盘可达与焦点顺序** | 焦点顺序 = 视图字段顺序（`groupLabel` 分组序号 + 字段声明顺序）——**顺序本身是契约，不是皮肤自由** | [presentation.md](lang/presentation.md) §3 |
 | **错误可被读屏** | 错误消息是**文本**（有词条 key），不是纯图标/颜色语义 | 本表上行 + [quality.md](quality.md) §1.4 |
 | 对比度 / 焦点可见 / 动效 | **皮肤侧**（`vui*` / `rui*` 各自负责） | 不在后端契约面 |
 
 基线强度（是否上 WCAG 2.2 AA 的自动化子集）见 **§11-3**。
 
-**✔ 已裁（2026-09-24 作者取 B）**：上表三条**进 `mmda check` 出 warning（不阻断、不进 `mmda quality gate`）**，基线 = **WCAG 2.2 AA 的可自动化子集**；**对比度 / 焦点可见 / 动效等视觉项不进契约、留皮肤**（换皮肤不构成契约破坏，同 [presentation.md](lang/presentation.md §5.1）。
+**✔ 已裁（2026-09-24 作者取 B）**：上表三条**进 `mmda check` 出 warning（不阻断、不进 `mmda quality gate`）**，基线 = **WCAG 2.2 AA 的可自动化子集**；**对比度 / 焦点可见 / 动效等视觉项不进契约、留皮肤**（换皮肤不构成契约破坏，同 [presentation.md](lang/presentation.md) §5.1）。
 
 ---
 
@@ -217,7 +217,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 ## 12. 相关
 
-- [presentation.md](lang/presentation.md — UI 契约（`MetaUi`、五视图、UiField）与视图钩子
+- [presentation.md](lang/presentation.md) — UI 契约（`MetaUi`、五视图、UiField）与视图钩子
 - [quality.md](quality.md) — 交互能力子特性、A/B/C/D 分级、阈值基线（**强度与门禁的真源**）
 - [requirements.md](requirements.md) — 关键用户 `Role` 与需求追溯链
 - [guide/quickstart.md](guide/quickstart.md) §0 — 五阶段全貌（本文 §5 的对照对象）

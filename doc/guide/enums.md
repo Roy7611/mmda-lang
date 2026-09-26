@@ -1,7 +1,7 @@
 # 枚举（Enum）开发指南
 
 > **面向**：建模的架构师 / 设计师 + 写业务代码的程序员。
-> **真源**：语法在 [`../records.md`](../lang/records.md §6 / §6.1，渲染口径在 [`../presentation.md`](../lang/presentation.md §4.1，元数据承载在 [`../meta-model.md`](../lang/meta-model.md §6，裁决过程在 [`../errata.md`](../errata.md) §五-62～65。
+> **真源**：语法在 [`../records.md`](../lang/records.md) §6 / §6.1，渲染口径在 [`../presentation.md`](../lang/presentation.md) §4.1，元数据承载在 [`../meta-model.md`](../lang/meta-model.md) §6，裁决过程在 [`../errata.md`](../errata.md) §五-62～65。
 > **实例**：[`../examples/enums/`](../examples/enums/)（`BomStatus` / `BomUsage` / `MaterialType` / `RoutingType`…）。
 
 ---
@@ -247,7 +247,7 @@ stm BomApproval on Bom.status {
 ## 13. 字符串表示与元数据 JSON
 
 > 两者都是**产物**（语言文件才是真源）。`MetaEnum` 是**内存模型**，只有两条通道：**字符串**（`toString()` / `fromString()`）与 **JSON**（`toJson()` / `fromJson()`）。
-> **`color` 只有一个形态**：`<role>` 或 `<role>-<shade>` —— `info` / `info-500`；注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段。规范条文见 [`../meta-model.md`](../lang/meta-model.md §6.1 / §6.2。
+> **`color` 只有一个形态**：`<role>` 或 `<role>-<shade>` —— `info` / `info-500`；注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段。规范条文见 [`../meta-model.md`](../lang/meta-model.md) §6.1 / §6.2。
 
 ### 13.1 字符串表示（`toString()` / `fromString()`）
 
@@ -305,7 +305,7 @@ stm BomApproval on Bom.status {
 }
 ```
 
-> **⤴ 本 JSON 没有 `description` 字段**（2026-09-26 作者：「**json 中不要 description 了吧**」「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）：文档注释**另存 comments 层**（**✔ A = 定案**：生成 DDL 时落数据库 `COMMENT ON`；B 备选、不采用 —— ⤴ 第一百一十八轮作者：「**1A**」）—— 见 [`../meta-model.md`](../lang/meta-model.md §6.3。JSON 只留「机器要用的」：`label`（另经词条发）、`color` / `icon`、名字与值。
+> **⤴ 本 JSON 没有 `description` 字段**（2026-09-26 作者：「**json 中不要 description 了吧**」「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）：文档注释**另存 comments 层**（**✔ A = 定案**：生成 DDL 时落数据库 `COMMENT ON`；B 备选、不采用 —— ⤴ 第一百一十八轮作者：「**1A**」）—— 见 [`../meta-model.md`](../lang/meta-model.md) §6.3。JSON 只留「机器要用的」：`label`（另经词条发）、`color` / `icon`、名字与值。
 
 - **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
 - **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
@@ -331,10 +331,10 @@ stm BomApproval on Bom.status {
 
 ## 15. 相关
 
-- [`../records.md`](../lang/records.md §6 / §6.1 —— 枚举与呈现注解的**规范条文**
-- [`../presentation.md`](../lang/presentation.md §4.1 —— **渲染口径**（角色 → 主题令牌、别名 → 三端映射）
-- [`../meta-model.md`](../lang/meta-model.md §6 —— 元数据属性
-- [`../statements.md`](../lang/statements.md —— 行为与状态机
+- [`../records.md`](../lang/records.md) §6 / §6.1 —— 枚举与呈现注解的**规范条文**
+- [`../presentation.md`](../lang/presentation.md) §4.1 —— **渲染口径**（角色 → 主题令牌、别名 → 三端映射）
+- [`../meta-model.md`](../lang/meta-model.md) §6 —— 元数据属性
+- [`../statements.md`](../lang/statements.md) —— 行为与状态机
 - [`../naming.md`](../naming.md) —— 命名约定（Pascal / UPPER_SNAKE / kebab）
 - [`../errata.md`](../errata.md) §五-62～65 —— 这几条口径的裁决记录
 - [`quickstart.md`](quickstart.md) —— 整个体系的上手入口
