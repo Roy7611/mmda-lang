@@ -90,7 +90,7 @@
 | `int64` | `i64`、`long` | 64 | `bigint` |
 | `int128` | `i128` | 128 | 未来支持 |
 
-> ⚠️ 无符号有两套写法并存：前缀式 `uint64` 与后缀式 `decimal(19,4) unsigned`，见 `errata.md` 二-8。
+> ⏳ **待作者点头（[`errata.md`](../errata.md) §二-8）—— 无符号有两套写法，但不是冲突**：前缀式 `uint64`（**类型名**，语料 774 处）与后缀式 `unsigned`（**行尾修饰关键字**，语料 237 处，如 `scrapQuantity decimal(18, 3)? unsigned readonly`）—— 待定成「`unsigned` 是修饰符 / `uint64` 是类型」。
 
 > ✔ **24 位整型已取消（✔ 2026-09-26 作者：「取消 24 位的整型，没啥用」）**：`uint24` / `int24`（及现实现的 `fixedBytes(3)`）**从类型表移除**；**位宽只有 8 / 16 / 32 / 64（+ 未来 128）** —— 需要 24 位请用 `BitVector(24)`（§7）。表内两行已删。
 >
@@ -98,7 +98,7 @@
 
 ### BIGID 与多租户分区
 
-> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@Partitioned` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](../design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
+> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@Partitioned` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §3、[`design-notes.md`](../design-notes.md) §实体语义字段）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
 >
 > ```
 > MAX_TENANT_ID = 0x7FF_FFFF    // 高 28 位是租户 id（上限 2^27−1 → bit 63 恒 0、ID 恒为正 long）
@@ -107,7 +107,7 @@
 > buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
 > ```
 >
-> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源 = 现行实现（新库）`D:\2026\java`**（✔ 2026-09-25 作者澄清：「**`D:\2026` 的是新的**」）：`Tenancy.java:15-19 / 42-44 / 85-103`、入库点 `056ef96`（mmda-core 5.0.0）。新库 `Tenancy.java:17` 的注释**已写「高 27 位是租户 id」**（与作者裁定一致）。**老库 = `D:\Java\mmda`**（作者给的路径；**非 git 仓**，多模块工程）；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](../design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**✔ 租户位宽已确认（2026-09-25，作者原话：「27位没错」）**：**高 28 位字段中 27 位有效（`MAX_TENANT_ID = 0x7FF_FFFF` = 134,217,727，bit 63 保留恒 0）** —— 不是笔误，ID 恒为正 `long`。**旧布局（16+48）的真源找到了 = 老库 `D:\Java\mmda`**：`mmda-core\mmda-core-entities\...\Tenancy.java:14` `short MAX_TENANT_ID = 0x7FFF`（**15 位有效值域**，注释称 16 位）、`:39` `partitionID >>> 48`、`:82-83` `entityID = tenantID & MAX_TENANT_ID; return (entityID << 48) + (id & 0xFFFF_FFFF_FFFFL)`（**低 48 位 realId**）、`:78` javadoc 同样写「48bits 实际的 id」。**新库改成了 28+36（`>>> 36` / `<< 36`），但 `Tenancy.java:82` 的 javadoc 与 `:27` 的注释漏改** —— 两处都是老库抄过来的话术，**以常量为准**（建议改，助手未动 Java 仓）。
+> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源 = 现行实现（新库）`D:\2026\java`**（✔ 2026-09-25 作者澄清：「**`D:\2026` 的是新的**」）：`Tenancy.java:15-19 / 42-44 / 85-103`、入库点 `056ef96`（mmda-core 5.0.0）。新库 `Tenancy.java:17` 的注释**已写「高 27 位是租户 id」**（与作者裁定一致）。**老库 = `D:\Java\mmda`**（作者给的路径；**非 git 仓**，多模块工程）；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §3 与 [`design-notes.md`](../design-notes.md) §实体语义字段。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**✔ 租户位宽已确认（2026-09-25，作者原话：「27位没错」）**：**高 28 位字段中 27 位有效（`MAX_TENANT_ID = 0x7FF_FFFF` = 134,217,727，bit 63 保留恒 0）** —— 不是笔误，ID 恒为正 `long`。**旧布局（16+48）的真源找到了 = 老库 `D:\Java\mmda`**：`mmda-core\mmda-core-entities\...\Tenancy.java:14` `short MAX_TENANT_ID = 0x7FFF`（**15 位有效值域**，注释称 16 位）、`:39` `partitionID >>> 48`、`:82-83` `entityID = tenantID & MAX_TENANT_ID; return (entityID << 48) + (id & 0xFFFF_FFFF_FFFFL)`（**低 48 位 realId**）、`:78` javadoc 同样写「48bits 实际的 id」。**新库改成了 28+36（`>>> 36` / `<< 36`），但 `Tenancy.java:82` 的 javadoc 与 `:27` 的注释漏改** —— 两处都是老库抄过来的话术，**以常量为准**（建议改，助手未动 Java 仓）。
 >
 > **语料形态与 `BIGID` 的关系（实测补正）**：`BIGID` 这个名字**只出现在早期文档**（全语料 case-insensitive `bigid` **0 命中**）；语料写的是 ——
 >
@@ -121,7 +121,7 @@
 >
 > - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
 > - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
-> - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §5）；
+> - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §3）；
 > - **`minId` / `maxId` 是「真实 id」（realId）的范围** —— **去掉租户标识之后的那部分**（比较前先 `getRealID(id) = id & MAX_REAL_ID`，`Tenancy.java:95-97`）。
 >
 > **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 [`workflows.md`](../workflows.md) §1。
@@ -360,9 +360,9 @@ var a = [0..20];    // range
 | `uint128` / `int128`（未来） | `struct{u64 lo, u64 hi}` | 预留；字节序随 FlatBuffers（小端） |
 | `decimal(p,s)` / `numeric` / `money` | **`p ≤ 18`：`long`（scaled int64，值 × 10^s）**；`p > 18`：`string` | **性能 = 定长可算、零分配** ⇒ 与 **JSON 的 `string` 口径不同**（[`api.md`](../api.md) §3.5 精度优先）；**两条口径都必须写进 Profile 显式声明** |
 | `float` / `float32` / `f32` / `real` | `float` | 32 位；三写法同义（§4） |
-> ✔ **两条写法专题收口（2026-09-26 作者：「1 A, 2 用 BitVector，BitSet, BitArray 别名」）**：① **容量写法 ✔ = A：维持 `type(size)`**（`char(10)` / `varchar(80)`）—— **不开 `[n]` 口子**（连兼容糖也不做），见 §1；② **位向量规范名 ✔ = `BitVector(n)`**，**`BitSet` / `BitArray` 作别名**，见 §7。上一轮两条 ⏳ 就此关闭（[`errata.md`](../errata.md) §二-16 / §二-17 转 ✔，校勘第一百二十三轮）。
-> ✔ **后缀式位向量保留（2026-09-26 作者：「留着」）**：`BitVector8`…`BitVector64` 作为**后缀式兼容写法**保留（≡ `BitVector(8)`…`BitVector(64)`，`n` 都是**位数**），**`mmda fmt` 仍归一写 `BitVector(n)`** —— 与 §7 定名同一口径，本轮把这条落成**显式裁定**（[`errata.md`](../errata.md) §二-17 ⤴ / §五-112）。**同时登记一条 ⏳ 提案**：`FloatVector` / `f32` / `f64`（见 §4 ⏳ 块、[`errata.md`](../errata.md) §二-18 —— **⤴ 同日已定稿，见下一行**）—— **勘验已给作者：原始文档里没有 `f8` / `f16` / `f32` / `f64` 别名**。
-> ✔ **浮点标量与浮点向量定稿（2026-09-26 作者：「float = float32 = f32, 向量FloatVector=Float32Vector；double = float64 = f64，向量Float64Vector」+「其他同意你的观点」）**：`float` = `float32` = `f32`、`double` = `float64` = `f64`（**规范拼写取短名**，别名 `mmda fmt` 归一）；**向量 = `Float32Vector(n)` / `Float64Vector(n)`**（别名 `FloatVector(n)` ≡ `Float32Vector(n)`）—— **`n` = 元素个数**（≠ `BitVector(n)` 的位宽）、**是定长值类型、不是数组语法**、DB 默认 `BINARY(4n)` / `BINARY(8n)`；见 §4 / §11.4（说明 6）/ §11.5。**唯一余项 ⏳ = 端序**（[`errata.md`](../errata.md) §二-19：助手立场 = 语言层不设端序轴、格式写死小端、**外部协议端序进端点 / 连接器配置**）。
+> ✔ **两条写法专题收口（2026-09-26 作者：「1 A, 2 用 BitVector，BitSet, BitArray 别名」）**：① **容量写法 ✔ = A：维持 `type(size)`**（`char(10)` / `varchar(80)`）—— **不开 `[n]` 口子**（连兼容糖也不做），见 §1；② **位向量规范名 ✔ = `BitVector(n)`**，**`BitSet` / `BitArray` 作别名**，见 §7。上一轮两条 ⏳ 就此关闭（[`errata.md`](../errata.md) §五-110 / §五-111 转 ✔，校勘第一百二十三轮）。
+> ✔ **后缀式位向量保留（2026-09-26 作者：「留着」）**：`BitVector8`…`BitVector64` 作为**后缀式兼容写法**保留（≡ `BitVector(8)`…`BitVector(64)`，`n` 都是**位数**），**`mmda fmt` 仍归一写 `BitVector(n)`** —— 与 §7 定名同一口径，本轮把这条落成**显式裁定**（[`errata.md`](../errata.md) §五-112 ⤴）。**同时登记一条 ⏳ 提案**：`FloatVector` / `f32` / `f64`（见 §4、[`errata.md`](../errata.md) §五-113 —— **⤴ 同日已定稿，见下一行**）—— **勘验已给作者：原始文档里没有 `f8` / `f16` / `f32` / `f64` 别名**。
+> ✔ **浮点标量与浮点向量定稿（2026-09-26 作者：「float = float32 = f32, 向量FloatVector=Float32Vector；double = float64 = f64，向量Float64Vector」+「其他同意你的观点」）**：`float` = `float32` = `f32`、`double` = `float64` = `f64`（**规范拼写取短名**，别名 `mmda fmt` 归一）；**向量 = `Float32Vector(n)` / `Float64Vector(n)`**（别名 `FloatVector(n)` ≡ `Float32Vector(n)`）—— **`n` = 元素个数**（≠ `BitVector(n)` 的位宽）、**是定长值类型、不是数组语法**、DB 默认 `BINARY(4n)` / `BINARY(8n)`；见 §4 / §11.4（说明 6）/ §11.5。**✔ 端序已定稿**（[`errata.md`](../errata.md) §五-114：语言层不设端序轴、IR / 线上写死小端、**外部协议端序进端点 `byteOrder` 声明**；见 §11.5 说明 6）。
 
 | `double` / `float64` / `f64` | `double` | 64 位；三写法同义（§4） |
 | `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector(n)` ≡ `Float32Vector(n)`） | `vector<float>` / `vector<double>` | **元素序 = 下标 0 起、连续（写死）**；**字节序 = 小端**（FlatBuffers 格式本身即小端；大端宿主由生成代码字节交换）；见 §4（浮点向量块，✔ 已裁）|
@@ -375,7 +375,7 @@ var a = [0..20];    // range
 | `BitVector(n)` | `uint64`（`n ≤ 64`）；`vector<uint64>`（`n > 64`） | **位序 = LSB-first（写死，进一致性用例）**；`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128 位；§7）；`n ≤ 64` = **一个 `uint64`** |
 | `uuid` | `[ubyte:16]`（RFC 4122 字节序） | 定长、零分配；**✔ 已裁：不用 `struct{u64 low, u64 high}`**；**字节序 = RFC 4122（大端文本序）写死，进一致性用例** |
 | `blob` / `byteArray` / `ByteStream` | `vector<ubyte>` | 大文件不走 IR（[`api.md`](../api.md) §3.5：`multipart/form-data`） |
-| `inet4` / `inet6` | `[ubyte:4]` / `[ubyte:16]` | 定长；不带文本 |
+| ~~`inet4` / `inet6`~~ | — | **不作类型**（✔ 2026-09-26 作者：「这个不作为类型，在校验器里支持即可」）⇒ 改由**框架层校验器** + `varchar(45)` 承担，**无 IR 形态**（§6 / §11.4） |
 | 枚举（`.me`） | 原生 `enum`（底层 `int8` / `int32`，取**最小能装下全部成员值**的整型） | 默认 `0 = NONE`（§12 已裁）⇒ **默认值不占数据**；**位标志枚举 = 底层整型 + 语义注释**（FlatBuffers 无 `[Flags]`） |
 | `T?`（可空） | **`table` 字段**（vtable 存在位 = 天然可空、零成本）；定长 `struct` 无空位 | **默认「能 table 就 table」**；只有「定长 + 全必填 + 纯值」的叶子才 `struct` |
 | `T[]`（子表） | `vector of tables`（偏移向量） | 值数组已取消（§10）⇒ 无别的分支 |
@@ -411,7 +411,7 @@ HAS_ONE Partner(partnerId, partnerCode, partnerName) AS customer
 >
 > ✔ **`default` 认两态（✔ 2026-09-26 作者：「定义的时候 `NONE = 0`，那么 `default 0` / `default NONE` 你能不能都认？」→ **都认**）**：`default 0` 与 `default NONE` **都认**（等价；`mmda fmt` 归一写成员名 `default NONE`）；**`NONE = 0` 是本语言约定**（`MetaEnumMember` 默认 `0`）。
 >
-> ✔ **呈现串 = `value;name;label;color;icon`（✔ 2026-09-26 作者：「`text` => `label`」）**：枚举成员呈现串第 3 段段名 = **`label`**（不是 `text`）；**`label` / `color` / `icon` 是呈现信息、不进业务数据**；**`description` 不进 JSON**（改走**类似 SQL 注释的存储侧注释**）；元数据 JSON 顶层带 **`locale`**、按 locale 分片（见 [`enums.md`](../guide/enums.md)）。
+> ✔ **呈现串 = `value;name;label;color;icon`（✔ 2026-09-26 作者：「`text` => `label`」）**：枚举成员呈现串第 3 段段名 = **`label`**（不是 `text`）；**`label` / `color` / `icon` 是呈现信息、不进业务数据**（**`label` 走词条**、按 locale 分片；**`color` / `icon` 随元数据下发一次、不走词条**）；**`description` 不进 JSON**（改走**类似 SQL 注释的存储侧注释**）；元数据 JSON 顶层带 **`locale`**、按 locale 分片（见 [`enums.md`](../guide/enums.md)）。
 
 ---
 
@@ -436,6 +436,6 @@ HAS_ONE Partner(partnerId, partnerCode, partnerName) AS customer
 | `M0102` | 布尔字面量非 `0` / `1` | 暂定（§2） |
 | `M0206` | 标识符与关键字同形（含 `@` 逃逸不可用） | 暂定（§1） |
 | `M07xx` | 目标端表达不了的**降级**（Profile 可关；≠ 轴越界） | 区间（§11.3） |
-| （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10 / §10） |
+| （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10） |
 | （待补） | `BitVector(n)` 的 `n` 非 8 的倍数 / 超上限 128 | 待定（§7） |
 | （待补） | 对非空类型写 `null` / `= null` | 待定（§1 / [`statements.md`](statements.md) §2） |

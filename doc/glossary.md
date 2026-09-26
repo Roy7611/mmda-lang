@@ -173,7 +173,7 @@
 | `@Partitioned` / `partitioned` | **分区主键**（✔ 2026-09-25 由 `@PartitionID` 改名）：**字段级行尾 `partitioned`**（不带范围）／ **注解 `@Partitioned [min,max]`**（带段范围）—— 与元对象属性 `MetaObject.partitioned` 同名；一个对象只能有一个 |
 | 基础表（base table） | **UNION 进某个视图的那几张表**（视图的组成表）—— 「标识共享组」即一个视图的基础表集合；SQL 现成词，不用「成员表 / 来源表」 |
 | 标识共享（Identity Sharing） | **一组要 UNION 成同一个视图的表，在 realId 空间里各领一个互不重叠的段**（`@Partitioned [min,max]` 声明），使 UNION 后的主键天然不冲突（✔ 2026-09-25 作者说明；段划分与六个组见 [`records.md`](lang/records.md) §2.3） |
-| `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@Partitioned [min,max]` + `uint64 identity`**，见 [`datatypes.md`](lang/datatypes.md) §5 |
+| `BIGID` | **自有整数类型（文档用名）**：本身即 partitionID（分区主键）—— **高 28 位字段 = tenantId（27 位有效，`0x7FF_FFFF`，bit 63 保留恒 0）+ 低 36 位 realId**（解析 `>>> 36`；`0` = 无租户，`1` 起为真实租户；realId 由分布式 ID 生成、底座合成）。**语料写法 = `@Partitioned [min,max]` + `uint64 identity`**，见 [`datatypes.md`](lang/datatypes.md) §3 |
 | customProperties | API 中 REF/ENUM 的显示标签扩展 |
 | MetaUiField | UI 呈现：formatter、editor、renderer |
 | UiLogic | 前端模块交互逻辑（beforeEdit 等钩子） |

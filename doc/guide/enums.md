@@ -307,8 +307,7 @@ stm BomApproval on Bom.status {
 
 > **⤴ 本 JSON 没有 `description` 字段**（2026-09-26 作者：「**json 中不要 description 了吧**」「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）：文档注释**另存 comments 层**（**✔ A = 定案**：生成 DDL 时落数据库 `COMMENT ON`；B 备选、不采用 —— ⤴ 第一百一十八轮作者：「**1A**」）—— 见 [`../meta-model.md`](../lang/meta-model.md) §6.3。JSON 只留「机器要用的」：`label`（另经词条发）、`color` / `icon`、名字与值。
 
-- **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
-- **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
+- **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。**✔ 已裁**：`label` 走**词条包**（按 locale 分片）、`color` / `icon` 随元数据下发一次（不走词条）—— 见 §13.2 末条。
 - **顶层 `locale` = 本份 JSON 的 locale（最终输出形式）**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）：**一份 JSON 只出一个 locale** —— `label` / 成员 `label` 都是**该 locale 的最终值**（缺译文回落项目 `defaultLocale`）；多 locale = **多份 JSON**，客户端**按 locale 分别缓存**（IndexedDB 分 locale 存）。**注意**：串里的第 3 段（`text`）是 **locale 无关的形态**，**✔ 存项目 `defaultLocale` 的标签**（⤴ 第一百一十八轮作者：「**2 defaultLocale**」）；locale 化的最终 `label` 只在元数据 JSON / 词条里。
 - **`description` 与 `label` 同源不同物**：`/// 已起草 : 保存但未提交审核` → `label: "已起草"`（进 JSON，且**另走词条**）+ **文档注释「保存但未提交审核」（不进 JSON，另存 comments 层）**；只写标签时没有文档注释（`null`）。
 - **JSON 里没有 `enumString` 字段** —— 旧实现的那个列就是 `toString()` 的结果；成员信息由 `members[]` 承载。

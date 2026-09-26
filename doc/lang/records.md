@@ -150,7 +150,7 @@ MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
 parseTenantID(id) = id >>> 36
 ```
 
-**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`（**语料原文；A2 已裁：语言侧写 `int64 identity`，外部语料 102 处待迁**），即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
+**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`（**语料原文；A2 已裁：语言侧写 `int64 identity`，外部语料 102 处待迁**），即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §3。
 
 **为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
 
@@ -181,7 +181,7 @@ parseTenantID(id) = id >>> 36
 - **✔ 一次性迁移（2026-09-25 作者同意）**：**`mmda migrate --rename @PartitionID=@Partitioned`** —— 默认 **`--dry-run`**（只出「文件:行:列 + 改动」清单），**`--write`** 才落盘；**只动语言文件**（`.mm` / `.me` / `.ms` / `.mi` / `.mmda` …），不碰生成区与 KEEP 区；与 [`naming.md`](../naming.md) §5 的命名迁移脚本**同一条线**，一并归 **P9**；
 - **唯一性校验**：**一个对象只能有一个 `partitioned` 字段**（分区主键唯一）→ `mmda check` **error**。
 
-**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](../design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`int64 identity partitioned`**（**⤴ 2026-09-26 更正，原写 `uint64`**）（见 [`datatypes.md`](datatypes.md) §5）。
+**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](../design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`int64 identity partitioned`**（**⤴ 2026-09-26 更正，原写 `uint64`**）（见 [`datatypes.md`](datatypes.md) §3）。
 
 **✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](../workflows.md) §1）。
 
