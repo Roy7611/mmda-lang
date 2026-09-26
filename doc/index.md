@@ -19,24 +19,25 @@
 | 8 | [presentation.md](lang/presentation.md) | 呈现层：UiField、分组、i18n、五视图 |
 | 9 | [meta-model.md](lang/meta-model.md) | 元模型元素（L1/L2/L3）与到旧实现结构的映射 |
 | 10 | [project.md](lang/project.md) | 项目格式：目录、扩展名、清单、变更日志、归档、多租户 ；**2026-09-25：语言文件统一 `*.m`、目录自由（默认四根 `intents/` `models/` `tests/` `delivery/`）、JSON → M 语言格式、迁移与 6 条待裁见 §11** |
-| 11 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
-| 12 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
-| 13 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
-| 14 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**需求即元对象（进语言 / 进库 / 进 IDE）**、**三层需求 ↔ 模块三级 System·Module·Feature**、**优秀需求四标准各自对应的机械信号**、**需求调研清单六项**、SERU 与 AI 原生 SDLC（intent / spec）对照、需求管理四步、SRS 形态与追溯链 |
-| 15 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
-| 16 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 ；**UAT 一等（需求完成即出 / 可执行 / hooks）+ 测试类型 = UAT 的展开 + 用例库化（分类 / 集合 / 状态）+ IDE 全生命周期管理面** |
-| 17 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、**OWASP ASVS 门禁口径**、IDE 全生命周期能力 |
-| 18 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
-| 19 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合、**业务功能模块插件（§7）** |
-| 20 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
-| 21 | [operations.md](operations.md) | **运维与可观测性（运维篇）**：五层监控模型（客户端 / 业务 / 应用 / 系统 / 网络）与责任归属、**元数据驱动的自动打点（零手写）**、三支柱 Metrics·Logs·Traces 与三个关联键、**与 Prometheus / Zabbix / Open-Falcon·夜莺的集成（只出标准出口 + 模板资产）**、DevOps 流水线与 Jenkins 集成、CI 输出契约、配置管理与漂移检测、应急 SOP 与 KPI、运维面安全、多租户与离线 |
-| 22 | [ux.md](ux.md) | **用户体验（UX）**：UX 与 Usability 之分（ISO 9241-11 vs 诺曼 1993）、**体验四层环**（Utility → Usability → Desirability → Brand Experience）、认知心理学与人因的**五条设计判据**（示能/意符/映射/反馈/人的差错）、**尼尔森十大原则 → A/B 类可判定信号清单**、UCD 六阶段与 **MVP 金字塔**（承诺下三层）、传统/Lean/Agile UX 三方对照、服务设计边界、**包容性三条可判定检查**、**一手材料与版权边界**、待裁 4 条 |
-| 23 | [glossary.md](glossary.md) | 术语表（**§3.1 = 事件与集成的唯一命名**：EventSource / EventSink / Endpoint / Connector / Channel / Processor 与**禁用别名**；**§3.2 = 易混淆概念辨析**：pub/sub ↔ produce/consume、channel ↔ pipe、**inbound/outbound ↔ inbox/outbox**） |
-| 24 | [naming.md](naming.md) | **命名约定**：接口 **`I` 前缀**、实现类**禁 `Impl`**、类与对象 **PascalCase**、字段与属性 **camelCase（含 C#）**、其余**尊重各端习惯**；**契约名三端逐字一致**的清单与一致性查法；生成器 / Profile 的责任边界 | 
-| 25 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
-| 26 | [guide/enums.md](guide/enums.md) | **枚举开发指南**（照着写：模板 → 注释 → 外观 → 自检 → 迁移） |
-| 27 | [examples/README.md](examples/README.md) | **m 语言示例**（取自 `mmda-mes` 语料的 `Material` / `Bom` / `DailyReport` / `Operation` 及其枚举、状态机；语料即基线 + 字段级 `partitioned` 等价简写） |
-| 28 | [workflows-phase.md](workflows-phase.md) | **开发阶段模型（草案 · 工作稿）**：**四阶段 S1 意图 / S2 建模 / S3 验收 / S4 交付**（作者 2026-09-25 裁定）+ 两条贯穿腿 + 与传统阶段/现存三种切法的映射 |
+| 11 | [modules.md](lang/modules.md) | **模块树与 Role / 权限**（语义篇）：`subsystem` / `module` 两种节点、模块编号（S1→S2 锚）、模块挂 `model:` / `ui:` / `flow:`、Role 声明与 `allowOps` 权限位、跨模块流程（`bpmn`）—— 语法真源仍在 [project.md](lang/project.md) §1.1 / §3.1 |
+| 12 | [targets.md](targets.md) | **目标端契约**：2 后端 + 1 前端的能力矩阵、capability 分档、一致性测试口径 |
+| 13 | [contracts-inventory.md](contracts-inventory.md) | **三端契约盘点清单**（P0.5 交付物）：60+ 概念逐行 `file:line`，标出同名同义 / 同义异名 / 不兼容 / 单侧独有 |
+| 14 | [protection.md](protection.md) | **算法与知识产权保护**（草案）：native 边界判据、三端交付形态、Rust 加固清单、许可与法务 |
+| 15 | [requirements.md](requirements.md) | **需求工程**：三层需求 → MMDA 落点、**需求即元对象（进语言 / 进库 / 进 IDE）**、**三层需求 ↔ 模块三级 System·Module·Feature**、**优秀需求四标准各自对应的机械信号**、**需求调研清单六项**、SERU 与 AI 原生 SDLC（intent / spec）对照、需求管理四步、SRS 形态与追溯链 |
+| 16 | [workflows.md](workflows.md) | **角色与工作流**：五类用户的写入边界、交接协议、变更分级、AI Agent 协议与业务人员路径 |
+| 17 | [testing.md](testing.md) | **测试与验收**：从架构/设计声明机械生成用例、AI 生成用例人审、三层验收物、覆盖率与变异测试 ；**UAT 一等（需求完成即出 / 可执行 / hooks）+ 测试类型 = UAT 的展开 + 用例库化（分类 / 集合 / 状态）+ IDE 全生命周期管理面** |
+| 18 | [quality.md](quality.md) | **质量模型与自动评估**：ISO/IEC 25010 九特性 → MMDA 可自动信号、A/B/C/D 可判定性分级、三层度量与加权聚合、默认阈值基线、**OWASP ASVS 门禁口径**、IDE 全生命周期能力 |
+| 19 | [architecture-review.md](architecture-review.md) | **架构评估**：分层/循环/数据所有权硬规则、Martin 度量（I/A/D）、**SOLID 操作化**、打分模型、建议模板、评审仪式 |
+| 20 | [runtime.md](runtime.md) | **运行架构**：四层职责（Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面）、进入与返回两条路径、**事务边界**、**拦截点统一语义**（设计师配置 + 程序员定制）、装配与聚合、**业务功能模块插件（§7）** |
+| 21 | [api.md](api.md) | **API 契约**：API 由声明推导（Module/Feature/视图/Action/Role/约束）、语言层只补 `expose` 与稳定度、OpenAPI 生成与契约测试、设计/测试/运维三面、与 YApi/Apifox/Swagger 的**单向**互动 |
+| 22 | [operations.md](operations.md) | **运维与可观测性（运维篇）**：五层监控模型（客户端 / 业务 / 应用 / 系统 / 网络）与责任归属、**元数据驱动的自动打点（零手写）**、三支柱 Metrics·Logs·Traces 与三个关联键、**与 Prometheus / Zabbix / Open-Falcon·夜莺的集成（只出标准出口 + 模板资产）**、DevOps 流水线与 Jenkins 集成、CI 输出契约、配置管理与漂移检测、应急 SOP 与 KPI、运维面安全、多租户与离线 |
+| 23 | [ux.md](ux.md) | **用户体验（UX）**：UX 与 Usability 之分（ISO 9241-11 vs 诺曼 1993）、**体验四层环**（Utility → Usability → Desirability → Brand Experience）、认知心理学与人因的**五条设计判据**（示能/意符/映射/反馈/人的差错）、**尼尔森十大原则 → A/B 类可判定信号清单**、UCD 六阶段与 **MVP 金字塔**（承诺下三层）、传统/Lean/Agile UX 三方对照、服务设计边界、**包容性三条可判定检查**、**一手材料与版权边界**、待裁 4 条 |
+| 24 | [glossary.md](glossary.md) | 术语表（**§3.1 = 事件与集成的唯一命名**：EventSource / EventSink / Endpoint / Connector / Channel / Processor 与**禁用别名**；**§3.2 = 易混淆概念辨析**：pub/sub ↔ produce/consume、channel ↔ pipe、**inbound/outbound ↔ inbox/outbox**） |
+| 25 | [naming.md](naming.md) | **命名约定**：接口 **`I` 前缀**、实现类**禁 `Impl`**、类与对象 **PascalCase**、字段与属性 **camelCase（含 C#）**、其余**尊重各端习惯**；**契约名三端逐字一致**的清单与一致性查法；生成器 / Profile 的责任边界 | 
+| 26 | [errata.md](errata.md) | 待裁决口径与校勘记录（§五 记录**已裁决**项） |
+| 27 | [guide/enums.md](guide/enums.md) | **枚举开发指南**（照着写：模板 → 注释 → 外观 → 自检 → 迁移） |
+| 28 | [examples/README.md](examples/README.md) | **m 语言示例**（取自 `mmda-mes` 语料的 `Material` / `Bom` / `DailyReport` / `Operation` 及其枚举、状态机；语料即基线 + 字段级 `partitioned` 等价简写） |
+| 29 | [workflows-phase.md](workflows-phase.md) | **开发阶段模型（草案 · 工作稿）**：**四阶段 S1 意图 / S2 建模 / S3 验收 / S4 交付**（作者 2026-09-25 裁定）+ 两条贯穿腿 + 与传统阶段/现存三种切法的映射 |
 
 ## 工具与 IDE
 
