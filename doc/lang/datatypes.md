@@ -385,7 +385,7 @@ var a = [0..20];    // range
 4. **schema 纪律**：`file_identifier` + IR 版本号（承 §3.5）；**字段只追加**。
 5. **两处「隐含约定」必须落成用例**：`BitVector` 的 **LSB-first**、`uuid` 的**字节序** —— 否则三端各按自己习惯解释。
 
-6. **✔ 端序 = 小端（语言层写死；2026-09-26 已裁）**：IR 里的整数 / 浮点字节序由 FlatBuffers 格式规定为**小端**（本表 §11.5 `uint128` 行早已如此），**大端平台（s390x 等）由生成代码在边界字节交换** ⇒ **语言层不设「端序轴」**；**外部协议（Modbus / S7 / OPC UA…）的端序不是类型的事**，落**端点的 `byteOrder` 声明**（见 §4 ⑥ 与 [`event_bus.md`](/event_bus.md §6）。
+6. **✔ 端序 = 小端（语言层写死；2026-09-26 已裁）**：IR 里的整数 / 浮点字节序由 FlatBuffers 格式规定为**小端**（本表 §11.5 `uint128` 行早已如此），**大端平台（s390x 等）由生成代码在边界字节交换** ⇒ **语言层不设「端序轴」**；**外部协议（Modbus / S7 / OPC UA…）的端序不是类型的事**，落**端点的 `byteOrder` 声明**（见 §4 ⑥ 与 [`event_bus.md`](event_bus.md §6）。
 
 **✔ 两格已裁（2026-09-26 作者「同意」）**：① **`uuid` = `[ubyte:16]`**（RFC 4122 字节序）；② **`decimal` 用 scaled `int64`** —— 与 JSON 的 `string` 不一致**是设计如此**（IR 效率优先 / JSON 精度优先），**两条口径都在 Profile 显式声明**。
 
@@ -431,4 +431,4 @@ HAS_ONE Partner(partnerId, partnerCode, partnerName) AS customer
 | `M07xx` | 目标端表达不了的**降级**（Profile 可关；≠ 轴越界） | 区间（§11.3-3） |
 | （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10 / §11.4 尾注二） |
 | （待补） | `BitVector(n)` 的 `n` 非 8 的倍数 / 超上限 128 | 待定（§7） |
-| （待补） | 对非空类型写 `null` / `= null` | 待定（§1 / [`statements.md`](/statements.md §2） |
+| （待补） | 对非空类型写 `null` / `= null` | 待定（§1 / [`statements.md`](statements.md §2） |

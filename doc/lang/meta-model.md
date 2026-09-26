@@ -156,9 +156,9 @@ Field ──(呈现层)── UiField
 | 属性 | 说明 |
 | --- | --- |
 | `name` | 枚举名，如 `OrderStatus`（✔ 2026-09-25 作者认可此名） |
-| `label` | 显示标签（来自 `///`，见 [`records.md`](/records.md §1.1；**旧实现列名 `displayLabel`**） |
+| `label` | 显示标签（来自 `///`，见 [`records.md`](records.md §1.1；**旧实现列名 `displayLabel`**） |
 | `description?` | **描述**（`/// <label> : <description>` 的冒号后半段；只写标签时为空）——**`MetaEnum` 与 `MetaEnumMember` 都有**（✔ 2026-09-25 落地 §五-61 / §五-77） |
-| `baseType` | 基类型：`int` \| `BitVector`（✔ 2026-09-25 作者认可的是**当时的 `BitSet`**；**⤴ 2026-09-26 规范名定为 `BitVector`，`BitSet` / `BitArray` 为别名**，见 [`datatypes.md`](/datatypes.md §7） |
+| `baseType` | 基类型：`int` \| `BitVector`（✔ 2026-09-25 作者认可的是**当时的 `BitSet`**；**⤴ 2026-09-26 规范名定为 `BitVector`，`BitSet` / `BitArray` 为别名**，见 [`datatypes.md`](datatypes.md §7） |
 | `bitwise` | 是否位标志 |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
 | `color?` | **默认色** `<role>-<shade>`（`@Colorized(role, shade)`，枚举级默认；**一个字段、一个形态**，见 §6.1） |
@@ -267,7 +267,7 @@ value ; name ; label ; color ; icon
 | --- | --- | --- |
 | ★ `locale` | string | **本份 JSON 的 locale**（如 `zh-CN`，取项目 `defaultLocale` 之一）—— **一份一个 locale**；`label` / `members[].label` 为该 locale 的最终值，**缺译文回落 `defaultLocale`** |
 | `name` / `baseType` / `bitwise` | ✔ 语言侧名 | `enum X : int` 的名字与基类型、是否位标志（旧列名 `enumClass` / `dataType`） |
-| `label` / `namespace` | 既有 | 显示标签（来自 `///`，见 [`records.md`](/records.md §1.1；**`label` 另走词条**）/ 所属模块（如 `mes`）。**`label` = 旧实现列名 `displayLabel` 的新名**；⤴ **`description` 不进本 JSON**（2026-09-26 作者：「**json 中不要 description 了吧**」）—— 文档注释另存 **comments 层**（§6.3） |
+| `label` / `namespace` | 既有 | 显示标签（来自 `///`，见 [`records.md`](records.md §1.1；**`label` 另走词条**）/ 所属模块（如 `mes`）。**`label` = 旧实现列名 `displayLabel` 的新名**；⤴ **`description` 不进本 JSON**（2026-09-26 作者：「**json 中不要 description 了吧**」）—— 文档注释另存 **comments 层**（§6.3） |
 | ★ `colorized` / `iconized` | bool | 开关（对应 `@Colorized` / `@Iconized`） |
 | ★ `color` | string? | 枚举级**默认色** `<role>-<shade>`（`@Colorized(role, shade?)`；无默认 = `null`） |
 | ★ `iconPrefix` | string? | `@Iconized("bom")` 的前缀；`@Iconized`（无参）为 `null` |
@@ -276,7 +276,7 @@ value ; name ; label ; color ; icon
 **三条口径**：
 
 1. **`toString()` 存原始、JSON 存最终** —— 串里没声明的段就是空的（IDE 据此判「显式还是默认」），`members[]` 一律是回落后的完整值（三端不必重算）。`label` / `color` / `icon` 也在此列（**`description` 不在此列** —— 它不进 JSON，见下条 ② 的 ④）。
-2. **呈现信息（`label` / `description` / `color` / `icon`）一律不进业务数据**（✔ 2026-09-26 作者：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」）：① **记录载荷里枚举字段只有成员名**（`"status": "CERTIFIED"`）—— **`customProperties.$status` 的标签形态取消**（**⤴ 修订 2026-09-24「保留」裁定**，见 [`api.md`](../api.md) §3.5）；② **`label` 走词条、`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：颜色 / 图标**走不了词条**、语言无关 ⇒ 一次一份给所有 locale），渲染方按值查 `MetaEnum.members` 即可；③ **`description` 连这一次也不下发** —— 它是**文档信息**，只进**设计真源 + `mmda doc` / IDE + comments 层（§6.3）**（本节 §6.2 的 JSON 是**设计期 / 元数据面**产物，不是业务载荷，**且不含 `description`**）。**✔ 2026-09-26 已裁**：① **`label` / `color` / `icon` 走词条（Model i18n）通道，**按 locale 分片**：**一次请求只出请求的那一个 locale**（不把多语言塞进同一份元数据），**但接口支持任意 locale、客户端按 locale 分别缓存** —— ⤴ 2026-09-26 作者修订：「**这个太武断，我在 indexedDb 里是分 locale 的，前端支持语言切换**」⇒ **缺哪个 locale 就按需再拉一份**；② **服务端组装作废**：旧实现 `assembleEnumProperties`（作者口语 `assembleEnums`）把枚举显示文本写进实体影子属性并打 `ASSEMBLE_ENUM` 标记 —— **再也不用**（`D:\2026\java` 的 `EntityRepository.java:411`、`DomainService.java:330/343`，见 [`legacy/runtime-java.md`](../legacy/runtime-java.md)）；③ **引用数据（`@Ref` / `@One`）的国际化 = 数据层的事**：作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **引用表按 locale 分行存储，查询按用户 locale 取那一行**，载荷里只有 FK / 嵌套对象，**不组装标签、不新增机制**（视图仍可自由声明字段，那不是本裁定的要求）。（详见 [`presentation.md`](/presentation.md §5「三通道分工」）
+2. **呈现信息（`label` / `description` / `color` / `icon`）一律不进业务数据**（✔ 2026-09-26 作者：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」）：① **记录载荷里枚举字段只有成员名**（`"status": "CERTIFIED"`）—— **`customProperties.$status` 的标签形态取消**（**⤴ 修订 2026-09-24「保留」裁定**，见 [`api.md`](../api.md) §3.5）；② **`label` 走词条、`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：颜色 / 图标**走不了词条**、语言无关 ⇒ 一次一份给所有 locale），渲染方按值查 `MetaEnum.members` 即可；③ **`description` 连这一次也不下发** —— 它是**文档信息**，只进**设计真源 + `mmda doc` / IDE + comments 层（§6.3）**（本节 §6.2 的 JSON 是**设计期 / 元数据面**产物，不是业务载荷，**且不含 `description`**）。**✔ 2026-09-26 已裁**：① **`label` / `color` / `icon` 走词条（Model i18n）通道，**按 locale 分片**：**一次请求只出请求的那一个 locale**（不把多语言塞进同一份元数据），**但接口支持任意 locale、客户端按 locale 分别缓存** —— ⤴ 2026-09-26 作者修订：「**这个太武断，我在 indexedDb 里是分 locale 的，前端支持语言切换**」⇒ **缺哪个 locale 就按需再拉一份**；② **服务端组装作废**：旧实现 `assembleEnumProperties`（作者口语 `assembleEnums`）把枚举显示文本写进实体影子属性并打 `ASSEMBLE_ENUM` 标记 —— **再也不用**（`D:\2026\java` 的 `EntityRepository.java:411`、`DomainService.java:330/343`，见 [`legacy/runtime-java.md`](../legacy/runtime-java.md)）；③ **引用数据（`@Ref` / `@One`）的国际化 = 数据层的事**：作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **引用表按 locale 分行存储，查询按用户 locale 取那一行**，载荷里只有 FK / 嵌套对象，**不组装标签、不新增机制**（视图仍可自由声明字段，那不是本裁定的要求）。（详见 [`presentation.md`](presentation.md §5「三通道分工」）
 3. **一份 JSON = 一个 locale（最终输出形式）** —— `locale` 是**该份切片**的标识（词条通道按它分片、客户端按它缓存）；**`label`（枚举级 / 成员级）都是这份 locale 的最终值**，**缺译文回落项目 `defaultLocale`**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）。
 
 **校验（`mmda check`）**：段内 `;` `|` = error；`color` 只有 `-500` 无 role、`role` 不在 7 值、`shade` 不在 10 档 = error。
@@ -300,7 +300,7 @@ value ; name ; label ; color ; icon
 ## 7. View
 
 基于 Record 的投影：`relatives`（join 的 Record 集合）、`colAliasMap`、`whereCondition`、`orderBy`、字段列表。
-语言形态见 [records.md](/records.md。
+语言形态见 [records.md](records.md。
 
 > ⚠️ `whereCondition` / `orderBy` 在旧实现里是**裸字符串**；m 语言目标是类型化表达式（纯函数，禁 IO）。
 
@@ -374,14 +374,14 @@ value ; name ; label ; color ; icon
 | `Channel` | `name`、`schema`、`transport`（memory/redis/rabbitmq…） |
 | `Subscription` | `handler`、`filter`、`delivery`、`retry`、`timeout` |
 
-声明语法见 [events.md](/events.md。
+声明语法见 [events.md](events.md。
 
 ---
 
 ## 12. UiField（呈现层，可选）
 
 与 Field 分离的 UI 元数据：`formatter`、`align`、`renderer`、`editor`、`placeholder`、`listSize`、`sortable` 等。
-详见 [presentation.md](/presentation.md。
+详见 [presentation.md](presentation.md。
 
 ---
 
@@ -397,7 +397,7 @@ value ; name ; label ; color ; icon
 | `prevLogId` | 链表 |
 | `undone` | 是否已撤销 |
 
-文件形态见 [project.md](/project.md。**Design Change Log ≠ Domain Event Sourcing**。
+文件形态见 [project.md](project.md。**Design Change Log ≠ Domain Event Sourcing**。
 
 ---
 
@@ -434,7 +434,7 @@ value ; name ; label ; color ; icon
 
 ## 16. 相关
 
-- [records.md](/records.md — 语言层面的对象定义
-- [project.md](/project.md — 项目与文件承载
+- [records.md](records.md — 语言层面的对象定义
+- [project.md](project.md — 项目与文件承载
 - [legacy/java-factory.md](../legacy/java-factory.md) — 旧库表映射
 - `..\PLAN.md` — IR 与宿主加载的落地口径
