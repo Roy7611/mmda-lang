@@ -6,7 +6,7 @@
 ---
 
 
-> ⚠️ **事故回填版（2026-09-26 18:43 事故）**：本文件被一次批量重写脚本清成 12 字节（`BOM + "undefined"`），**作者原稿（24,918 B）未找回**；此版 = **git `HEAD` 骨架 + 会话重放残片 + `errata.md` §六 抢救行** 回填，**§11.1–§11.3 标题为回填摘要、§11.4 / §11.5 / §14 为回填块**，请作者过目。
+> **溯源**：2026-09-26 事故后回填（原稿 24,918 B 未找回）—— 底本 = git `HEAD` 骨架 + 会话重放 + [`errata.md`](../errata.md) §六 抢救行；事故与恢复口径见同文件 §七。
 
 ## 1. 写法约定
 
@@ -16,7 +16,7 @@
 | 长度 / 精度 | 括号参数 | `decimal(18,3)`、`varchar(100)`（采用数据库的表达方式） |
 | 组合 | `decimal(18,3)?` | 可空、精度 18、小数 3 的定点小数 —— **`?` 在括号之后**（语料实测 `decimal(18, 3)?` **93 处**；`decimal?(18,3)` **0 命中**，见 `errata.md` 冲突 5） |
 | **数值字面量** | 十 / `0x` 十六 / `0b` 二；`_` 分组；**大小写不敏感** | `10000`、`0x000F_FFFF`、`0X7f_ff`、`0b1010` 属**同一个数值层**：词法层直接产出**数值**，之后一律**按数值比较** —— **没有「位数 / 大小写规范化」这回事**（✔ 2026-09-25 作者：「范围的写法支持数学上开区间，闭区间的表达式……**你是一门语言，不是字符串解析**」；✔ **2026-09-26 作者：「八进制不要了」→ 不设八进制字面量**，词法器**不认** `0o755`（报 `M0101`），与 C# 一致） |
-| 大小写 | **分三层**（见下） | ✔ 2026-09-26 收口：**① 关键字（语法骨架）= 严格小写**（`RECORD` / `SELECT` / `DEFAULT` ❌ error）；**② 内建类型名 / 注解名 / 约束名 = 大小写不敏感**（`BOOL` = `bool`、`BIGID` = `bigid`、`@COMPUTED` = `@Computed`、`INDEXED` = `indexed`）；**③ 标识符（对象名 / 字段名 / 枚举成员）= 严格敏感**，按 ](../naming.md)（类 PascalCase、字段 camelCase） |
+| 大小写 | **分三层**（见下） | ✔ 2026-09-26 收口：**① 关键字（语法骨架）= 严格小写**（`RECORD` / `SELECT` / `DEFAULT` ❌ error）；**② 内建类型名 / 注解名 / 约束名 = 大小写不敏感**（`BOOL` = `bool`、`BIGID` = `bigid`、`@COMPUTED` = `@Computed`、`INDEXED` = `indexed`）；**③ 标识符（对象名 / 字段名 / 枚举成员）= 严格敏感**，按 [`naming.md`](../naming.md)（类 PascalCase、字段 camelCase） |
 
 > **大小写三层（✔ 2026-09-26 作者：「关键字统一小写吧，类似 C#，你举例的 `module, Module` 让我下了决心」）**：
 >
@@ -30,7 +30,7 @@
 >
 > **两条配套**：① **标识符不得与关键字同形** —— 标识符位置出现关键字 → 解析期 **error `M0206`** + 改名建议（如 `moduleName`）；② **C# 的 `@` 逃逸在本语言不可用**（`@` 已被注解占用，`@record` 无意义）⇒ 只能改名，不能逃逸。**注：`Module`（PascalCase 对象名）合法**（严格小写 ⇒ 与 `module` 不等），`module`（全小写名）非法。
 
-> ✔ **已裁（2026-09-25，取语料形态）**：**长度一律 `type(size)`、可空一律尾部 `?`** —— `varchar(80)?`、`char(11)?`、`decimal(18,3)?`；早期文档的 `varchar?[30]`、`char[11]`、`varchar?(30)` **标为历史、不进词法器**。**容量与可空各司其职**：`(size)` 管容量、`?` 管可空，不混进方括号（见 ](../errata.md) 冲突 5）。
+> ✔ **已裁（2026-09-25，取语料形态）**：**长度一律 `type(size)`、可空一律尾部 `?`** —— `varchar(80)?`、`char(11)?`、`decimal(18,3)?`；早期文档的 `varchar?[30]`、`char[11]`、`varchar?(30)` **标为历史、不进词法器**。**容量与可空各司其职**：`(size)` 管容量、`?` 管可空，不混进方括号（见 [`errata.md`](../errata.md) 冲突 5）。
 
 > ✔ **空值只有 `null` 一个（✔ 2026-09-26 作者：「`null` = `NULL`，这个很特殊」「我把 TS 的 `undefined` 也认为是空值，就不进入 m 语言了」）—— 八条口径**：
 >
@@ -94,7 +94,39 @@
 
 > ✔ **24 位整型已取消（✔ 2026-09-26 作者：「取消 24 位的整型，没啥用」）**：`uint24` / `int24`（及现实现的 `fixedBytes(3)`）**从类型表移除**；**位宽只有 8 / 16 / 32 / 64（+ 未来 128）** —— 需要 24 位请用 `BitVector(24)`（§7）。表内两行已删。
 >
-> ✔ **`BIGID` = `int64 identity partitioned`（✔ 2026-09-26 作者：「bigid = int64 identity partitioned」）**：**`uint64` 已迁 `int64`** —— 原因是 **Java 没有 `ulong`**（✔ 作者：「外键也要（受限于 java 无 ulong）」）⇒ **`BIGID` / 主键 / 外键一律 `int64`**；FlatBuffers 有原生 `uint64`，用不用是**宿主投影**的事（§11.5）。**分区位布局**（高 28 位 tenantId 含 27 位有效 + 低 36 位 realId）见 §6 末。
+> ✔ **`BIGID` = `int64 identity partitioned`（✔ 2026-09-26 作者：「bigid = int64 identity partitioned」）**：**`uint64` 已迁 `int64`** —— 原因是 **Java 没有 `ulong`**（✔ 作者：「外键也要（受限于 java 无 ulong）」）⇒ **`BIGID` / 主键 / 外键一律 `int64`**；FlatBuffers 有原生 `uint64`，用不用是**宿主投影**的事（§11.5）。**分区位布局**（高 28 位 tenantId 含 27 位有效 + 低 36 位 realId）见下节「BIGID 与多租户分区」。
+
+### BIGID 与多租户分区
+
+> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@Partitioned` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、[`design-notes.md`](../design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
+>
+> ```
+> MAX_TENANT_ID = 0x7FF_FFFF    // 高 28 位是租户 id（上限 2^27−1 → bit 63 恒 0、ID 恒为正 long）
+> MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id（上限 2^36−1 ≈ 687 亿）
+> parseTenantID(partitionId) = partitionId >>> 36
+> buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
+> ```
+>
+> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源 = 现行实现（新库）`D:\2026\java`**（✔ 2026-09-25 作者澄清：「**`D:\2026` 的是新的**」）：`Tenancy.java:15-19 / 42-44 / 85-103`、入库点 `056ef96`（mmda-core 5.0.0）。新库 `Tenancy.java:17` 的注释**已写「高 27 位是租户 id」**（与作者裁定一致）。**老库 = `D:\Java\mmda`**（作者给的路径；**非 git 仓**，多模块工程）；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 [`design-notes.md`](../design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**✔ 租户位宽已确认（2026-09-25，作者原话：「27位没错」）**：**高 28 位字段中 27 位有效（`MAX_TENANT_ID = 0x7FF_FFFF` = 134,217,727，bit 63 保留恒 0）** —— 不是笔误，ID 恒为正 `long`。**旧布局（16+48）的真源找到了 = 老库 `D:\Java\mmda`**：`mmda-core\mmda-core-entities\...\Tenancy.java:14` `short MAX_TENANT_ID = 0x7FFF`（**15 位有效值域**，注释称 16 位）、`:39` `partitionID >>> 48`、`:82-83` `entityID = tenantID & MAX_TENANT_ID; return (entityID << 48) + (id & 0xFFFF_FFFF_FFFFL)`（**低 48 位 realId**）、`:78` javadoc 同样写「48bits 实际的 id」。**新库改成了 28+36（`>>> 36` / `<< 36`），但 `Tenancy.java:82` 的 javadoc 与 `:27` 的注释漏改** —— 两处都是老库抄过来的话术，**以常量为准**（建议改，助手未动 Java 仓）。
+>
+> **语料形态与 `BIGID` 的关系（实测补正）**：`BIGID` 这个名字**只出现在早期文档**（全语料 case-insensitive `bigid` **0 命中**）；语料写的是 ——
+>
+> ```
+> record Address {
+>     @Partitioned [10000,0x000F_FFFF]      // 独占一行（字段级注解）
+>     addressId uint64 identity generated readonly,
+> ```
+>
+> 即 **分区主键 = 带 `@Partitioned` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处；**注意：语料里的注解写的还是旧名 `@PartitionID`（186 处）**，见 [`records.md`](records.md) §2.3 的改名说明）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3；**组就声明在视图处（视图即组）**，见同文件 §7。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `int64 identity partitioned`（✔ 2026-09-26 作者裁定 `uint64` 迁 `int64`，因 Java 无 `ulong`，见本节）**——
+>
+> - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
+> - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
+> - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §5）；
+> - **`minId` / `maxId` 是「真实 id」（realId）的范围** —— **去掉租户标识之后的那部分**（比较前先 `getRealID(id) = id & MAX_REAL_ID`，`Tenancy.java:95-97`）。
+>
+> **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 [`workflows.md`](../workflows.md) §1。
+>
+> 因此语料那两行（**原文用旧名**：`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；✔ **大小写敏感面同日已裁（2026-09-25，作者：「类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似」）**：**类型名与约束名一律大小写不敏感**（`BIGID` = `bigid`、`indexed` = `INDEXED`），**标识符（Record / 字段 / 枚举成员）仍大小写敏感**（[`naming.md`](../naming.md) §1）—— **`errata.md` §二-6 至此清零**。
 
 ---
 
@@ -147,36 +179,6 @@
 
 语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1，默认最大容量 **2000**（可由 Profile 调整）；可指定字符编码 `charset`。
 
-> ✔ **已裁（2026-09-25）：`BIGID` 既不是 `bigint` 的别名、也不是错字 —— 它是自有类型**（位布局同日补定：**高 28 位 tenantId + 低 36 位 realId**，见本节末）：**本身即 partitionID（分区主键），高位存 tenantId**（作者原话：「**另外 bigid 是我们特有的定义，就是指本身是 partitionID，高位存 tenantId**」）。与 `@Partitioned` / `MetaObject.partitionKey` / `minID`·`maxID`（[`meta-model.md`](meta-model.md) §5、](../design-notes.md) §8.3）同属**多租户主键**机制。**位布局（✔ 2026-09-25 已定）**：**高 28 位 = tenantId、低 36 位 = realId** ——
->
-> ```
-> MAX_TENANT_ID = 0x7FF_FFFF    // 高 28 位是租户 id（上限 2^27−1 → bit 63 恒 0、ID 恒为正 long）
-> MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id（上限 2^36−1 ≈ 687 亿）
-> parseTenantID(partitionId) = partitionId >>> 36
-> buildEntityID(tenantId, realId) = ((tenantId & MAX_TENANT_ID) << 36) + (realId & MAX_REAL_ID)
-> ```
->
-> **0 = 无租户**（`NO_TENANT_ID = 0`，平台公共数据）、`MIN_TENANT_ID = 1`；**realId 由分布式唯一 ID 生成器产出、由底座合成完整 ID**（不是数据库生成）。**生成方**：底座 / 应用侧（`buildEntityID`），**不是 DB**。**真源 = 现行实现（新库）`D:\2026\java`**（✔ 2026-09-25 作者澄清：「**`D:\2026` 的是新的**」）：`Tenancy.java:15-19 / 42-44 / 85-103`、入库点 `056ef96`（mmda-core 5.0.0）。新库 `Tenancy.java:17` 的注释**已写「高 27 位是租户 id」**（与作者裁定一致）。**老库 = `D:\Java\mmda`**（作者给的路径；**非 git 仓**，多模块工程）；相关的 `partitionKey` / `minID` / `maxID` 见 [`meta-model.md`](meta-model.md) §5 与 ](../design-notes.md) §7.2。**底座落地用例（同一份扫描实测）**：`TenancyEntityRepository.java:100 / :552 / :585` 与 `SqlQuery.java:1270` 都走 **`Tenancy.buildEntityID(...)`** 合成与过滤实体 ID（配合 `getMinEntityID` / `getMaxEntityID` 做**分区范围查询**）—— 即 **`BIGID` 不只是主键类型，也是多租户查询的过滤口径**（租户维度的隔离直接落在主键高 28 位上）。**✔ 租户位宽已确认（2026-09-25，作者原话：「27位没错」）**：**高 28 位字段中 27 位有效（`MAX_TENANT_ID = 0x7FF_FFFF` = 134,217,727，bit 63 保留恒 0）** —— 不是笔误，ID 恒为正 `long`。**旧布局（16+48）的真源找到了 = 老库 `D:\Java\mmda`**：`mmda-core\mmda-core-entities\...\Tenancy.java:14` `short MAX_TENANT_ID = 0x7FFF`（**15 位有效值域**，注释称 16 位）、`:39` `partitionID >>> 48`、`:82-83` `entityID = tenantID & MAX_TENANT_ID; return (entityID << 48) + (id & 0xFFFF_FFFF_FFFFL)`（**低 48 位 realId**）、`:78` javadoc 同样写「48bits 实际的 id」。**新库改成了 28+36（`>>> 36` / `<< 36`），但 `Tenancy.java:82` 的 javadoc 与 `:27` 的注释漏改** —— 两处都是老库抄过来的话术，**以常量为准**（建议改，助手未动 Java 仓）。
->
-> **语料形态与 `BIGID` 的关系（实测补正）**：`BIGID` 这个名字**只出现在早期文档**（全语料 case-insensitive `bigid` **0 命中**）；语料写的是 ——
->
-> ```
-> record Address {
->     @Partitioned [10000,0x000F_FFFF]      // 独占一行（字段级注解）
->     addressId uint64 identity generated readonly,
-> ```
->
-> 即 **分区主键 = 带 `@Partitioned` 的 `uint64 identity` 字段**（语料 `uint64 identity` **102 处**、`identity generated` 16 处；**注意：语料里的注解写的还是旧名 `@PartitionID`（186 处）**，见 [`records.md`](records.md) §2.3 的改名说明）；`[min, max]` 是**该对象在 realId 空间里领的区间**（示例统一为 `[10000, 0x000F_FFFF]`，186 个文件）—— 与 `MetaObject.minID`/`maxID`、`getMinEntityID`/`getMaxEntityID` 一一对应，**realId 不是整段给一个租户，而是每个对象领一段**。**为什么要分段 = 标识共享**（作者原话「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」）：一组要 UNION 成视图的表各领一段 → 视图主键天然不冲突；段划分、六个标识共享组与语料逐段对照见 [`records.md`](records.md) §2.3；**组就声明在视图处（视图即组）**，见同文件 §7。**✔ 已裁（2026-09-25，作者）**：**`BIGID` 保留为语言类型**，**等价于 `int64 identity partitioned`（✔ 2026-09-26 作者裁定 `uint64` 迁 `int64`，因 Java 无 `ulong`，见 §3）**——
->
-> - `uint64` = 类型；`identity` = 由底座生成（分布式唯一 ID）；
-> - **`partitioned` = 分区标记**（既有元对象属性 `MetaObject.partitioned`：**物理表分区 + 按租户 / 段隔离查询**）；
-> - **分段（`minId` / `maxId`）不在字段上逐表写死，而是在元对象上配置** —— 即 `MetaObject.minID` / `maxID`（[`meta-model.md`](meta-model.md) §5）；
-> - **`minId` / `maxId` 是「真实 id」（realId）的范围** —— **去掉租户标识之后的那部分**（比较前先 `getRealID(id) = id & MAX_REAL_ID`，`Tenancy.java:95-97`）。
->
-> **段的分配主体 = 架构师 / 设计师**（✔ 2026-09-25 作者：「**段是架构师、设计师分配阿**」）—— 工具只校验不自动分配，见 [`records.md`](records.md) §2.3 与 ](../workflows.md) §1。
->
-> 因此语料那两行（**原文用旧名**：`@PartitionID [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`）与 M 语言的 `BIGID` **是同一件事的两种写法**；✔ **大小写敏感面同日已裁（2026-09-25，作者：「类型一律大小写不敏感，包括那些约束，这个跟 SQL 类似」）**：**类型名与约束名一律大小写不敏感**（`BIGID` = `bigid`、`indexed` = `INDEXED`），**标识符（Record / 字段 / 枚举成员）仍大小写敏感**（](../naming.md) §1）—— **`errata.md` §二-6 至此清零**。
-
 > ✔ **`string` 是别名（✔ 2026-09-26 作者：「`string` = `nvarchar(255)`，你把 `string` 理解为类型别名，兼容程序化语言定义」）**：**`string` ≡ `nvarchar(255)`** —— 有 `nvarchar` 就用 `nvarchar`，别名只为让 C# / Java / TS 开发者一眼认得。
 >
 > ✔ **`MAX_LENGTH` 的单位随类型（✔ 2026-09-26 作者：「`maxLength` 还涉及是字节还是字符，例如 `char(10)` 这个 10 是字符数，`nchar(10)` 是 10 个 unicode 字符，而 `binary(10)` 这个就是字节数，单位不同」）**：`char` / `nchar` / `varchar` / `nvarchar` / `BitStr` = **字符数**；`binary` / `blob` / `ByteStream` = **字节数** —— 轴上**必须带单位语义**，方言投影器不许把「字符数」与「字节数」混算（§11.4 说明 5）。
@@ -193,7 +195,7 @@
 
 **规范类型 = `BitVector(n)`**（✔ 2026-09-26 作者定义：「**BitSet(n) 可加长度明确定义，n 是 8 的倍数，BitSet 默认就是 8 位，最大 128**」；引文里的 `BitSet(n)` 是作者当日原话、**逐字保留**）：
 
-✔ **2026-09-26 定名（作者：「**用 BitVector，BitSet, BitArray 别名**」）**：**规范名 = `BitVector(n)`**；**`BitSet`（含 `BitSet(n)`）/ `BitArray` = 别名**；**后缀式 `BitVector8`…`BitVector64` ≡ `BitVector(8)`…`BitVector(64)`**；`mmda fmt` **一律归一写 `BitVector(n)`**（C# `BitArray` / Java `java.util.BitSet` 的差异 = **宿主投影**，§11.3-2）。
+✔ **2026-09-26 定名（作者：「**用 BitVector，BitSet, BitArray 别名**」）**：**规范名 = `BitVector(n)`**；**`BitSet`（含 `BitSet(n)`）/ `BitArray` = 别名**；**后缀式 `BitVector8`…`BitVector64` ≡ `BitVector(8)`…`BitVector(64)`**；`mmda fmt` **一律归一写 `BitVector(n)`**（C# `BitArray` / Java `java.util.BitSet` 的差异 = **宿主投影**，§11.2）。
 
 **⚠️ 计量口径 = 数「位（bit）」（✔ 2026-09-26 作者追认：「**这个 `n` 是按字节，为了不误解也可以改为按位计数，那么它就跟 `bit(n)` 一样的意思了**」）**：`n` **一律是位数** —— `BitVector(8)` = **8 位 = 1 字节**（**不是 8 字节**）；**要按字节思考就写 `BitVector(b*8)`**（`b` 字节 ⇒ `b*8` 位 —— 作者原话：「**所以我们只有 `bit`, `bitset(n*8)`，理解？**」）。**为什么 `n` 限 8 的倍数**：位宽 = **整数个字节**，作者原话：「**你来一个 `bit(3)`，实际上计算机底层肯定也是对齐拿 8 位来运算**」。**`BitStr` 的 `n` 则数「字符」（它是字符类型，见 §6）**，两者别混。
 
@@ -201,7 +203,7 @@
 | --- | --- |
 | `BitVector` / `BitVector(8)` | **默认 8 位（= 1 字节）** |
 | `BitVector(16)` / `BitVector(24)` … `BitVector(128)` | `n` = **位数**；**必须是 8 的倍数**（= 整数字节），**上限 128 位（= 16 字节）** |
-- **别名归一 ✔（2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）**：**规范名 = `BitVector(n)`**（真源 `DataType.BIT_VECTOR`(129)，唯一）；**`BitSet(n)` / `BitArray` = 别名**（**只作输入兼容**，`mmda fmt` 归一写 `BitVector(n)`）；**`BitVector8`…`BitVector64` = 后缀式兼容写法**（✔ 2026-09-26 作者：「**留着**」—— **保留**、不删）≡ `BitVector(8)`…`BitVector(64)`。**不再新增第四个名字**；**C# `BitArray` / `BitVector32`、Java `java.util.BitSet` 的差异 = 宿主投影**（§11.3-2 每端一个薄投影器），**不进语言层**。
+- **别名归一 ✔（2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）**：**规范名 = `BitVector(n)`**（真源 `DataType.BIT_VECTOR`(129)，唯一）；**`BitSet(n)` / `BitArray` = 别名**（**只作输入兼容**，`mmda fmt` 归一写 `BitVector(n)`）；**`BitVector8`…`BitVector64` = 后缀式兼容写法**（✔ 2026-09-26 作者：「**留着**」—— **保留**、不删）≡ `BitVector(8)`…`BitVector(64)`。**不再新增第四个名字**；**C# `BitArray` / `BitVector32`、Java `java.util.BitSet` 的差异 = 宿主投影**（§11.2 每端一个薄投影器），**不进语言层**。
 | `BitSet` / `BitSet(n)` / `BitArray` | **别名** ≡ `BitVector` / `BitVector(8)` / `BitVector(n)`（**输入兼容写法**；`mmda fmt` 归一为 `BitVector(n)`） |
 
 - **非 8 倍数怎么办（✔ 2026-09-26 作者：「非 8 倍数在存储时难实现，不认，使用 `BitStr(n)`」）**：**不认**作 `BitVector`（位宽必须是整数字节）；**`mmda import --db` 反查 `BIT(M)`**：`M = 1` → `bool`；`M` 为 **8 的倍数** → `BitVector(M)`（`M` = **位数**）；**其余 `M` → `BitStr(M)`**（文本位串，落地 `VARCHAR(M)`）—— **不报降级**。
@@ -251,6 +253,8 @@
 
 **为什么**：M 语言的字段**只有一条落库路径**（列 / 子表），**数组没有自己的类型轴**（§11.4 `T[]` 行）——**基数是声明层的事**，`T[]` 必须先能被翻译成一张表。
 
+> ✔ **为什么没有「值数组」（✔ 2026-09-26 作者：「**数据库支持 list, set, array 这种存储是通行的吗？据我所知不兼容**」）**：**数据库对 list / set / array 的支持不通行** —— 多数方言没有原生数组列（PostgreSQL 的 `int[]` 是孤例、且投影不到别家）⇒ **值数组没有可移植的落库形态**；**子表是唯一形态**。JSON 载荷侧的数组形态是**投影**，不是类型层的事。
+
 **写法**（表达式层，已定）：
 
 ```sql
@@ -290,23 +294,23 @@ var a = [0..20];    // range
 
 「目标端表达不了」（上限更小 / 精度不足 / 无 unsigned …）= **降级** ⇒ 每端声明 + 内核 `M07xx` warning + Profile 可关；**轴越界 ≠ 降级**（轴越界是**校验失败**，见 §11.4 四轴）。
 
-> ⚠️ **回填说明**：§11.1–§11.3 的小标题在 18:43 事故中随原稿丢失，此处按正文引用与 `errata.md` §六 抢救行**回填摘要**；**§11.4 / §11.5 为完整回填块**，请作者过目。
-### 11.4 类型 × 8 轴（语言层声明，回填块）
+### 11.4 类型 × 8 轴（语言层声明）
 
 **六条说明**：
 
 1. **`AUTO_INCR` 保留（数据库普遍支持）**（✔ 2026-09-26 作者：「**auto_incr 数据库一般支持，所以放着**」）：现在实测虽只有 `SERIAL` 的厂商类型字符串里出现 `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE`、语言层 0 处显式使用，但**它是普遍可投影的轴** ⇒ **留在封闭清单里**（`BIGID` / `identity generated` 就是它的语言层写法）。**`UDT` 首版不用**（留位给扩展；✔ 2026-09-26 作者：「**本意是 UDT，用户定义类型，改为 UDT 吧**」）。
-2. **方言必须逐一向这 8 个轴作答**（支持 / 怎么投影 / 怎么降级，§11.3-3）。本表是**语言层声明**，不是方言答案：方言可以「多」（补 `VALUE_RANGE`、绑 `TYPE_HANDLER`），不能「缺」—— 缺就是降级，必须声明。
+2. **方言必须逐一向这 8 个轴作答**（支持 / 怎么投影 / 怎么降级，§11.3）。本表是**语言层声明**，不是方言答案：方言可以「多」（补 `VALUE_RANGE`、绑 `TYPE_HANDLER`），不能「缺」—— 缺就是降级，必须声明。
 3. **`BitVector(n)` 的位宽走 `STORAGE_BITS`、`BitStr` 的长度走 `MAX_LENGTH`**，二者别混（**且 `BitVector(n)` 的 `n` 数位、`BitStr(n)` 的 `n` 数字符**，§7）：现实现把 MySQL `BIT(M)` 的位宽算进了 `maxLength`（`MySqlDataTypes.java:34`），**这是本表纠正的第一处已知漂移**。
 4. **`bool` 与 `BitVector(n)` 在 DB 侧都碰 `BIT`，但落点不同**（✔ 2026-09-26 作者：「兼容数据库的 bit 1/0 定义，我们要考虑存储」）：实现里 **MySQL `BOOL` 的 DDL = `BIT(1)`**（值 1/0），而 **MySQL 的 `BIT` / `BIT(M)` 类型映射到 `BIT_VECTOR`**（`make(BIT_VECTOR,"BIT", maxLength(1..64，默认 1))`）= 我们的 `BitVector(n)`，**不是 `bool`**。⇒ **反查（`mmda import --db`）见 `BIT(M)` 的落点（✔ 2026-09-26 作者：「**非 8 倍数在存储时难实现，不认，使用 `BitStr(n)`**」）**：`M = 1` → **`bool`**；`M` 为 **8 的倍数** → **`BitVector(M)`**（`M` 是**位数**）；**其余 `M`（2–7、非 8 的倍数）→ `BitStr(M)`**（文本位串，落地 `VARCHAR(M)`）—— **不认**作 `BitVector`（非 8 倍数位宽存储上难实现），**也不报降级**。
 5. **`MAX_LENGTH` 的单位随类型**（✔ 2026-09-26 作者：「**`maxLength` 还涉及是字节还是字符，例如 `char(10)` 这个 10 是字符数，`nchar(10)` 是 10 个 unicode 字符，而 `binary(10)` 这个就是字节数，单位不同**」）：`char` / `nchar` / `varchar` / `nvarchar` / `BitStr` = **字符数**；`binary` / `blob` / `ByteStream` = **字节数** —— 轴上**必须带单位语义**，方言投影器不许把「字符数」跟「字节数」混算（`varchar(n)` 落地时要按 `charset` 换算字节上限）。
+6. **`Float32Vector(n)` / `Float64Vector(n)` = 定长值类型、不是数组**（✔ 2026-09-26 定稿）：`MAX_LENGTH` = **元素个数 `n`**、`STORAGE_BITS` = **元素位宽 × 元素个数**（32 / 64 位 × n）；**元素序 = 下标 0 起连续（写死）**；**DB 无通行原生 ⇒ 默认 `BINARY(4n)` / `BINARY(8n)`**（元素序与端序见 §4）；**它不是 §10 的数组** —— 元素类型只能是 `f32` / `f64`（不能是 record，也没有子表语义）。
 | 逻辑类型 | MAX_LENGTH | PRECISION | SCALE | TYPE_HANDLER | VALUE_RANGE | AUTO_INCR | STORAGE_BITS | UDT | 现实现（Java 侧）实测 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `bool` / `bit` | — | — | — | — | ● | — | ● | — | `BOOL` = `valueRange(0,1)`；**`STORAGE_BITS` = 1 位（逻辑布尔）** —— **MySQL DDL 出 `BIT(1)`、存 1 / 0**（`MySqlDataTypes.java:49`）；**厂商落地各异**（`bool` / `BIT(1)` / 达梦自有形态 —— `BIT(1)` 里的「1」既是长度也当位宽，**是存储实现的事**），**由方言回答、mmda 只做转义**（见说明 4） |
 | `uint8`…`uint64` / `int8`…`int64` | — | — | — | — | ● | ○ | ● | — | `valueRange(…)` + `fixedBytes(1/2/4/8)` ⇒ **`STORAGE_BITS` = 8 / 16 / 32 / 64**（`fixedBytes(8)` ≡ `fixedBits(64)`，**纯计量单位换算**）；现实现另有 `uint24` / `int24` = `fixedBytes(3)`，**已取消**（§3） |
 | `uint128` / `int128`（未来） | — | — | — | — | ● | ○ | ● | — | 实现里没有（仅 Rust 有）⇒ **`STORAGE_BITS` = 128** |
 | `decimal` / `numeric` | — | ● | ● | — | ○ | — | — | — | `precision(0,65)` + `scale(0,30)`；**变长十进制 ⇒ 不声明固定 `STORAGE_BITS`** |
-| `money` | — | ● | ● | — | ○ | — | — | — | = `DECIMAL(20,4)`（`DECIMAL.as(MONEY,…)`）—— **`decimal` 家族别名**（有原生用原生，否则 `decimal(19,4)`） |
+| `money` | — | ● | ● | — | ○ | — | — | — | = `DECIMAL(20,4)`（`DECIMAL.as(MONEY,…)`）—— **`decimal` 家族别名**（有原生用原生，否则 `decimal(20,4)`） |
 | `float` / `float32` / `f32` / `real` | — | — | — | — | ● | — | ● | — | `valueRange(…)` + `fixedBytes(4)` ⇒ **32 位**；**MySQL 里 `REAL` 就是 `FLOAT`** |
 | `double` / `float64` / `f64` | — | — | — | — | ● | — | ● | — | `valueRange(…)` + `fixedBytes(8)` ⇒ **64 位** |
 | `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector` ≡ `Float32Vector`） | ●（**元素个数**） | — | — | — | ○ | — | ●（**元素位宽** 32 / 64） | — | **语言层新类型（2026-09-26 定稿；Java 实现里没有）**：`MAX_LENGTH` = **元素个数**、`STORAGE_BITS` = **元素位宽 × 元素个数**；**定长值类型、不是数组 ⇒ §10 不适用**；DB 无通行原生 ⇒ 默认 `BINARY(4n)` / `BINARY(8n)` |
@@ -339,7 +343,7 @@ var a = [0..20];    // range
 
 ✔ **2026-09-26 作者：「把它从 Java 的 enum 提到内核（语言层）」** —— 这 8 个轴现状是 **Java 私货**（`D:\2026\java\mmda-core\mmda-core-metadata\...\enums\DataTypeAttribute.java`，位标志 `1 << bit`）。**提到语言层 ⇒ 成为类型系统的一部分**：① **每个逻辑类型声明适用哪些轴**（`varchar` = `MAX_LENGTH`；`decimal` = `PRECISION` + `SCALE`；`BitVector(n)` = `STORAGE_BITS`；`identity` 字段 = `AUTO_INCR`）；② **每个方言必须逐一回答这 8 个轴**（支持 / 怎么投影 / 怎么降级）。
 
-> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3-3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。
+> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。
 
 > ✔ **轴 6 由 `BYTE_RANGE` 改名 `STORAGE_BITS`，量纲 = 位（✔ 2026-09-26 作者：「`byte_range` 实际我想用 `storage_bits` 用来搞清楚底层存储，因为 bit 类型数据库的实现不一样，可能不是 8 位，`byte_range` 无法覆盖……`fixedBytes(8)` = `fixedBits(64)`，仅仅存储计量单位转换而已」）**：**轴值一律写位（bit）**，需要字节就 **÷8**（`fixedBytes(8)` ≡ `fixedBits(64)`）；**`bit` 在语言层概念里就是 1 位**，具体是 `bool` / `BIT(1)` / 达梦等哪一形态**是底层实现的事**（作者在 Java 代码里注释了各数据库官方文档参考）—— **mmda 只做转义，合适就好**（作者原话）。
 
@@ -351,7 +355,7 @@ var a = [0..20];    // range
 | --- | --- | --- |
 | `bool` / `bit` | `bool` | 1 字节；存 1 / 0，与 §2 同源 —— ⚠️ **IR 的 1 字节 ≠ `STORAGE_BITS` 的 1 位**（存储位宽见 §11.1 / §11.4，IR 形态见本表） |
 | `int8`…`int32` / `uint8`…`uint32` | 同名标量 | 一一对应，零转换 |
-| `uint64` | `uint64` | **FlatBuffers 有原生 `uint64`** ⇒ 不受「Java 无 ulong」的约束（那是**宿主投影**的活，见 §11.3-2） |
+| `uint64` | `uint64` | **FlatBuffers 有原生 `uint64`** ⇒ 不受「Java 无 ulong」的约束（那是**宿主投影**的活，见 §11.2） |
 | `int64` / `BIGID` / ID 与外键 | `int64` | 与 §3 定案一致（`uint64 identity` 已迁 `int64`） |
 | `uint128` / `int128`（未来） | `struct{u64 lo, u64 hi}` | 预留；字节序随 FlatBuffers（小端） |
 | `decimal(p,s)` / `numeric` / `money` | **`p ≤ 18`：`long`（scaled int64，值 × 10^s）**；`p > 18`：`string` | **性能 = 定长可算、零分配** ⇒ 与 **JSON 的 `string` 口径不同**（[`api.md`](../api.md) §3.5 精度优先）；**两条口径都必须写进 Profile 显式声明** |
@@ -361,7 +365,7 @@ var a = [0..20];    // range
 > ✔ **浮点标量与浮点向量定稿（2026-09-26 作者：「float = float32 = f32, 向量FloatVector=Float32Vector；double = float64 = f64，向量Float64Vector」+「其他同意你的观点」）**：`float` = `float32` = `f32`、`double` = `float64` = `f64`（**规范拼写取短名**，别名 `mmda fmt` 归一）；**向量 = `Float32Vector(n)` / `Float64Vector(n)`**（别名 `FloatVector(n)` ≡ `Float32Vector(n)`）—— **`n` = 元素个数**（≠ `BitVector(n)` 的位宽）、**是定长值类型、不是数组语法**、DB 默认 `BINARY(4n)` / `BINARY(8n)`；见 §4 / §11.4（说明 6）/ §11.5。**唯一余项 ⏳ = 端序**（[`errata.md`](../errata.md) §二-19：助手立场 = 语言层不设端序轴、格式写死小端、**外部协议端序进端点 / 连接器配置**）。
 
 | `double` / `float64` / `f64` | `double` | 64 位；三写法同义（§4） |
-| `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector(n)` ≡ `Float32Vector(n)`） | `vector<float>` / `vector<double>` | **元素序 = 下标 0 起、连续（写死）**；**字节序 = 小端**（FlatBuffers 格式本身即小端；大端宿主由生成代码字节交换）；见 §4 ⑥（✔ 已裁）|
+| `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector(n)` ≡ `Float32Vector(n)`） | `vector<float>` / `vector<double>` | **元素序 = 下标 0 起、连续（写死）**；**字节序 = 小端**（FlatBuffers 格式本身即小端；大端宿主由生成代码字节交换）；见 §4（浮点向量块，✔ 已裁）|
 | `Date` | `int32`（UTC 日序） | 定长 4 字节（DB 侧的 `fixedBytes(3)` 是**存储**口径，不是 IR 口径） |
 | `Time` | `int64`（当日纳秒） | 定长、可比较 |
 | `DateTime` / `Timestamp` | `int64` epoch（单位进 schema） | **IR 走 epoch 整数**；JSON 侧仍 `string`（[`api.md`](../api.md) §3.5 已裁：可读性优先） |
@@ -385,7 +389,7 @@ var a = [0..20];    // range
 4. **schema 纪律**：`file_identifier` + IR 版本号（承 §3.5）；**字段只追加**。
 5. **两处「隐含约定」必须落成用例**：`BitVector` 的 **LSB-first**、`uuid` 的**字节序** —— 否则三端各按自己习惯解释。
 
-6. **✔ 端序 = 小端（语言层写死；2026-09-26 已裁）**：IR 里的整数 / 浮点字节序由 FlatBuffers 格式规定为**小端**（本表 §11.5 `uint128` 行早已如此），**大端平台（s390x 等）由生成代码在边界字节交换** ⇒ **语言层不设「端序轴」**；**外部协议（Modbus / S7 / OPC UA…）的端序不是类型的事**，落**端点的 `byteOrder` 声明**（见 §4 ⑥ 与 [`event_bus.md`](event_bus.md) §6）。
+6. **✔ 端序 = 小端（语言层写死；2026-09-26 已裁）**：IR 里的整数 / 浮点字节序由 FlatBuffers 格式规定为**小端**（本表 §11.5 `uint128` 行早已如此），**大端平台（s390x 等）由生成代码在边界字节交换** ⇒ **语言层不设「端序轴」**；**外部协议（Modbus / S7 / OPC UA…）的端序不是类型的事**，落**端点的 `byteOrder` 声明**（见 §4 浮点向量块与 [`event_bus.md`](event_bus.md) §6）。
 
 **✔ 两格已裁（2026-09-26 作者「同意」）**：① **`uuid` = `[ubyte:16]`**（RFC 4122 字节序）；② **`decimal` 用 scaled `int64`** —— 与 JSON 的 `string` 不一致**是设计如此**（IR 效率优先 / JSON 精度优先），**两条口径都在 Profile 显式声明**。
 
@@ -415,20 +419,23 @@ HAS_ONE Partner(partnerId, partnerCode, partnerName) AS customer
 
 - [records.md](records.md) — 字段与对象
 - [meta-model.md](meta-model.md) — Field 元模型
-- ](../errata.md) — 待裁决
+- [`statements.md`](statements.md) — 空值（`is null`）、`coalesce` 与三值逻辑
+- [`../api.md`](../api.md) §3.5 — JSON / OpenAPI 投影口径（与 §11.5 的 IR 口径并列）
+- [`../naming.md`](../naming.md) — 标识符大小写与命名 · [`../glossary.md`](../glossary.md) — 类型词条
+- [`errata.md`](../errata.md) — 待裁决与校勘
 
 ## 14. 诊断码（末节码表 —— 载体已定、码位后一步）
 
-> ✔ **载体（2026-09-26 作者批注：「末节码表」）**：码表**放本文件末节**（不另开 `doc/diagnostics.md`）；**码位编号后一步再细化**（作者：「**诊断码后一步，我还没能搞这么细**」—— 见 §11.4 尾注四）。
+> ✔ **载体（2026-09-26 作者批注：「末节码表」）**：码表**放本文件末节**（不另开 `doc/diagnostics.md`）；**码位编号后一步再细化**（作者：「**诊断码后一步，我还没能搞这么细**」—— 见 §14）。
 >
 > **现文已引用的码（暂定，未定稿）**：
 
 | 码 | 含义 | 现状 |
 | --- | --- | --- |
-| `M0101` | 非法数值字面量（原八进制 `0o755` 已撤） | 暂定（§1 / §3 / §11.4 尾注四） |
+| `M0101` | 非法数值字面量（原八进制 `0o755` 已撤） | 暂定（§1 / §3 / §14） |
 | `M0102` | 布尔字面量非 `0` / `1` | 暂定（§2） |
 | `M0206` | 标识符与关键字同形（含 `@` 逃逸不可用） | 暂定（§1） |
-| `M07xx` | 目标端表达不了的**降级**（Profile 可关；≠ 轴越界） | 区间（§11.3-3） |
-| （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10 / §11.4 尾注二） |
+| `M07xx` | 目标端表达不了的**降级**（Profile 可关；≠ 轴越界） | 区间（§11.3） |
+| （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10 / §10） |
 | （待补） | `BitVector(n)` 的 `n` 非 8 的倍数 / 超上限 128 | 待定（§7） |
 | （待补） | 对非空类型写 `null` / `= null` | 待定（§1 / [`statements.md`](statements.md) §2） |
