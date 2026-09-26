@@ -407,3 +407,4 @@ events/**/*.mmda
 - [ide/graph-files.md](../ide/graph-files.md) — `*.g` 格式
 - [ide/workflow.md](../ide/workflow.md) — 六步工作流与导航
 - [errata.md](../errata.md) — 口径冲突
+- [modules.md](modules.md) — 模块树与 Role / 权限（语义篇：语义与约束、真源指针）
