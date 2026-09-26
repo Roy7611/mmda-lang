@@ -83,7 +83,7 @@
 | 4 | 一致性（Consistency and standards） | 同一动作跨模块同名、同一含义同一标签；日期/小数格式统一（`formatter` = `D` / `N3`） | [naming.md](naming.md) §1/§2、[presentation.md](lang/presentation.md) §2 | A |
 | 5 | 防错（Error prevention） | 约束写在**声明层**（必填、范围、唯一、长度）→ 生成物两侧（前端 + 服务端）**同时**拦截 | [records.md](lang/records.md) 约束、[api.md](api.md) §3.5 | A |
 | 6 | 识别优于记忆（Recognition rather than recall） | 引用字段给**下拉 / `searchBox`**（别让用户手输 ID）；枚举给标签；空值给 `nullDisplayText` | [presentation.md](lang/presentation.md) §4、§2 | A |
-| 7 | 灵活高效（Flexibility and efficiency of use） | 默认值（`.mm` 的 `default` / 库侧 `DF_`）、批量动作、保存的查询条件（`search` 视图） | [naming.md](naming.md) §3.3、[presentation.md](lang/presentation.md) §1 | B |
+| 7 | 灵活高效（Flexibility and efficiency of use） | 默认值（`.m` 的 `default` / 库侧 `DF_`）、批量动作、保存的查询条件（`search` 视图） | [naming.md](naming.md) §3.3、[presentation.md](lang/presentation.md) §1 | B |
 | 8 | 优美简约（Aesthetic and minimalist design） | 列表**列数与分组有上限意识**（`listed` / `groupLabel`）；隐藏字段**根本不投影**进载荷 | [api.md](api.md) §3.5、[meta-model.md](lang/meta-model.md) | B |
 | 9 | 容错（Help users recognize, diagnose, and recover from errors） | 错误消息 = **模板 + 字段级 `validationRules`**，且**服务端与呈现侧同源**（同一约束生成两处，不手写两份） | 本表 #5、[quality.md](quality.md) §1.4 | A |
 | 10 | 人性化帮助（Help and documentation） | `tooltip` / `placeholder` / `///` 文档 → 帮助面板与 API 文档**同源** | [presentation.md](lang/presentation.md) §2、[api.md](api.md) | B |
@@ -102,11 +102,11 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 | UCD 六节点 | 我们的五阶段 | 说明 |
 | --- | --- | --- |
-| User research and analysis | **需求** | 关键用户 = `Role`（[requirements.md](requirements.md)、`.mr`） |
-| Concept design + Detailed design | **设计** | 三类架构 + 交互设计（`ui/**/*.mi`） |
+| User research and analysis | **需求** | 关键用户 = `Role`（[requirements.md](requirements.md)、`.m`） |
+| Concept design + Detailed design | **设计** | 三类架构 + 交互设计（`ui/**/*.m`） |
 | (Concept/Detailed 的产物) | **原型自动生成** | 我们比 UCD 多的一步：**设计直接产出可跑原型** |
 | Develop and measure | **逻辑实现**（KEEP 区）+ 运行期观测 | [runtime.md](runtime.md)、[operations.md](operations.md) |
-| User testing of prototypes | **测试** | `.mt` 用例 + 中文验收单 |
+| User testing of prototypes | **测试** | `.m` 用例 + 中文验收单 |
 | Project launch | **交付** | 离线包 + `mmda doctor` |
 | **Develop and measure 的「measure」回路** | **✔ 已裁（2026-09-24 取 B）** | UCD 是**闭环**：上线度量要回流到下一轮研究。**裁决 = 回流进 `mmda check` 出 warning**——但注意回流是两半，见下表后的落地口径 |
 
@@ -149,7 +149,7 @@ UCD 循环图（作者笔记配图）六节点：**Project start → User resear
 
 笔记原话：「如果说产品设计是解决单一触点的问题，服务设计则是要关注包含多个触点的整个服务流程」「要像做服务一样做产品，从真实的生活场景出发，分析用户接触产品的整个旅程中的痛点并发掘设计机会」。
 
-- **现状已覆盖的可执行部分**：`Role`（谁）+ 流程建模（`*.mf`）+ 事件链（[event_bus.md](lang/event_bus.md)）+ 五层监控（[operations.md](operations.md) §1）。
+- **现状已覆盖的可执行部分**：`Role`（谁）+ 流程建模（`*.m`）+ 事件链（[event_bus.md](lang/event_bus.md)）+ 五层监控（[operations.md](operations.md) §1）。
 - **不做**：**不新增 `journey` / `touchpoint` 一类元模型元素**——语言层零新增是既有裁决，且「旅程」目前是**分析工具**（画给人看），不是可执行契约；要画就画在设计器插件或外部工具里（只读产物，不进真源，口径同 [ide/plugins.md](ide/plugins.md)）。
 - 落点待定：见 §11-4。
 

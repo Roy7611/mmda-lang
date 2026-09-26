@@ -291,7 +291,7 @@ value ; name ; label ; color ; icon
 | B · `comments` 附属产物 | 独立 `comments` 表 / 文件（键 = `schemaCode` + `objectName` + `memberName?`），由内核从 `///` 生成 | 备选（**不采用**） |
 
 - **不进 JSON、不进业务载荷**：`MetaEnum` / `members[]`（§6.2）与记录载荷都没有 `description`；`label` 是**唯一走词条（Model i18n）**的呈现文本，`color` / `icon` 随**元数据**，**comments 是给开发者看的**（与 SQL 注释同性质）。
-- **消费方 = `mmda doc` / IDE + 数据库注释**；设计真源仍是 `.mm` 里的 `///`。
+- **消费方 = `mmda doc` / IDE + 数据库注释**；设计真源仍是 `.m` 里的 `///`。
 - **✔ 载体 = A（数据库注释）**（⤴ 第一百一十八轮作者：「**1A**」）；**B 不采用**。
 - **comments 不进 i18n**（与 SQL 注释同性质：数据库注释是单语言的；要翻译的只有 `label`）。
 
@@ -321,7 +321,7 @@ value ; name ; label ; color ; icon
 
 ### 8.1 Role（关键用户 · **与 Module 同级**）
 
-> **✔ 已裁（2026-09-24）**：**Role 是架构设计元素，进 m 语言，地位与 Module 分解同级**（`flow/roles/*.mr`）。**组织架构 / 岗位 / 职员仍是「数据」**（普通 `Record` + 关系）——两者不在同一层：**Role 来自需求阶段识别的关键用户**（SERU 的需求过程里就要求识别关键用户，即 RUP 的 Actor），组织架构数据是它的**实例来源**。
+> **✔ 已裁（2026-09-24）**：**Role 是架构设计元素，进 m 语言，地位与 Module 分解同级**（`flow/roles/*.m`）。**组织架构 / 岗位 / 职员仍是「数据」**（普通 `Record` + 关系）——两者不在同一层：**Role 来自需求阶段识别的关键用户**（SERU 的需求过程里就要求识别关键用户，即 RUP 的 Actor），组织架构数据是它的**实例来源**。
 
 | 属性 | 说明 |
 | --- | --- |

@@ -413,7 +413,7 @@ enum BomStatus : int {
 | 2 | 主题能否自定义角色 | **不能**：语言层写死 6 值，扩展只留在**皮肤变量**里（不新增角色名） |
 | 3 | **图标别名清单** | **开放** —— 别名由**开发人员定义语义词**（不在语言层内置清单、**不进关键字表**，语言层只校验它是字符串字面量）；**映射在 UI 层**（主题 / 皮肤）；**没映射上 → 充其量不显示**（不报 error）；**能警告更好**（UI 层 / IDE 可给 warning / lint，**可选的、不阻塞生成**） |
 | 4 | `@Icon` 是否只收别名 | **只收别名**（老实现模块图标的 `fas fa-sitemap fa-fw` 属旧实现，后续迁成别名） |
-| 5 | 字段 / 视图能否覆盖成员颜色 | **暂不**：字段级不覆盖；视图级覆盖归 `ui/**/*.mi` |
+| 5 | 字段 / 视图能否覆盖成员颜色 | **暂不**：字段级不覆盖；视图级覆盖归 `ui/**/*.m` |
 | 6 | 缺开关却写取值 | **warning**（`mmda check` 出警告，不阻塞） |
 
 > 一句话记：**颜色角色封闭（语言层校验）、图标别名开放（UI 层映射）** —— 前者要拼错即报错，后者允许开发人员自己造词、映射不上顶多不显示。
@@ -464,7 +464,7 @@ union all Contactor as c
 - 于是 **「基础表」= 这个定义里的「基」** —— 不需要新的声明位，**就在视图定义里**。
 
 - **语料证据（四个组名就在语料里）**：`view person`（人）、`view organizationunit`（组织单元）、`view materialnsku`（物料 Sku）、`view Maintainable`（工装器具）
-  —— `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2`、`data/models/mes/Maintainable.mm:2`。
+—— `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2`、`data/models/mes/Maintainable.mm:2`。
 - **语料形态**：`/// VIEW` + `view <名> { 列定义 }` —— **列直接写在视图里**（= 各基础表的**公共列**），语料 `union` / `from` **0 命中**；
   即**语料的 `view` 已经是 UNION 视图的结果形态，只是没写 `union` 子句**。
 - **`Maintainable` 视图自带段**：`@Partitioned [10000,0x000F_FFFF]` + `equipId int64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。

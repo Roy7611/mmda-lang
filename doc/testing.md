@@ -8,7 +8,7 @@
 ## 0. 三条原则
 
 1. **用例是派生物**：与元模型同版本、同粒度（一对象一文件），模型改了用例**自动重算**；手写只用于声明不出来语义（少数例外，要标明原因）。
-2. **每条用例必须可追溯**：`covers:` 指向声明（`data/models/{schema}/{Name}.mm#字段`）或 `req: REQ-xxx`。**无法追溯的用例标为 orphan，不计覆盖率，CI 报警**——这是防止「用例很多但什么都没验」的唯一机械办法。
+2. **每条用例必须可追溯**：`covers:` 指向声明（`data/models/{schema}/{Name}.m#字段`）或 `req: REQ-xxx`。**无法追溯的用例标为 orphan，不计覆盖率，CI 报警**——这是防止「用例很多但什么都没验」的唯一机械办法。
 3. **AI 不许当裁判**：AI 可以生成用例、可以跑、可以诊断失败原因；**判定标准只能来自声明与冻结基线**，不能来自 AI 的叙述。「AI 说没问题」永远不是验收依据。
 
 ### 0.1 UAT 的地位与时点（✔ 2026-09-25 作者共识）
@@ -65,12 +65,12 @@
 
 | 声明（来源） | 生成什么用例 | 断言什么 |
 | --- | --- | --- |
-| `flow/roles/*.mr`（角色 / 权限 / scope） | **权限矩阵**：role × action × scope 全覆盖 | 允许的角色能执行；未授权角色被拒（**拒绝路径必须有用例**） |
+| `flow/roles/*.m`（角色 / 权限 / scope） | **权限矩阵**：role × action × scope 全覆盖 | 允许的角色能执行；未授权角色被拒（**拒绝路径必须有用例**） |
 | 数据范围（OWNER / WORKGROUP / DEPARTMENT / ALL） | 范围样本用例 | OWNER 只看到自己创建的；跨部门不可见 |
 | `biz/*.ma` 模块依赖 | 边界用例 | 跨模块只能用声明接口；反向依赖 = 校验/编译失败 |
-| `flow/*.mb`（BPMN 池/活动/网关） | 路径覆盖 | 每个网关分支有样本；每个节点有触发者与结果事件；无孤立节点 |
-| `flow/*.mf`（数据流：节点图 / DFD / 数据映射图） | 路径覆盖 | 每个端点有上下游；映射字段类型兼容；无孤立节点 |
-| `flow/converters/*.mc` | 映射用例 | 字段类型兼容；抽样值双向等价；必填字段不可丢 |
+| `flow/*.m`（BPMN 池/活动/网关） | 路径覆盖 | 每个网关分支有样本；每个节点有触发者与结果事件；无孤立节点 |
+| `flow/*.m`（数据流：节点图 / DFD / 数据映射图） | 路径覆盖 | 每个端点有上下游；映射字段类型兼容；无孤立节点 |
+| `flow/converters/*.m` | 映射用例 | 字段类型兼容；抽样值双向等价；必填字段不可丢 |
 | capability 声明 | 能力门禁用例 | 语言用到的能力在目标端必须声明（缺失 → 生成期报错）；同一声明三端行为一致 |
 | 多租户扩展文件（include，B4） | 隔离与叠加用例 | 租户扩展不破坏基线；基线升级后扩展仍能加载 |
 
@@ -88,7 +88,7 @@
 | `constraint` / `formula` | 约束表达式边界 | 纯函数 ⇒ 输入域可抽样穷举；非法表达式不许进真源 |
 | `@Computed` | 确定性用例 | 同输入必同输出、可重放（与 [`events.md`](lang/events.md) 的重放要求一致） |
 | `@State` + STM（`data/stms/*.ms`） | **迁移矩阵**：每对合法迁移 1 正例，每类非法迁移 1 反例；可达性 | 从初始态到每个状态都存在路径；每个 action 有前置状态与授权 |
-| `ui/**/*.mi` + i18n 词条 | 呈现用例 | 可见/必填/只读与元数据一致；无空标签；五视图可渲染（[`presentation.md`](lang/presentation.md) §5.1 渲染描述） |
+| `ui/**/*.m` + i18n 词条 | 呈现用例 | 可见/必填/只读与元数据一致；无空标签；五视图可渲染（[`presentation.md`](lang/presentation.md) §5.1 渲染描述） |
 
 **设计阶段的"完成"定义**：`validate` 零 error **且** 机械用例全绿。设计师交付的不是"模型文件"，是"模型文件 + 那批自动长出来的用例"。
 
@@ -278,12 +278,12 @@ MCP 面（[`ai/tools.md`](ai/tools.md) 需补）：`mmda_test_gen`、`mmda_test_
 
 ```
 # tests/order/Order.m（语言文件后缀统一为 .m）
-test "长度上限 30" covers data/models/order/Order.mm#code
+test "长度上限 30" covers data/models/order/Order.m#code
   source: mechanical
   given  { code: "A"*31 }
   expect { reject(reason: "长度超出 30") }
 
-test "审批必须从草稿发起" covers data/stms/order/OrderStatus.ms
+test "审批必须从草稿发起" covers data/stms/order/OrderStatus.m
   source: ai
   reviewedBy: { business: 张三, designer: 李四 }
   given  { order.status: APPROVED }

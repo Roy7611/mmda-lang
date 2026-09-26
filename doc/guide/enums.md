@@ -44,7 +44,7 @@ enum BomStatus : int {
 
 | 项 | 约定 |
 | --- | --- |
-| 文件 | `data/enums/{模块}/{Name}.me`（一对象一文件；扩展名 `.me`） |
+| 文件 | `data/enums/{模块}/{Name}.m`（一对象一文件；扩展名 `.m`） |
 | 枚举名 | **PascalCase**（`BomStatus`、`RoutingType`） |
 | 成员名 | **UPPER_SNAKE**（`RAW_MATERIAL`、`ABANDONED`）—— 三端一致（见 [`../naming.md`](../naming.md)） |
 | 成员值 | 冒号后是底层类型：`enum X : int { … }`；位枚举写 `enum X : int flags { … }`（也见 `BitVector`） |
@@ -94,7 +94,7 @@ record Bom {
     status BomStatus default 0 indexed readonly,
 }
 
-// data/stms/mes/BomApproval.ms
+// data/stms/mes/BomApproval.m
 /// BOM 审批流
 stm BomApproval on Bom.status {
     /// 审核
@@ -185,7 +185,7 @@ stm BomApproval on Bom.status {
 
 - [ ] 每个成员的 `///` 都在**上一行**，格式 `label` 或 `label : description`
 - [ ] 成员名 UPPER_SNAKE；值域固定、没随手改老值
-- [ ] 用状态就用 `@State` + `.ms` 状态机，别把流程写进枚举名
+- [ ] 用状态就用 `@State` + `.m` 状态机，别把流程写进枚举名
 - [ ] 开颜色：角色在 7 值内、shade 在 10 档内（或省略 = 500）
 - [ ] 开图标：默认别名形态选一种（无前缀 / 带前缀），**写了 `@Icon` 就当完整别名**
 - [ ] 枚举与成员的 `///` 写了（三端 UI 与 md 文档都靠它）；**描述可选**，写了就进 `description`
@@ -235,7 +235,7 @@ stm BomApproval on Bom.status {
 
 | 层 | 做什么 |
 | --- | --- |
-| 语言文件（真源） | `data/enums/**/*.me` |
+| 语言文件（真源） | `data/enums/**/*.m` |
 | 元数据（产物） | `MetaEnum`（内存模型，`toJson()`/`fromJson()`、`toString()`/`fromString()`）：`label` / **`description`** / `colorized` / `color` / `iconized` / `iconPrefix`；`MetaEnumMember`：`label` / **`description`** / `color` / `icon` |
 | 前端（TS，**唯一渲染方**） | 消费 `MetaEnum` 渲染：角色 + shade → 主题令牌；别名 → 图标；缺注解 → 文本 |
 | C# / Flutter | 同一份元数据，各自映射图标库（FontAwesome / Material Icons） |

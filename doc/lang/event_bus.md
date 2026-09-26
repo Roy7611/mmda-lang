@@ -64,7 +64,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | --- | --- | --- |
 | Flink `Source` / SI `Inbound Channel Adapter` | **EventSource（事件源）** | 入口永远是「产生了什么事件」；实现按 `kind`（设备/定时/回调/CDC/文件/消息/进程内）分 |
 | Flink `Transformation` | **Processor（处理器）** 的四个具体类 | 一个含糊的上位词不如四个能配置的节点：**Validator / Converter / Filter / Aggregator**（+ Router / Splitter） |
-| SI `Transformer` | **Converter（转换器）** | **Transformer 与 AI 的 Transformer 冲突**；且 Converter 在 MMDA 里**本来就有**（`.mc` / `flow/converters/`） |
+| SI `Transformer` | **Converter（转换器）** | **Transformer 与 AI 的 Transformer 冲突**；且 Converter 在 MMDA 里**本来就有**（`.m` / `flow/converters/`） |
 | SI `Channel Adapter` | **Endpoint（端点）** | Adapter 词太泛（UI 适配器、图形适配器都叫 Adapter）；端点同时是**配置单元** |
 | Flink `Sink` / SI `Outbound Channel Adapter` | **EventSink（数据汇）**（**✔ 已裁 §15-8：正式名由 `Sink` 改为 `EventSink`，与 `EventSource` 对称**） | 你原话「数据沉淀、存储、再推送」→ 三种**投递方式**（Write / Push / Call），不是三个概念 |
 | Spring 的 `Message Channel` / Kafka Topic | **Channel（通道）** | 队列/主题只是它的**投递语义**，不另立概念 |
@@ -80,8 +80,8 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 | 类 | 一句话 | 典型场景 | 载体（既有机制） | 真源落点 |
 | --- | --- | --- | --- | --- |
-| **数据集成** | **基础数据同步**：表 → 表，少逻辑、要准 | 主数据下发（物料 / 客户 / 组织）到各车间库；车间产出回总部 | 数据模型 + 映射 + `@trigger`；外部库走 DB/CDC 端点 | `data/models/*.mm` + DataFlow 图 |
-| **流程集成** | **事件流带数据**：状态变化驱动下一步 | 到货 → 质检 → 上架；设备动作完成 → 报工 | `event` / `channel` / `subscribe`（[`events.md`](events.md)）+ ModuleFlow | `flow/*.mf` + 图 |
+| **数据集成** | **基础数据同步**：表 → 表，少逻辑、要准 | 主数据下发（物料 / 客户 / 组织）到各车间库；车间产出回总部 | 数据模型 + 映射 + `@trigger`；外部库走 DB/CDC 端点 | `data/models/*.m` + DataFlow 图 |
+| **流程集成** | **事件流带数据**：状态变化驱动下一步 | 到货 → 质检 → 上架；设备动作完成 → 报工 | `event` / `channel` / `subscribe`（[`events.md`](events.md)）+ ModuleFlow | `flow/*.m` + 图 |
 | **接口集成** | **接口调用**：编排外部/内部 API | 缺料时调供应商/集团 ERP 的物料接口；调用外部物流轨迹 | [`api.md`](../api.md) 的端点（内部）+ 外部端点适配器 | API 契约 + DataFlow 图 |
 
 三者**共用同一套运行时**（通道、状态、重试、监控），差别只在**节点类型**（`Data` 节点 / `Event` 节点 / `Call` 节点，§7.3）——这是「一套东西」而不是三个子产品的原因。
@@ -119,7 +119,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 ```
 ┌── 控制面（设计期 + 运行期）───────────────────────────────┐
-│ 设计：数据流（*.mf：节点图 / DFD / 映射图）+ 流程（*.mb）  │
+│ 设计：数据流（*.m：节点图 / DFD / 映射图）+ 流程（*.m）  │
 │ 运行：总线拓扑面板 · 端点管理 · 监控 · 失败队列与重放      │  ← 作者要求「有自己的 UI」
 └──────────────────────────────────────────────────────────┘
 ┌── 契约层（内核，Rust）───────────────────────────────────┐
@@ -240,9 +240,9 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | **数据流图**（DFD） | 数据从哪来、经过谁、到哪去（含外部实体与数据存储） | 流程级 | 架构师、设计师 |
 | **数据映射图** | 上游字段 → 下游字段（含转换与计算） | **字段级** | 设计师、实施 |
 
-### 7.2 落文件：**数据流 = `.mf`，跨模块流程 = `.mb`（✔ 已裁 §15-3）**
+### 7.2 落文件：**数据流 = `.mf`，跨模块流程 = `.mb`（✔ 已裁 §15-3；⤴ 2026-09-25 后缀统一 ⇒ 一律读作 `.m`）**
 
-**✔ 2026-09-24 已裁**（作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」）——扩展名职责重划：
+**✔ 2026-09-24 已裁**（作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」）——扩展名职责重划（**⤴ 后缀统一后一律读作 `.m`**，此处为历史口径）：
 
 - **`.mf`（Meta Flow）= 数据流（DataFlow）**：一个文件一份数据流编排；其 `*.mf.g` **多 sheet** = **`mf-flow`（节点图）· `mf-dfd`（数据流图）· `mf-map`（数据映射图）**；
 - **`.mb`（Meta BPMN）= 跨模块流程**：BPMN **从 `.mf.g` 的一个 sheet 升格为独立文件类型**，投影 `*.mb.g`（sheet `mb-bpmn`）。
@@ -427,7 +427,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ## 15. ✔ 已裁（2026-09-24，**9 条全部已裁**；**⤴ 2026-09-26 追加第 10 条**）
 
-> 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」；第 3 条先回「**3 待定**」，随后另给方案：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」——**9 条至此全部收口**。
+> 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」；第 3 条先回「**3 待定**」，随后另给方案：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」（⤴ 后缀统一后读作 `.m`）——**9 条至此全部收口**。
 
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |

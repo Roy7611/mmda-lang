@@ -111,7 +111,7 @@ algorithm LogisticsScheduler {
 | --- | --- | --- |
 | A（推荐） | `@Action dispatch : LogisticsScheduler dispatchOrder(Order o)` | 动作直接绑定算法契约，最直白 |
 | B | `@Native(LogisticsScheduler) compute dispatchPlan(...)` | 加注解标节点为 native 调用 |
-| C | 状态机里 `action dispatch { native LogisticsScheduler }` | 与 `.ms` 现有形态贴近（`stm … { action … { transition … } }`） |
+| C | 状态机里 `action dispatch { native LogisticsScheduler }` | 与 `.m` 现有形态贴近（`stm … { action … { transition … } }`） |
 
 三种都要能回答：**输入从哪来（record/查询）、输出落到哪（字段/事件/表）、失败怎么回滚（宿主事务）**。
 
@@ -222,7 +222,7 @@ rg -n "启发式|heuristic|cost_model|weights" -g '!*.dll' -g '!*.so' D:/2026/ja
 | # | 议题 | 选项 / 建议 |
 | --- | --- | --- |
 | 1 | `algorithm` 契约与 `protection` / `license` 声明是否进语言 | 建议进（与 capability 同源） |
-| 2 | 行为里引用 native 的语法 | A `@Action dispatch : LogisticsScheduler …`（推荐）／ B `@Native(...)` 注解 ／ C `.ms` 里 `action { native … }` |
+| 2 | 行为里引用 native 的语法 | A `@Action dispatch : LogisticsScheduler …`（推荐）／ B `@Native(...)` 注解 ／ C `.m` 里 `action { native … }` |
 | 3 | 默认保护档 | 建议：native-stripped + 机器指纹在线激活，宽限期 30 天 |
 | 4 | 哪些算法必须服务化 | 建议：物流调度内核服务化；其余（计费、展开）走 native 库 |
 | 5 | WASM 公开子集的范围 | 建议：输入校验、单位换算、预览小算例；不含调度内核 |

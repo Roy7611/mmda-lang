@@ -53,7 +53,7 @@
 | 账号 → 角色 | 决定**导航**（没这顶帽子就看不到对应导航项/编辑区）与**写入边界**（§1.3 矩阵是工具强制的硬边界，不只是约定） |
 | 角色 → 签字权 | 决定 §8 各变更级别的签字落到谁 |
 
-> 注意：这里配置的是「**账号 → Role 的授予**」。**Role 本身是设计元素**——需求阶段识别的关键用户，声明在语言里（`flow/roles/*.mr`，与 `biz/*.ma` 的模块分解**同级**，见 [`meta-model.md`](lang/meta-model.md) §8.1）；Role 的能力范围（`auth module` / `actions` / `scope`）由架构师设计，**谁持有它**才是在 IDE 里配置的。
+> 注意：这里配置的是「**账号 → Role 的授予**」。**Role 本身是设计元素**——需求阶段识别的关键用户，声明在语言里（`flow/roles/*.m`，与 `biz/*.ma` 的模块分解**同级**，见 [`meta-model.md`](lang/meta-model.md) §8.1）；Role 的能力范围（`auth module` / `actions` / `scope`）由架构师设计，**谁持有它**才是在 IDE 里配置的。
 
 **因此「一人到底」不是绕过权限模型，而是把多项角色授予同一个人**：规则不变、门禁不减；同一个账号同时持有几顶帽子时，IDE 要在界面上明确提示「你现在在改哪一层、这一层改完必须跑什么」。
 
@@ -66,11 +66,11 @@
 | 对象 / 文件 | 架构师 | 设计师 | 程序员 | AI Agent | 业务人员 |
 | --- | --- | --- | --- | --- | --- |
 | `biz/*.ma`（模块树、模块依赖） | **写** | 读 | 读 | 提议 | 读（中文视图） |
-| `flow/roles/*.mr`（角色、权限、数据范围） | **写** | 读 | 读 | 提议 | 审 |
-| `data/models/*.mm`、`data/enums/*.me` | 审 | **写** | 读 | 提议 | 审（标签/取值） |
-| `data/stms/*.ms`（状态机、Action） | 审 | **写** | 读 | 提议 | 审（状态名/流转语义） |
-| `flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` | **写** | **写** | 读 | 提议 | 审 |
-| `ui/**/*.mi`（五视图定制） | 读 | **写** | 读 | 提议 | 审（字段顺序/标签）——**消费方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1）；前端 kit（Vue `vui*` / React `rui*`）**由开发者自选**（写自定义前端 UI 插件时按熟悉度挑） |
+| `flow/roles/*.m`（角色、权限、数据范围） | **写** | 读 | 读 | 提议 | 审 |
+| `data/models/*.m`、`data/enums/*.m` | 审 | **写** | 读 | 提议 | 审（标签/取值） |
+| `data/stms/*.m`（状态机、Action） | 审 | **写** | 读 | 提议 | 审（状态名/流转语义） |
+| `flow/converters/*.m`、`flow/*.m` | **写** | **写** | 读 | 提议 | 审 |
+| `ui/**/*.m`（五视图定制） | 读 | **写** | 读 | 提议 | 审（字段顺序/标签）——**消费方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1）；前端 kit（Vue `vui*` / React `rui*`）**由开发者自选**（写自定义前端 UI 插件时按熟悉度挑） |
 | `conventions.md`、`codegen/profiles/*.yaml`、capability 声明 | **写** | 读 | 写（工程参数） | 提议 | — |
 | `generated/**` 的 GENERATED 区 | 禁 | 禁 | 禁（工具写） | 工具写 | — |
 | KEEP 区 / `handlers/**`（业务逻辑） | 禁 | 禁 | **写** | **写**（受 `conventions.md` 约束） | — |
@@ -100,8 +100,8 @@
 | 1 | 业务需求（口述/文档/会议纪要） | 划子系统与模块边界；定模块编码 | `biz/*.ma` 模块树 | Architect UI 导航树 / M语言 | 每个 Feature 有归属模块；无空模块 |
 | 2 | 模块树 | 定**数据所有权**（哪个模块拥有哪个 Record，跨模块只走声明引用） | 模块 → Record 绑定 | 菜单树编辑 | 无反向依赖；无「两个模块都改同一张表」 |
 | 3 | 数据所有权 | 定领域硬约束（主键策略、租户键、编号规则、审计字段） | 项目级约定 + `conventions.md` 骨架 | M语言 / 模板 | 约定可被 `mmda validate` 检查 |
-| 4 | 领域硬约束 | 定角色与权限（role / auth / scope：OWNER/WORKGROUP/DEPARTMENT/ALL） | `flow/roles/*.mr` | 角色权限编辑器 | 每个 Action 有授权角色；数据范围字段齐（`creatorId`/`ownerId`） |
-| 5 | 角色权限 | 定跨模块流程与数据流（BPMN 池/活动/网关、Converter 映射） | `flow/*.mb`、`flow/*.mf`、`flow/converters/*.mc` | BPMN 图 / DFD | 每条流有触发者与结果事件；无孤立节点 |
+| 4 | 领域硬约束 | 定角色与权限（role / auth / scope：OWNER/WORKGROUP/DEPARTMENT/ALL） | `flow/roles/*.m` | 角色权限编辑器 | 每个 Action 有授权角色；数据范围字段齐（`creatorId`/`ownerId`） |
+| 5 | 角色权限 | 定跨模块流程与数据流（BPMN 池/活动/网关、Converter 映射） | `flow/*.m`、`flow/converters/*.m` | BPMN 图 / DFD | 每条流有触发者与结果事件；无孤立节点 |
 | 6 | 全部模型 | 定**交付形态**：目标端、capability、算法保护档 | capability 声明（含 `algorithm(...)`） | M语言 / CLI | 语言用到的能力在目标端都有声明（否则生成期报错） |
 | 7 | 完成的设计 | 出 Codegen Profile、跑一次全量校验与生成、评审 | `codegen/profiles/*.yaml` + 评审记录 | `mmda validate` / `generate` | 零 error；生成成功；**Spec 完成度清单**（`ai/vibe-spec.md` §5）全绿；**架构评估**硬规则无新增违规（[`architecture-review.md`](architecture-review.md) §5） |
 
@@ -113,12 +113,12 @@
 
 | # | 输入 | 动作 | 产物 | 门禁 |
 | --- | --- | --- | --- | --- |
-| 1 | 模块树 + 数据所有权 | 建 Record 骨架（名称、主键、租户键、审计字段） | `data/models/{schema}/{Name}.mm` | 命名与 `conventions.md` 一致；一对象一文件（**推荐，非硬规则** —— 一文件可多对象，同文件内引用不写 `import`） |
+| 1 | 模块树 + 数据所有权 | 建 Record 骨架（名称、主键、租户键、审计字段） | `data/models/{schema}/{Name}.m` | 命名与 `conventions.md` 一致；一对象一文件（**推荐，非硬规则** —— 一文件可多对象，同文件内引用不写 `import`） |
 | 2 | Record 骨架 | 加字段：类型/长度/可空/默认值/@{注解}（`@Ref`/`@One`/`@Many`/`@Id`/`@Index`/`@Partitioned`） | 同上 | 引用目标存在；类型与长度合法；无裸字符串表达式 |
 | 3 | 字段 | 写业务约束与计算属性（`@Computed`、约束表达式） | 同上 | **表达式纯函数**（禁 IO/赋值/随机/时间依赖，`doc/lang/events.md:97-102`） |
-| 4 | 状态型实体 | 建 `@State` 枚举 + STM：`stm X on R.field { action … { transition A->B } }` | `data/enums/*.me`、`data/stms/*.ms` | 每个 `@State` 字段有 STM；无不可达状态；每个 Action 有前置状态 |
-| 5 | 跨对象编排 | 定 Converter（数据流）与跨模块流程节点 | `flow/converters/*.mc`、`flow/*.mf`、`flow/*.mb` | 映射字段类型兼容；流程节点有 owner |
-| 6 | 模型 | 设计呈现：五视图引用、UiField（editor/formatter/align/placeholder）、分组 `groupLabel` | `ui/**/*.mi` → `MetaUi` | 未提供 `.mi` 时框架能按元数据生成标准 CRUD；**渲染方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1），后端只产 `MetaUi` |
+| 4 | 状态型实体 | 建 `@State` 枚举 + STM：`stm X on R.field { action … { transition A->B } }` | `data/enums/*.m`、`data/stms/*.m` | 每个 `@State` 字段有 STM；无不可达状态；每个 Action 有前置状态 |
+| 5 | 跨对象编排 | 定 Converter（数据流）与跨模块流程节点 | `flow/converters/*.m`、`flow/*.m` | 映射字段类型兼容；流程节点有 owner |
+| 6 | 模型 | 设计呈现：五视图引用、UiField（editor/formatter/align/placeholder）、分组 `groupLabel` | `ui/**/*.m` → `MetaUi` | 未提供 `.m` 时框架能按元数据生成标准 CRUD；**渲染方唯一 = mmda-vue**（[`presentation.md`](lang/presentation.md) §5.1），后端只产 `MetaUi` |
 | 7 | 呈现 | 填 i18n：label、字段 placeholder/tooltip、枚举成员标签（默认语言 + 其余语言） | 模型内 i18n 词条 | 无空标签；**多语言映射编辑**并排核对（`presentation.md` §7） |
 | 8 | 完成设计 | 出 E-R 图 / 状态图并自检、跑校验 | `*.g` 图形投影 + 校验报告 | `mmda validate` 零 error；图形与文本双向一致 |
 
@@ -208,7 +208,7 @@ open → read(相关子集) → dryRun 补丁 → validate → diff --impact
 
 **三条红线**：① 业务人员不直接改真源，只审语义；② 破坏性变更必须架构师批准（不能只经业务人员同意）；③ 业务人员不参与技术选型讨论——AI 要把技术选项**翻译成业务后果**再问他。
 
-**UAT 反馈回路**：使用中发现的问题 → issue → 分三类路由：**语义错**（业务人员 → 设计师改模型）、**交互不顺**（业务人员 → 设计师改 `ui/**/*.mi`）、**性能/缺陷**（→ 程序员改 KEEP 区/native 算法）。
+**UAT 反馈回路**：使用中发现的问题 → issue → 分三类路由：**语义错**（业务人员 → 设计师改模型）、**交互不顺**（业务人员 → 设计师改 `ui/**/*.m`）、**性能/缺陷**（→ 程序员改 KEEP 区/native 算法）。
 
 ---
 
@@ -217,7 +217,7 @@ open → read(相关子集) → dryRun 补丁 → validate → diff --impact
 | 级别 | 例子 | 必须留下的证据 | 签字要求（单人模式） | 签字要求（结对 / 团队） |
 | --- | --- | --- | --- | --- |
 | **L0 无副作用** | 注释、文档、`*.g` 布局 | 工具校验结果 | 无需签字 | 无需签字 |
-| **L1 非破坏** | 加可选字段、加枚举成员、加 Action/STM 状态、加 `ui/**/*.mi`、加别名 | `validate` 零 error + 影响面报告 | self-approve | 1 人签字（设计师或架构师） |
+| **L1 非破坏** | 加可选字段、加枚举成员、加 Action/STM 状态、加 `ui/**/*.m`、加别名 | `validate` 零 error + 影响面报告 | self-approve | 1 人签字（设计师或架构师） |
 | **L2 破坏** | 删字段/删表、改名、改类型/长度、必填化、删枚举成员、改 `@Ref` 目标 | 迁移脚本 + 兼容期策略（双写/灰度/回填）+ 在副本库上的迁移演练结果 + **回滚路径** + 三端一致性测试 | **AI 对抗复核**（写明最坏情况与反例）+ **冷却期**（候选分支挂起 ≥ 24h + 自动对账）+ **回滚演练通过** | **另一人签字**（不可同一人）+ 上述全部证据 |
 | **L3 结构性** | 模块边界调整、权限模型变更、capability/目标端变更、算法服务化 | 设计决策记录（`docs/adr/`）+ 受影响角色交接物重出 + L2 的证据（若含破坏项） | 同 L2 + ADR；**建议**找一位外部/同侪评审（可异步，不必同组织） | 架构师签字 + ADR + 评审记录 |
 
@@ -255,7 +255,7 @@ open → read(相关子集) → dryRun 补丁 → validate → diff --impact
 | 角色 | 做了什么 | 产物 | 门禁 |
 | --- | --- | --- | --- |
 | 业务人员 → AI | 口述「按车辆装载率与交货期自动排配送顺序，司机能在手机上看」 | 业务需求 + 候选影响面（会新增 2 个表、3 个页面） | 业务确认语义 |
-| 架构师 | 加 `logistics` 模块与数据所有权；声明 `capability algorithm(logistics-scheduler: native)`；定角色权限（调度员/司机/主管数据范围） | `biz/logistics.ma`、`flow/roles/*.mr`、capability 声明 | 无反向依赖；每个 Action 有授权 |
+| 架构师 | 加 `logistics` 模块与数据所有权；声明 `capability algorithm(logistics-scheduler: native)`；定角色权限（调度员/司机/主管数据范围） | `biz/logistics.ma`、`flow/roles/*.m`、capability 声明 | 无反向依赖；每个 Action 有授权 |
 | 设计师 | 建 `DispatchRequest`/`DispatchPlan` record、`DispatchStatus` 枚举与 STM、排序字段与 `ui` 编辑器 | `data/**`、`ui/**` | validate 零 error；STM 可达 |
 | 程序员 | 在独立 Rust 仓实现 `logistics-scheduler`（cdylib + 加固 + 许可）；写 KEEP 区 Handler（校验前置状态、写回方案） | 算法 crate + 薄适配 + handlers | `nm -D` 只见少量 C ABI 符号；许可校验生效 |
 | AI Agent | 生成三端薄适配与 DTO、补测试用例、出影响面报告、开 PR | `generated/**` 适配 + `tests/**` | 三道闸全过；变更级别标注 |
@@ -289,7 +289,7 @@ open → read(相关子集) → dryRun 补丁 → validate → diff --impact
 | 4 | 运行期回写（库 → 文件）的签字人 | 建议：架构师/设计师任一，但必须有 changelog |
 | 5 | 五类职责的**工具入口**是否统一为 `mmda` CLI + MCP（取消手工文件编辑） | 建议：是；手工编辑只作应急 |
 | 6 | ~~三种工作模式的默认配置~~ → **✔ 已裁（2026-09-24）**：模式与角色权限在 **IDE 项目管理**里配置，导航与写入边界按角色权限限制（见 §1.2）；默认 `mode = 单人`，门禁不因模式而变 |
-| 7 | ~~测试用例的形态与验收门禁~~ → **✔ 已裁（2026-09-24）**：`.mt` 进语言族；覆盖率门禁见 [`testing.md`](testing.md) §6；AI 用例业务 + 设计师双签；中文验收单作为验收凭证 | 落点见 [`testing.md`](testing.md) §11 已裁表 |
+| 7 | ~~测试用例的形态与验收门禁~~ → **✔ 已裁（2026-09-24）**：`.m` 进语言族；覆盖率门禁见 [`testing.md`](testing.md) §6；AI 用例业务 + 设计师双签；中文验收单作为验收凭证 | 落点见 [`testing.md`](testing.md) §11 已裁表 |
 | 8 | AI Reviewer 的采纳率阈值与降权规则、质量报告是否作为交付物 | 见 [`quality.md`](quality.md) §7（5 条待裁） |
 | 9 | 架构评估的硬门禁范围与阈值、例外白名单机制 | **✔ 已裁（2026-09-24）**：硬门禁 = ARCH-101/102/104/105 + 302/304/305；抽象度 `A` 采用「对外契约 /（契约 + 具体对象）」（见 [`architecture-review.md`](architecture-review.md) §8） |
 

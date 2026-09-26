@@ -49,7 +49,7 @@
 | --- | --- | --- | --- |
 | 业务对象 | `data/models/mes/*`（**138 个**） | 所属业务模块的 Feature（节点 `model` 字段绑定） | 按 `sops` 开放 CRUD |
 | **共享主数据** | `Bank` / `Carrier` / `Country` / `CurrencyUnit` | **基础模块 `Base`**（`biz/base.ma`：`id: B`、`db: base`、**模块级 `sops: READ`**、子节点按需 `CRUD`，如 `B.01.001 Department`） | 模块级只读 + 子节点按需 |
-| 枚举 | `.me` | **不需要归属** | **无端点**——枚举值随视图 / `MetaUi` 下发，前端不必单独取 |
+| 枚举 | `.m` | **不需要归属** | **无端点**——枚举值随视图 / `MetaUi` 下发，前端不必单独取 |
 | 从属对象 | `Address` / `Contactor` | 不单独归属（挂在主对象关系上） | 无端点（随主对象装配，[`runtime.md`](runtime.md) §6） |
 | 技术对象 | `AuditTrail` / `Attachment` / `BackgroundTask` | 不对外 | 默认 `internal`（运维可见、业务不可见） |
 | 平台对象 | 用户 / 角色 / 租户 | 平台模块 | 独立端点，受权限保护 |
@@ -204,7 +204,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 
 > **另一条出口 —— FlatBuffers IR（✔ 2026-09-26 作者：「性能和效率优先」）**：**本节的表是 JSON / OAS 投影（可读性优先）**：`decimal` / `money` → `string`、`Timestamp` → `date-time`。**FlatBuffers 是另一条投影、口径不同**（性能 / 效率优先）：`decimal(p,s)` → **scaled `int64`**（`p ≤ 18`）、`DateTime` / `Timestamp` → **epoch `int64`**、可空 → **`table` vtable 存在位**、子表 → `vector of tables` —— 见 [`datatypes.md`](lang/datatypes.md) **§11.5**。**两条投影共一个真源**（逻辑类型 + 8 轴）；**同一条 record 在两条出口上形态不同 = 设计如此，不是漂移** —— 但**每条的取值口径必须写进 Profile 显式声明**，不许默认。
 
-**`example` 的来源**：`.mt` 用例里的样本 + AI 造数（§3.9）→ `components.examples` 与端点级 `example`。**用例是派生物 ⇒ 例值也是派生物**。
+**`example` 的来源**：`.m` 用例里的样本 + AI 造数（§3.9）→ `components.examples` 与端点级 `example`。**用例是派生物 ⇒ 例值也是派生物**。
 
 ### 3.6 Security Scheme / Security Requirement
 
@@ -269,7 +269,7 @@ Schema 对象 = **JSON Schema 2020-12 的超集**（OAS 方言 `https://spec.ope
 | **用例来源（新增一类）** | OpenAPI → **机械用例**：每端点 × 角色（Role）× 边界（缺参 / 越权 / 非法状态转移 / 分页边界 / 并发）。用例仍是**派生物**（[`testing.md`](testing.md) §1） |
 | **契约测试** | 响应必须符合 schema（字段类型/必填/枚举），否则失败——**B 级**（生成后可判定），可进质量门禁 |
 | **Mock server** | 由 OpenAPI 起 mock（前端 `vui`/`rui` 与第三方并行开发、演示、联调）；归属（IDE 内置 vs 外部工具）待裁；**数据来源 = 机械打底 + AI 填语义**（§3.9） |
-| **外部工具用例** | Postman / Apifox 的 collection 可**导入作补充**，状态是「外部用例」：不进真源、不参与门禁，除非回写成 `.mt` |
+| **外部工具用例** | Postman / Apifox 的 collection 可**导入作补充**，状态是「外部用例」：不进真源、不参与门禁，除非回写成 `.m` |
 | 性能 / 安全 | 阈值挂到端点（[`quality.md`](quality.md) §2.2）：响应均值 ≤ 5 s、并发 ≥ 500/800、TPS ≥ 80；越权用例属安全维度 |
 
 ---

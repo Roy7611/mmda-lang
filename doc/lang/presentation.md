@@ -15,7 +15,7 @@
 | `search` | 查询条件 | 高级搜索 |
 | `report` | 报表 | 统计输出 |
 
-定制视图放在 `ui/{子系统}/{Name}.mi`；未提供 `.mi` 时框架按 `data/models/*.mm` 的元数据生成标准 CRUD。
+定制视图放在 `ui/{子系统}/{Name}.m`；未提供 `.m` 时框架按 `data/models/*.m` 的元数据生成标准 CRUD。
 
 **视图钩子**（前端 `UiLogic`，对应关系 ✔ 已裁 2026-09-24）：`index` → **`beforeIndex`**、`editor` → **`beforeEdit`**、`details` → **`beforeDetails`**、`search` → **`beforeSearch`**（本轮按作者要求补上）；**`report` 暂不设钩子**（未提，待有实现再裁）。参考实现见 [legacy/runtime-java.md](../legacy/runtime-java.md)。
 
@@ -92,11 +92,11 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 | 默认值 | **颜色**：`@Colorized(role, shade?)` 给默认色，成员 `@Color` 缺省即**回落**；**图标**：`@Iconized`（不写括号）默认别名 = **成员名 kebab**（`DESIGN` → `design`）、`@Iconized("prefix")` 默认别名 = `<prefix>-<成员名 kebab>`（`bom-design`）；成员显式 `@Icon("x")` 是**完整别名**、**不再叠前缀** |
 | shade → 令牌 | 角色 + shade映射到主题的色板（如 `primary` 的 `200`）；**具体令牌名由皮肤定义**，模型层不写色值 |
 | 缺注解 | 枚举**按文本渲染**（旧行为不变，向后兼容） |
-| 渲染形态（默认） | 列表 / 表单里：颜色用于**标签或其徽章底色**，图标置于标签**前**；具体形态可由视图层（`ui/**/*.mi`）覆盖 |
+| 渲染形态（默认） | 列表 / 表单里：颜色用于**标签或其徽章底色**，图标置于标签**前**；具体形态可由视图层（`ui/**/*.m`）覆盖 |
 | i18n | 颜色 / 图标**不是翻译对象**（§5 的 i18n 只管标签 / `placeholder` / `tooltip`） |
 | 与业务色区分 | 业务数据里的「每行一个色」（`taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义；两者不互相替代 |
 
-> ✔ 细节 6 条**已裁**（2026-09-25）：颜色角色**封闭 6 值**（拼错 = 解析期 error）、主题不新增角色；**图标别名开放**（开发人员定义语义词、UI 层映射、没映射上顶多不显示、warning 可选）；`@Icon` 只收别名；字段级不覆盖（视图级归 `ui/**/*.mi`）；缺开关写取值 = warning。见 [`records.md`](records.md) §6.1。
+> ✔ 细节 6 条**已裁**（2026-09-25）：颜色角色**封闭 6 值**（拼错 = 解析期 error）、主题不新增角色；**图标别名开放**（开发人员定义语义词、UI 层映射、没映射上顶多不显示、warning 可选）；`@Icon` 只收别名；字段级不覆盖（视图级归 `ui/**/*.m`）；缺开关写取值 = warning。见 [`records.md`](records.md) §6.1。
 
 ## 5. 国际化（i18n）
 
@@ -134,7 +134,7 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 数据流（单向、无回环）：
 
 ```
-m 声明（ui/**/*.mi + Field/UiField）→ IR → 后端适配成 MetaUi（Java / C# 各一份薄适配）→ mmda-vue 消费渲染
+m 声明（ui/**/*.m + Field/UiField）→ IR → 后端适配成 MetaUi（Java / C# 各一份薄适配）→ mmda-vue 消费渲染
 ```
 
 | 端 | 职责 | 实测现状（P0.5 盘点） |
@@ -157,11 +157,11 @@ m 声明（ui/**/*.mi + Field/UiField）→ IR → 后端适配成 MetaUi（Java
 
 | 位置 | 说明 |
 | --- | --- |
-| `ui/{子系统}/{Name}.mi` | 定制视图定义（五视图引用） |
+| `ui/{子系统}/{Name}.m` | 定制视图定义（五视图引用） |
 | `ui/{schema}/*.ui.yaml` | （规划）字段级呈现配置 |
 | 旧实现 | 元数据库里维护 `MetaUiField`，或在前端 `UiLogic` 里以代码扩展 |
 
-> ⚠️ `.mi` 的完整语法（布局、绑定、事件）尚未定稿；`presentation.md` 原为空壳，本轮只并入 UiField / i18n 的既有定义。界面布局见 [ide/ui-shell.md](../ide/ui-shell.md) 与 [design-notes.md](../design-notes.md) 的「交互设计」一节。
+> ⚠️ `.m` 的完整语法（布局、绑定、事件）尚未定稿；`presentation.md` 原为空壳，本轮只并入 UiField / i18n 的既有定义。界面布局见 [ide/ui-shell.md](../ide/ui-shell.md) 与 [design-notes.md](../design-notes.md) 的「交互设计」一节。
 
 ---
 

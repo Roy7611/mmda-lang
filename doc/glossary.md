@@ -29,7 +29,7 @@
 | 术语 | 说明 |
 | --- | --- |
 | m 语言 | 元模型文本语法；Monaco 语言 id `m-lang`，MIME `text/x-m-lang` |
-| M 语言分片 | `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mb` `.mi` —— 按类型的语言文件 |
+| M 语言文件 | **`.m`（唯一后缀，✔ 2026-09-25）** —— partType 由**正文首关键字**判定；`.ma` / `.mm` / `.me` / `.ms` / `.mr` / `.mc` / `.mf` / `.mb` / `.mi` / `.mt` = **旧分片后缀（已作废，读作 `.m`）** |
 | MMDA 项目 | SSOT：根 `{projectCode}.mmda` 清单 + `biz/` `data/` `flow/` `ui/`；见 [project.md](lang/project.md) |
 | 项目清单 | 根目录 `{projectCode}.mmda`（JSON），非语言模型 |
 | 工作区 | 展开目录，日常编辑与 git/svn（推荐形态） |
@@ -69,7 +69,7 @@
 | 传输 | **Channel（通道）** | 端点与处理器之间的传输；投递语义 = **点对点（队列）/ 发布订阅（主题）**；`transport` = `memory` · `redis` · `rabbitmq` · `kafka` · `db`（**跨进程/跨系统集成走消息平台**） | ~~Queue / Topic~~（只作投递语义的修饰，不作概念名） |
 | 处理（上位词） | **Processor（处理器）** | 流中间节点的统称 | ~~Transformation~~ · ~~Transform~~ · ~~Map~~ · ~~Compute（并入 Converter）~~ |
 | 处理·校验 | **Validator（校验器）** | 必填 / 类型 / 长度 / 枚举 / 正则 / 跨字段；不通过 → 拦截 + 进失败队列 | ~~Validation（作概念名）~~ |
-| 处理·转换 | **Converter（转换器）** | 字段映射、单位换算、编码与格式转换、计算；**配置面 = DataMapper**（既有概念：`.mc` / `flow/converters/`） | **~~Transformer~~（与 AI 的 Transformer 架构混淆，作者明确不用）** |
+| 处理·转换 | **Converter（转换器）** | 字段映射、单位换算、编码与格式转换、计算；**配置面 = DataMapper**（既有概念：`.m` / `flow/converters/`） | **~~Transformer~~（与 AI 的 Transformer 架构混淆，作者明确不用）** |
 | 处理·过滤 | **Filter（过滤器）** | 丢弃 / 放行（可计数） | — |
 | 处理·聚合 | **Aggregator（聚合器）** | 多条 → 一条（含窗口内聚合） | ~~Reduce~~ · ~~Collect~~ |
 | 处理·拆分 | **Splitter（拆分器）** | 一条 → 多条（与 Aggregator 对称） | ~~Explode~~ · ~~FlatMap~~ |
@@ -165,7 +165,7 @@
 | **位向量** | **`BitVector(n)`**（**规范名**，✔ 2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）；**别名 = `BitSet` / `BitSet(n)` / `BitArray`**（输入兼容，`mmda fmt` 归一）、**后缀式 `BitVector8`…`BitVector64`** ≡ `BitVector(8)`…`BitVector(64)`。`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128）；真源 `DataType.BIT_VECTOR`(129)；见 [`datatypes.md`](lang/datatypes.md) §7 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
-| `.m` | **纯脚本文件**的扩展名（✔ 2026-09-25）：模型之外的脚本程序（拦截器 / 钩子体 / 可复用函数），**与它服务的对象同目录**，可用 `import` 引到别的文件里复用；模型仍用分片族（`.mm` / `.me` / `.ms` …） |
+| `.m` | **M 语言文件**的扩展名（✔ 2026-09-25）：**模型与脚本同用 `.m`**（partType 由正文首关键字判定）；脚本 = 拦截器 / 钩子体 / 可复用函数，**与它服务的对象同目录**，可用 `import` 引到别的文件里复用 |
 | view（视图） | **定义式，不是查询式**：`view X : B { 列 }` 的 **`:` 是 C# 风格的继承 / 实现**，语义 = **对 `X` 进行定义**（`B` 是基，可以是 `record`，见语料 `view Product : Bom`）；`as` = 引用该基的别名，`join` / `union` = 再挂别的基（横向 / 纵向）；**列清单逐字段显式写出**（每个基的字段都要写、名字对得上，不一致用 `as` 对齐，对齐规矩照 SQL）；**基可以是 `record` 或另一个 `view`**；**段对视图可选 —— 只读视图（大多数）不写段** |
 | `@Colorized` / `@Iconized` | **枚举的呈现开关 + 默认值**（✔ 2026-09-25）：写在**枚举声明**上；`@Colorized(role, shade?)` 只负责给**默认色**（成员 `@Color` 缺省时回落）、`@Iconized`（**无参、不写括号**）默认别名 = **成员名 kebab**、`@Iconized("bom")` 默认别名 = **前缀 + 成员名 kebab**（`bom-design`）；成员不写就用默认，没默认才不渲染 |
 | `@Color(role, shade?)` | **枚举成员的主题色**（✔ 2026-09-25；原 `@ColorRole(role)` 写法并入）：**封闭 7 值** `primary` / `secondary` / `info` / `success` / `warning` / `danger` / `gray`（含**默认支持的黑白灰**；语言层校验，拼错 = 解析期 error）+ **色板 shade（色阶）**（**封闭 10 档** `50`–`900`，**省略 = `500`**）；**只给角色与 shade、不给色值**（色值来自主题令牌，模型层不写 `#RRGGBB`） |
@@ -184,14 +184,6 @@
 | 扩展名 | 目录 | 内容 |
 | --- | --- | --- |
 | `.mmda` | 根 | 项目清单（仅 `{projectCode}.mmda`）⚠️ 与决策 B8 冲突，见 [errata.md](errata.md) 冲突 3 |
-| `.ma` | `biz/` | 子系统 Module 树 |
-| `.mm` | `data/models/` | Record / View |
-| `.me` | `data/enums/` | Enum |
-| `.ms` | `data/stms/` | STM |
-| `.mr` | `flow/roles/` | Role / Auth |
-| `.mc` | `flow/converters/` | Converter |
-| `.mf` | `flow/` | **数据流（DataFlow）**：节点图 / 数据流图 / 数据映射图（✔ 2026-09-24 改判） |
-| `.mb` | `flow/` | **跨模块流程（BPMN）**（✔ 2026-09-24 新增） |
-| `.mi` | `ui/` | 定制 UI（五视图） |
+| `.m` | `{四阶段根}/`（目录自由） | **全部语言文件**：模块树 / Record / View / Enum / STM / Role / Converter / DataFlow / BPMN / UI / 用例 —— partType **由正文首关键字判定**（旧分片后缀 `.ma` `.mm` `.me` `.ms` `.mr` `.mc` `.mf` `.mb` `.mi` `.mt` 已作废、读作 `.m`） |
 | `*.g` | 与 SSOT 同目录 | 图形投影（布局/样式） |
 | `.mmdax` | — | ZIP 归档包 |

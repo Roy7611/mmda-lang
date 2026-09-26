@@ -38,7 +38,7 @@ flowchart LR
 | 步骤 | 操作 | 产出 |
 |------|------|------|
 | 1 | 需求：三层需求 + **识别 Role**（关键用户） | SRS / 用例、Role 清单 |
-| 2 | 设计：Module 三级 + Record/Relation + STM/Flow | `biz/*.ma`、`data/models/*.mm`、`data/stms/*.ms`、`flow/roles/*.mr` |
+| 2 | 设计：Module 三级 + Record/Relation + STM/Flow | `biz/*.ma`、`data/models/*.m`、`data/stms/*.m`、`flow/roles/*.m` |
 | 3 | 复制或新建项目目录 | `{projectCode}.mmda`、`biz/`、`data/` |
 | 4 | 编辑 `data/models/`、`data/stms/`、`biz/*.ma` | Record、STM、Module 树 |
 | 5 | 校验 | 零 error |
@@ -76,7 +76,7 @@ examples/mmda-mes/
 | 1 | Module | `M.01` 工厂模型 |
 | 2 | Feature | `M.01.032` BOM → 绑定 `model: Bom` |
 
-Feature 必须绑定 Record；Action 写在 `data/stms/*.ms`，与 Module 的 `stm:` 引用一致。
+Feature 必须绑定 Record；Action 写在 `data/stms/*.m`，与 Module 的 `stm:` 引用一致。
 
 **编号即导航路径**：`M.01.032` = 子系统字母 + 两级序号；旧版手册的写法（`H` 人力资源 → `H.02` 组织人事 → `H.02.003` 职员）是同一套约定，**模块编码同时决定菜单顺序**。**Action 是 Feature 上的操作**，例如职员模块的 `promote`（升职）/ `leave`（离职）/ `dismiss`（辞退），属性见 [meta-model.md](../lang/meta-model.md) §9。
 

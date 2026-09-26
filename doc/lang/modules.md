@@ -42,7 +42,7 @@
 ## 5. 跨模块流程
 
 - partType = **`bpmn`**，落 `models/bpml/`（**目录名待裁**：建议改 `bpmn/`，[`project.md`](project.md) §11-④）；旧后缀 `.mb` 已作废（**读作 `.m`**）。
-- **与模块内数据流分工**：`flow`（旧 `.mf`）= 模块内数据流；`bpmn`（旧 `.mb`）= **跨模块流程**。
+- **与模块内数据流分工**：`flow`（旧 `.mf`，读作 `.m`）= 模块内数据流；`bpmn`（旧 `.mb`，读作 `.m`）= **跨模块流程**。
 - 运行时与集成面（Endpoint / DataFlow 三图 / Outbox / 引擎 `embedded` 默认）见 [`event_bus.md`](event_bus.md) 与 [`events.md`](events.md)。
 - ⏳ **待裁**：图形投影的后缀与格式（`{SSOT}.g` 形态，[`project.md`](project.md) §11-①）。
 

@@ -87,7 +87,7 @@
 | 方法名 | `camelCase` | `PascalCase` | `camelCase` | 各端惯例（作者原话「其他尊重习惯」） |
 | 常量 | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **`UPPER_SNAKE`** | **三端统一，不随各端习惯**（✔ 2026-09-24 作者补充） |
 | 包 / 命名空间 | `com.x.y`（小写点分） | `X.Y`（Pascal 点分） | 模块路径 | 不进契约 |
-| 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](lang/project.md)（`*.mm` 一对象一文件） |
+| 文件名 | 一公共类型一文件 | 同名文件 | 脚手架惯例 | 见 [`project.md`](lang/project.md)（`*.m` 一对象一文件） |
 | 局部变量 / 参数 | `camelCase` | `camelCase` | `camelCase` | — |
 | 泛型参数 | `T` / `TKey` | 同 Java | 同 Java | — |
 | **前端 / Flutter 本地名**（组件名 · 文件名 · CSS class · 静态资源名） | **允许 `kebab-case` / `snake_case`**（含 `-`、`_`） | 同（Dart 文件名本就走 `snake_case`） | 同 | ✔ 2026-09-24 作者裁：**尊重他们的习惯**（组件名、CSS BEM），细则见 §3.4 |

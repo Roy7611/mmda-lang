@@ -90,7 +90,7 @@
 | `int64` | `i64`、`long` | 64 | `bigint` |
 | `int128` | `i128` | 128 | 未来支持 |
 
-> ⏳ **待作者点头（[`errata.md`](../errata.md) §二-8）—— 无符号有两套写法，但不是冲突**：前缀式 `uint64`（**类型名**，语料 774 处）与后缀式 `unsigned`（**行尾修饰关键字**，语料 237 处，如 `scrapQuantity decimal(18, 3)? unsigned readonly`）—— 待定成「`unsigned` 是修饰符 / `uint64` 是类型」。
+> ✔ **无符号两套写法已裁（✔ 2026-09-26 作者对「`unsigned` 是修饰符 / `uint64` 是类型」答「同意」）**：**`unsigned` = 行尾修饰关键字（修饰符）、`uint64` = 类型名** —— 两者**并存、语用不同、不是冲突**：前缀式 `uint64`（**类型名**，语料 774 处）与后缀式 `unsigned`（**行尾修饰关键字**，语料 237 处，如 `scrapQuantity decimal(18, 3)? unsigned readonly`）。ID 类字段已迁 `int64`（见下）。（[`errata.md`](../errata.md) §二-8 清零）
 
 > ✔ **24 位整型已取消（✔ 2026-09-26 作者：「取消 24 位的整型，没啥用」）**：`uint24` / `int24`（及现实现的 `fixedBytes(3)`）**从类型表移除**；**位宽只有 8 / 16 / 32 / 64（+ 未来 128）** —— 需要 24 位请用 `BitVector(24)`（§7）。表内两行已删。
 >
@@ -155,7 +155,7 @@
 | 类型 | 说明 |
 | --- | --- |
 | `Date` | 年、月、日（**没有小数秒轴** —— `precision` 不适用） |
-| `Time` | 时、分、秒与**小数秒**；`precision` **0–9**（默认 0） |
+| `Time` | 时、分、秒与**小数秒**；`precision` **0–7**（默认 0） |
 | `DateTime` | 日期 + 时间；`precision` **0–9**（默认 0） |
 | `DateTimeOffset` | 带 UTC 偏移；`precision` **0–9** |
 | `DateTimeZoned` | 带偏移与时区 ID；`precision` **0–9** |
@@ -164,7 +164,7 @@
 **时区**：本质是数据转换。**只有 `DateTimeOffset` / `DateTimeZoned` 自带偏移 / 时区**；`Date` / `Time` / `DateTime` / `Timestamp` = **服务器本地时间**（跨时区传递必须改用带偏移 / 带时区的两种，见下）。
 
 > ✔ **时区口径（✔ 2026-09-26 作者：「只有这两种带偏移和时区，其他都是存服务器本地时间」）**：**只有 `DateTimeOffset` / `DateTimeZoned` 带偏移 / 时区**；**`Date` / `Time` / `DateTime` / `Timestamp` = 服务器本地时间**（无时区语义、**不做 UTC 强制度**）；跨时区传递必须用带偏移 / 带时区的两种。助手原提案「存储一律 UTC」**撤回**（[`errata.md`](../errata.md) §五-117）。
-> ✔ **小数秒精度（`precision`）的范围 = 按数据库厂商的描述（✔ 2026-09-26 作者：「时间精度都是根据数据库方的描述，你可以核查一些，包括 time, datetime」）**：**语言层取超集 `0–9`**（纳秒），**各方言逐一向 `PRECISION` 轴作答**（§11.1 / §11.3）——
+> ✔ **小数秒精度按语言层原稿声明（✔ 2026-09-26 作者：「别管实测」）**：**语言层照原稿** —— `Time` `0–7`、`DateTime` / `DateTimeOffset` / `DateTimeZoned` / `Timestamp` 为 `0–9`（`Timestamp` = `DateTime(9)`）；**方言实测上限只作参考、不改语言层口径**（作者原话「时间精度都是根据数据库方的描述，你可以核查一些，包括 time, datetime」→ 随后裁定「**别管实测**」）；方言表达不了 ⇒ 按 §11.3 声明降级（§11.1 / §11.3）。**下表 = 方言实测参考（2026-09-26 核查），不约束语言层** ——
 >
 > | 方言 | `Time` 小数秒 | `DateTime` / `Timestamp` 小数秒 | 出处（2026-09-26 核查） |
 > | --- | --- | --- | --- |
@@ -176,7 +176,7 @@
 > | Kingbase ES V8 | `0–6`（PG 口径） | `0–6`；Oracle 兼容模式 `0–9` | ⏳ 未取到原文（官方页分页；本仓 `KingbaseDataTypes.java` 是 stub） |
 > | DB2 | —（无 `TIME`） | `TIMESTAMP(p)` `0–12` | ⏳ 未取到原文（官方页 403） |
 >
-> **口径**：① **语言层 = `0–9`**（超集 —— 覆盖 Oracle 的 9，也是 .NET（tick = 100 ns = 7 位）/ Java（`Instant` 9 位）/ FlatBuffers·protobuf `Timestamp`（纳秒）能表达的最大值）；② **方言上限 < 语言层** ⇒ **降级 `M07xx`（禁静默，Profile 可关）** —— 如 `DateTime(9)` 落 MySQL / PG / 达梦 = 截到 6 位；③ **`Date` 没有小数秒轴**（`precision` 只对 `Time` / `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` 有意义）；④ **默认**：`DateTime` / `Time` = `0`（秒）、`Timestamp` = `9`（纳秒口径）；⑤ **⏳ 待点头**：语言层上限取**超集 `0–9`**（本稿，依据 §11.1「轴 = 语言层声明」+ §11.3「表达不了 ⇒ 降级声明」）还是**交集 `0–6`**（MySQL / PG / 达梦 的上限 —— 取交集则 `Timestamp` 默认随之改 `6`）；⑥ **历史**：`Time` 原写 `0–7` 是 **`archive/2026-06/language/types.md:57` 的原稿遗留**（那是 SQL Server `time(n)` 的上限，不是语言层口径，本轮改正）；`Timestamp` `0–9` **默认 `9`** = 原稿既定（同文件 `:61`），本稿保留。
+> **口径**：① **语言层** = `Time` `0–7`、`DateTime` / `DateTimeOffset` / `DateTimeZoned` / `Timestamp` `0–9`（**照原稿，不按方言实测改**）；② **方言上限 < 语言层** ⇒ **降级 `M07xx`（禁静默，Profile 可关）** —— 如 `DateTime(9)` 落 MySQL / PG / 达梦 = 截到 6 位；③ **`Date` 没有小数秒轴**（`precision` 只对 `Time` / `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` 有意义）；④ **默认**：`DateTime` / `Time` = `0`（秒）、`Timestamp` = `9`（纳秒口径）；⑤ **上表 = 方言参考、不约束语言层**（✔ 作者「别管实测」—— 上一稿曾据实测把语言层改成「超集 `0–9`」并抛出「超集 / 交集」⏳，**已撤回**）；⑥ **历史**：`Time` `0–7` 承 `archive/2026-06/language/types.md:57` 原稿口径；`Timestamp` `0–9` **默认 `9`** = 原稿既定（同文件 `:61`），保留。
 
 ---
 
@@ -190,9 +190,9 @@
 | `BitStr` | 位串，字符只能包含 `0`/`1`（如 `01011100`），等价 `BitStream` |
 | `uuid` | 128 位通用唯一标识 |
 
-语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1，**默认最大容量 = 2000**（✔ 2026-09-26 作者：「留」；可由 Profile 调整）；可指定字符编码 `charset`。
+语义上字符串即 `char[]` / `nchar[]`：`size` ≥ 1；**语言层容量上限：单字节 `char` / `varchar` = `4000`、Unicode `nchar` / `nvarchar` = `2000`**（✔ 2026-09-26 作者：「nvarchar 最大 2000，varchar 最大 4000，就这么定」）；可指定字符编码 `charset`。
 
-> ✔ **默认最大容量 `2000` 保留（✔ 2026-09-26 作者：「留」）**：**语言层未显式给 `size` ⇒ 容量按 `2000` 计**（Profile 可调）；**它是语言层默认值、不是方言的物理上限** —— 方言侧 `varchar` `0..65535`、`char` `0..255`（各自还有自己的列 DDL 缺省长度）由**方言作答**（§11.4 `MAX_LENGTH` 行）；**`string` ≡ `nvarchar(255)`**（本节首块）是**别名自带的显式容量**，与「默认 2000」是两层，不冲突。
+> ✔ **容量上限按类型（✔ 2026-09-26 作者：「nvarchar 最大 2000，varchar 最大 4000，就这么定」）**：**`char` / `varchar` ≤ `4000`、`nchar` / `nvarchar` ≤ `2000`** —— **每个类型都能推出存储大小**（承作者「我们的类型都要定义存储大小」：裸 `string` 没法映射数据库，故所有类型都带容量口径）；**`string` ≡ `nvarchar(255)`**（本节首块，别名自带显式容量）；**超上限 = 校验失败**（轴越界，见 §11.4 四轴 —— **不是降级、不许静默截断**）。⤴ 上一稿的「默认最大容量 `2000` + 方言 `varchar` `0..65535` / `char` `0..255`」**作废**。
 >
 > ✔ **`string` 是别名（✔ 2026-09-26 作者：「`string` = `nvarchar(255)`，你把 `string` 理解为类型别名，兼容程序化语言定义」）**：**`string` ≡ `nvarchar(255)`** —— 有 `nvarchar` 就用 `nvarchar`，别名只为让 C# / Java / TS 开发者一眼认得。
 >
@@ -263,8 +263,8 @@
 | 字段形态 | 是否允许 | 落地 |
 | --- | --- | --- |
 | `T[]` 且 `T` = record | ✅ **允许** | **子表**（1:N 外键反向引用 + `@Index`）—— 这是本语言**唯一**的「数组字段」 |
-| `T[]` 且 `T` = 枚举 / 标量 | ❌ **不允许** | **解析期 error**（`M0102` 同族，码位待补 §14）。标量多值请用 `BitVector` / `BitStr`（§7）或子表 |
-| 嵌套 record（值对象） | ❌ **不允许** | **解析期 error** —— 关系库里落不下（作者：「不要嵌套！」） |
+| `T[]` 且 `T` = 枚举 / 标量 | ❌ **不允许** | **解析期 error `M0301`**（码位 2026-09-26 定，原写「`M0102` 同族、待补」）。标量多值请用 `BitVector` / `BitStr`（§7）或子表 |
+| 嵌套 record（值对象） | ❌ **不允许** | **解析期 error `M0302`**（码位 2026-09-26 定）—— 关系库里落不下（作者：「不要嵌套！」） |
 
 **为什么**：M 语言的字段**只有一条落库路径**（列 / 子表），**数组没有自己的类型轴**（§11.4 `T[]` 行）——**基数是声明层的事**，`T[]` 必须先能被翻译成一张表。
 
@@ -329,15 +329,15 @@ var a = [0..20];    // range
 | `float` / `float32` / `f32` / `real` | — | — | — | — | ● | — | ● | — | `valueRange(…)` + `fixedBytes(4)` ⇒ **32 位**；**MySQL 里 `REAL` 就是 `FLOAT`** |
 | `double` / `float64` / `f64` | — | — | — | — | ● | — | ● | — | `valueRange(…)` + `fixedBytes(8)` ⇒ **64 位** |
 | `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector` ≡ `Float32Vector`） | ●（**元素个数**） | — | — | — | ○ | — | ●（**元素位宽** 32 / 64） | — | **语言层新类型（2026-09-26 定稿；Java 实现里没有）**：`MAX_LENGTH` = **元素个数**、`STORAGE_BITS` = **元素位宽 × 元素个数**；**定长值类型、不是数组 ⇒ §10 不适用**；DB 无通行原生 ⇒ 默认 `BINARY(4n)` / `BINARY(8n)` |
-| `char` / `nchar` | ●（**字符数**） | — | — | — | ○ | — | ○ | — | `maxLength(0..255，默认 10)`；**`nchar(10)` = 10 个 Unicode 字符**；**位宽 = 长度 × 每字符字节数**（由 `charset` 定，方言回答） |
-| `varchar` / `nvarchar` | ●（**字符数**） | — | — | — | ○ | — | ○ | — | `maxLength(0..65535，默认 50)`；上限交方言投影器（§6） |
+| `char` / `varchar` | ●（**字符数**） | — | — | — | ○ | — | ○ | — | `maxLength(0..4000)` —— **单字节**（每字符 1 字节）；`char` 定长 / `varchar` 变长；**上限 = 语言层声明**（§6） |
+| `nchar` / `nvarchar` | ●（**字符数**） | — | — | — | ○ | — | ○ | — | `maxLength(0..2000)` —— **Unicode**；位宽 = 长度 × 每字符字节数（由 `charset` 定，方言回答）；`string` ≡ `nvarchar(255)`（§6） |
 | `string` | ●（**字符数**，= 255） | — | — | — | — | — | — | — | ≡ `nvarchar(255)` 类型别名（B2） |
 | `BitStr` / `BitStr(n)`（文本位串） | ●（**字符数** = 位串长度） | — | — | — | — | — | ○ | — | **`BIT_STRING`(38) = `VARCHAR.as(BIT_STRING)`** ⇒ 带 `MAX_LENGTH`；`DataTypeHandler.BIT_STR`。**`BitStr(n)` 的长度 = 位串字符数（不是位数）**，也是**反查非 8 倍数 `BIT(M)` 的落点**（说明 4）；**字面量 = `b'0110'`** |
 | `BitVector(n)`（**规范名**；别名 `BitSet` / `BitArray`、后缀式 `BitVector8`…`BitVector64`） | — | — | — | — | ○ | — | ● | — | **`STORAGE_BITS` = `n` 位**（`n` 为 8 的倍数、默认 8、上限 128；**`n` 走 `STORAGE_BITS` 不走 `MAX_LENGTH`**）—— ⚠️ 现实现把位宽挂在 `maxLength(1..64，默认 1)` 上（MySQL `BIT`），**漂移，语言层纠正为 `STORAGE_BITS`**；`BitVector8`…`64` ≡ `BitVector(8)`…`BitVector(64)`（**都是位数**） |
 | `uuid` | — | — | — | — | — | — | ● | — | `STORAGE_BITS` = **128 位（逻辑）**；**DDL 默认 = `CHAR(36)`**（✔ 2026-09-26 作者：「就是个 36 位的字符串」；现实现 `CHAR.as(UUID,"CHAR(36)", fixedBytes(36))` 与此一致）、**生成默认 v7（时间有序）**；方言可改 `BINARY(16)` / `RAW(16)`；**IR 侧 = `[ubyte:16]`**（§11.5） |
 | ~~`inet4` / `inet6`~~ | — | — | — | — | ~~○~~ | — | ~~●~~ | — | **不作类型（✔ 2026-09-26 作者：「这个不作为类型，在校验器里支持即可」）** ⇒ 从类型表移除、`STORAGE_BITS` 行作废，改由**框架层校验器**（Validator 层）+ `varchar(45)` 承担（§6 / [`glossary.md`](../glossary.md)） |
 | `Date` | — | — | — | — | ● | — | ● | — | **无 `precision` 轴**（§5）：`MySQL` `fixedBytes(3)`（`1000-01-01`–`9999-12-31`）；`Oracle` `DATE` = `fixedBytes(7)`（**日期 + 秒**，无小数秒） |
-| `Time` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–9`、方言上限见 §5 表**；`MySQL`：`maxPrecision(6)` + `inBytes(3,6)` + `Time` 值域 ⇒ **24–48 位**；`PostgreSQL`：`fixedBytes(8)` + `precision(0,6)` |
+| `Time` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–7`、方言上限见 §5 表**；`MySQL`：`maxPrecision(6)` + `inBytes(3,6)` + `Time` 值域 ⇒ **24–48 位**；`PostgreSQL`：`fixedBytes(8)` + `precision(0,6)` |
 | `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–9`、方言上限见 §5 表**；`MySQL`：`DATETIME` `0–6`（5–8 B）、`TIMESTAMP` `0–6`（4–7 B）；`Oracle`：`TIMESTAMP` `0–9`（7–11 B）、`TIMESTAMP WITH TIME ZONE` `0–9`（13 B）；`PostgreSQL`：`0–6`（8 B） |
 | `blob` / `byteArray` | ●（**字节数**） | — | — | ○ | — | — | ○ | — | `BLOB` = `maxLength(65535)`；`BINARY` = `maxLength(0..255，默认 1)` —— **这里的数是字节** |
 | `clob` / `text` / `nclob` | ●（**字符数**） | — | — | ○ | — | — | — | — | `TEXT` / `LONGTEXT` = `maxLength(…)` |
@@ -358,7 +358,7 @@ var a = [0..20];    // range
 
 ✔ **2026-09-26 作者：「把它从 Java 的 enum 提到内核（语言层）」** —— 这 8 个轴现状是 **Java 私货**（`D:\2026\java\mmda-core\mmda-core-metadata\...\enums\DataTypeAttribute.java`，位标志 `1 << bit`）。**提到语言层 ⇒ 成为类型系统的一部分**：① **每个逻辑类型声明适用哪些轴**（`varchar` = `MAX_LENGTH`；`decimal` = `PRECISION` + `SCALE`；`BitVector(n)` = `STORAGE_BITS`；`identity` 字段 = `AUTO_INCR`）；② **每个方言必须逐一回答这 8 个轴**（支持 / 怎么投影 / 怎么降级）。
 
-> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。 **`PRECISION` 的语言层范围与方言上限 = §5 的小数秒精度表**（时间类 `0–9`；MySQL / PG / 达梦 `6`、SQL Server `7`、Oracle `9`、DB2 `12`）。
+> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。 **`PRECISION` 的语言层范围 = §5 表**（`Time` `0–7`；`DateTime` / `Timestamp` 等 `0–9`）；**方言上限表仅作参考**（MySQL / PG / 达梦 `6`、SQL Server `7`、Oracle `9`、DB2 `12`）。
 
 > ✔ **轴 6 由 `BYTE_RANGE` 改名 `STORAGE_BITS`，量纲 = 位（✔ 2026-09-26 作者：「`byte_range` 实际我想用 `storage_bits` 用来搞清楚底层存储，因为 bit 类型数据库的实现不一样，可能不是 8 位，`byte_range` 无法覆盖……`fixedBytes(8)` = `fixedBits(64)`，仅仅存储计量单位转换而已」）**：**轴值一律写位（bit）**，需要字节就 **÷8**（`fixedBytes(8)` ≡ `fixedBits(64)`）；**`bit` 在语言层概念里就是 1 位**，具体是 `bool` / `BIT(1)` / 达梦等哪一形态**是底层实现的事**（作者在 Java 代码里注释了各数据库官方文档参考）—— **mmda 只做转义，合适就好**（作者原话）。
 
@@ -391,7 +391,7 @@ var a = [0..20];    // range
 | `uuid` | `[ubyte:16]`（RFC 4122 字节序） | 定长、零分配；**✔ 已裁：不用 `struct{u64 low, u64 high}`**；**字节序 = RFC 4122（大端文本序）写死，进一致性用例** |
 | `blob` / `byteArray` / `ByteStream` | `vector<ubyte>` | 大文件不走 IR（[`api.md`](../api.md) §3.5：`multipart/form-data`） |
 | ~~`inet4` / `inet6`~~ | — | **不作类型**（✔ 2026-09-26 作者：「这个不作为类型，在校验器里支持即可」）⇒ 改由**框架层校验器** + `varchar(45)` 承担，**无 IR 形态**（§6 / §11.4） |
-| 枚举（`.me`） | 原生 `enum`（底层 `int8` / `int32`，取**最小能装下全部成员值**的整型） | 默认 `0 = NONE`（§12 已裁）⇒ **默认值不占数据**；**位标志枚举 = 底层整型 + 语义注释**（FlatBuffers 无 `[Flags]`） |
+| 枚举（`.m`） | 原生 `enum`（底层 `int8` / `int32`，取**最小能装下全部成员值**的整型） | 默认 `0 = NONE`（§12 已裁）⇒ **默认值不占数据**；**位标志枚举 = 底层整型 + 语义注释**（FlatBuffers 无 `[Flags]`） |
 | `T?`（可空） | **`table` 字段**（vtable 存在位 = 天然可空、零成本）；定长 `struct` 无空位 | **默认「能 table 就 table」**；只有「定长 + 全必填 + 纯值」的叶子才 `struct` |
 | `T[]`（子表） | `vector of tables`（偏移向量） | 值数组已取消（§10）⇒ 无别的分支 |
 | record（根 / 子表） | `table` | 字段名 = record 字段名（[`naming.md`](../naming.md) §1 契约名零端差异）；字段**只追加、不删不改号** |
@@ -444,13 +444,15 @@ HAS_ONE Partner(partnerId, partnerCode, partnerName) AS customer
 > ✔ **载体（2026-09-26 作者批注：「末节码表」）**：码表**放本文件末节**（不另开 `doc/diagnostics.md`）；**码位编号后一步再细化**（作者：「**诊断码后一步，我还没能搞这么细**」—— 见 §14）。
 >
 > **现文已引用的码（暂定，未定稿）**：
+> ✔ **两条已定码位（✔ 2026-09-26 作者对「数组 / 嵌套建议单独给码位（如 M03xx）」答「同意」）**：**`M0301` = 枚举 / 标量数组字段（值数组）、`M0302` = 嵌套 record（值对象）** —— **全为解析期 error**；其余码位仍后一步细化。
 
 | 码 | 含义 | 现状 |
 | --- | --- | --- |
 | `M0101` | 非法数值字面量（原八进制 `0o755` 已撤） | 暂定（§1 / §3 / §14） |
 | `M0102` | 布尔字面量非 `0` / `1` | 暂定（§2） |
 | `M0206` | 标识符与关键字同形（含 `@` 逃逸不可用） | 暂定（§1） |
+| `M0301` | **枚举 / 标量数组字段**（值数组）→ 解析期 error | ✔ 已定码位（2026-09-26）（§10） |
+| `M0302` | **嵌套 record（值对象）** → 解析期 error | ✔ 已定码位（2026-09-26）（§10） |
 | `M07xx` | 目标端表达不了的**降级**（Profile 可关；≠ 轴越界） | 区间（§11.3） |
-| （待补） | 枚举 / 标量数组字段 → 解析期 error | 待定（§10） |
 | （待补） | `BitVector(n)` 的 `n` 非 8 的倍数 / 超上限 128 | 待定（§7） |
 | （待补） | 对非空类型写 `null` / `= null` | 待定（§1 / [`statements.md`](statements.md) §2） |
