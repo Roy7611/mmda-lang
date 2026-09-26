@@ -408,3 +408,4 @@ events/**/*.mmda
 - [ide/workflow.md](../ide/workflow.md) — 六步工作流与导航
 - [errata.md](../errata.md) — 口径冲突
 - [modules.md](modules.md) — 模块树与 Role / 权限（语义篇：语义与约束、真源指针）
+- [../naming.md](../naming.md) — 标识符大小写与**三端命名契约**（**✔ 2026-09-26 作者「不搬」**：它同时管**生成代码三端命名**（`I` 前缀 / 禁 `Impl` / 契约名零端差异），性质近 [targets.md](../targets.md) ⇒ **留在 `doc/`、不并入 `doc/lang/`**；`modules.md` / `records.md` 用 `../naming.md` 反指即为此故）
