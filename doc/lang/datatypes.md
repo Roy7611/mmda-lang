@@ -155,16 +155,16 @@
 | 类型 | 说明 |
 | --- | --- |
 | `Date` | 年、月、日（**没有小数秒轴** —— `precision` 不适用） |
-| `Time` | 时、分、秒与**小数秒**；`precision` **0–7**（默认 0） |
-| `DateTime` | 日期 + 时间；`precision` **0–9**（默认 0） |
-| `DateTimeOffset` | 带 UTC 偏移；`precision` **0–9** |
-| `DateTimeZoned` | 带偏移与时区 ID；`precision` **0–9** |
-| `Timestamp` | 时间戳，**等价 `DateTime(9)`（纳秒口径）**；`precision` 0–9，默认 9 |
+| `Time` | 时、分、秒与**小数秒**；`precision` **0–6**（默认 0） |
+| `DateTime` | 日期 + 时间；`precision` **0–6**（默认 0） |
+| `DateTimeOffset` | 带 UTC 偏移；`precision` **0–6**（默认 0） |
+| `DateTimeZoned` | 带偏移与时区 ID；`precision` **0–6**（默认 0） |
+| `Timestamp` | 时间戳；`precision` **0–6**、**默认 6**（微秒口径）—— **不是独立类型，读作 `DateTime(6)`** |
 
 **时区**：本质是数据转换。**只有 `DateTimeOffset` / `DateTimeZoned` 自带偏移 / 时区**；`Date` / `Time` / `DateTime` / `Timestamp` = **服务器本地时间**（跨时区传递必须改用带偏移 / 带时区的两种，见下）。
 
 > ✔ **时区口径（✔ 2026-09-26 作者：「只有这两种带偏移和时区，其他都是存服务器本地时间」）**：**只有 `DateTimeOffset` / `DateTimeZoned` 带偏移 / 时区**；**`Date` / `Time` / `DateTime` / `Timestamp` = 服务器本地时间**（无时区语义、**不做 UTC 强制度**）；跨时区传递必须用带偏移 / 带时区的两种。助手原提案「存储一律 UTC」**撤回**（[`errata.md`](../errata.md) §五-117）。
-> ✔ **小数秒精度按语言层原稿声明（✔ 2026-09-26 作者：「别管实测」）**：**语言层照原稿** —— `Time` `0–7`、`DateTime` / `DateTimeOffset` / `DateTimeZoned` / `Timestamp` 为 `0–9`（`Timestamp` = `DateTime(9)`）；**方言实测上限只作参考、不改语言层口径**（作者原话「时间精度都是根据数据库方的描述，你可以核查一些，包括 time, datetime」→ 随后裁定「**别管实测**」）；方言表达不了 ⇒ 按 §11.3 声明降级（§11.1 / §11.3）。**下表 = 方言实测参考（2026-09-26 核查），不约束语言层** ——
+> ✔ **小数秒精度（`precision`）= 交集 `0–6`（✔ 2026-09-26 作者裁定：「**降级 0-6，timestamp 从 9 改 6**」）**：**语言层取交集 `0–6`** —— 取 MySQL / PG / 达梦 / Kingbase 的上限 `6`，**语言层不再留「方言表达不了」的降级面**（Oracle `9` / SQL Server `7` / DB2 `12` 都是**超集**、由方言自行回答）；**`Timestamp` 默认由 `9`（纳秒）改 `6`（微秒）**。**下表 = 方言上限参考** ——
 >
 > | 方言 | `Time` 小数秒 | `DateTime` / `Timestamp` 小数秒 | 出处（2026-09-26 核查） |
 > | --- | --- | --- | --- |
@@ -176,7 +176,7 @@
 > | Kingbase ES V8 | `0–6`（PG 口径） | `0–6`；Oracle 兼容模式 `0–9` | ⏳ 未取到原文（官方页分页；本仓 `KingbaseDataTypes.java` 是 stub） |
 > | DB2 | —（无 `TIME`） | `TIMESTAMP(p)` `0–12` | ⏳ 未取到原文（官方页 403） |
 >
-> **口径**：① **语言层** = `Time` `0–7`、`DateTime` / `DateTimeOffset` / `DateTimeZoned` / `Timestamp` `0–9`（**照原稿，不按方言实测改**）；② **方言上限 < 语言层** ⇒ **降级 `M07xx`（禁静默，Profile 可关）** —— 如 `DateTime(9)` 落 MySQL / PG / 达梦 = 截到 6 位；③ **`Date` 没有小数秒轴**（`precision` 只对 `Time` / `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` 有意义）；④ **默认**：`DateTime` / `Time` = `0`（秒）、`Timestamp` = `9`（纳秒口径）；⑤ **上表 = 方言参考、不约束语言层**（✔ 作者「别管实测」—— 上一稿曾据实测把语言层改成「超集 `0–9`」并抛出「超集 / 交集」⏳，**已撤回**）；⑥ **历史**：`Time` `0–7` 承 `archive/2026-06/language/types.md:57` 原稿口径；`Timestamp` `0–9` **默认 `9`** = 原稿既定（同文件 `:61`），保留。
+> **口径**：① **语言层 = `0–6`**（**交集**：MySQL / PG / 达梦 / Kingbase 的上限 6；Oracle `9` / SQL Server `7` / DB2 `12` 是超集）；② **方言上限 ≥ 语言层 ⇒ 不降级** —— **无上限 < 6 的方言，故时间精度不产生降级**（`M07xx` 不适用）；③ **`Date` 没有小数秒轴**（`precision` 只对 `Time` / `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` 有意义）；④ **默认**：`Time` / `DateTime` / `DateTimeOffset` / `DateTimeZoned` = `0`（秒）、`Timestamp` = **`6`**（微秒口径）；⑤ **上表 = 方言上限参考**；⤴ **演进留痕**：原稿 `Time 0–7` →（2026-09-26 探查方言，拟超集 `0–9`）→（作者「别管实测」回原稿）→ **（作者裁定「降级 0-6，timestamp 从 9 改 6」）最终取交集 `0–6`、`Timestamp` 默认 `6`**；⑥ **历史**：`Time` 原稿 `0–7` 出自 `archive/2026-06/language/types.md:57`（SQL Server 上限，非交集）；`Timestamp` 原稿默认 `9`（同文件 `:61`）**已被本条取代**。
 
 ---
 
@@ -337,8 +337,8 @@ var a = [0..20];    // range
 | `uuid` | — | — | — | — | — | — | ● | — | `STORAGE_BITS` = **128 位（逻辑）**；**DDL 默认 = `CHAR(36)`**（✔ 2026-09-26 作者：「就是个 36 位的字符串」；现实现 `CHAR.as(UUID,"CHAR(36)", fixedBytes(36))` 与此一致）、**生成默认 v7（时间有序）**；方言可改 `BINARY(16)` / `RAW(16)`；**IR 侧 = `[ubyte:16]`**（§11.5） |
 | ~~`inet4` / `inet6`~~ | — | — | — | — | ~~○~~ | — | ~~●~~ | — | **不作类型（✔ 2026-09-26 作者：「这个不作为类型，在校验器里支持即可」）** ⇒ 从类型表移除、`STORAGE_BITS` 行作废，改由**框架层校验器**（Validator 层）+ `varchar(45)` 承担（§6 / [`glossary.md`](../glossary.md)） |
 | `Date` | — | — | — | — | ● | — | ● | — | **无 `precision` 轴**（§5）：`MySQL` `fixedBytes(3)`（`1000-01-01`–`9999-12-31`）；`Oracle` `DATE` = `fixedBytes(7)`（**日期 + 秒**，无小数秒） |
-| `Time` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–7`、方言上限见 §5 表**；`MySQL`：`maxPrecision(6)` + `inBytes(3,6)` + `Time` 值域 ⇒ **24–48 位**；`PostgreSQL`：`fixedBytes(8)` + `precision(0,6)` |
-| `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–9`、方言上限见 §5 表**；`MySQL`：`DATETIME` `0–6`（5–8 B）、`TIMESTAMP` `0–6`（4–7 B）；`Oracle`：`TIMESTAMP` `0–9`（7–11 B）、`TIMESTAMP WITH TIME ZONE` `0–9`（13 B）；`PostgreSQL`：`0–6`（8 B） |
+| `Time` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–6`、方言上限见 §5 表**；`MySQL`：`maxPrecision(6)` + `inBytes(3,6)` + `Time` 值域 ⇒ **24–48 位**；`PostgreSQL`：`fixedBytes(8)` + `precision(0,6)` |
+| `DateTime` / `Timestamp` / `DateTimeOffset` / `DateTimeZoned` | — | ● | — | — | ● | — | ● | — | **`PRECISION` 语言层 `0–6`（`Timestamp` 默认 6）、方言上限见 §5 表**；`MySQL`：`DATETIME` `0–6`（5–8 B）、`TIMESTAMP` `0–6`（4–7 B）；`Oracle`：`TIMESTAMP` `0–9`（7–11 B，**超集**）、`TIMESTAMP WITH TIME ZONE` `0–9`（13 B）；`PostgreSQL`：`0–6`（8 B） |
 | `blob` / `byteArray` | ●（**字节数**） | — | — | ○ | — | — | ○ | — | `BLOB` = `maxLength(65535)`；`BINARY` = `maxLength(0..255，默认 1)` —— **这里的数是字节** |
 | `clob` / `text` / `nclob` | ●（**字符数**） | — | — | ○ | — | — | — | — | `TEXT` / `LONGTEXT` = `maxLength(…)` |
 | `json` / `jsonb` | ●（**字符数**） | — | — | ● | — | — | — | — | `LONGTEXT.as(JSON)`；`TYPE_HANDLER` = 序列化 / 反序列化 |
@@ -358,7 +358,7 @@ var a = [0..20];    // range
 
 ✔ **2026-09-26 作者：「把它从 Java 的 enum 提到内核（语言层）」** —— 这 8 个轴现状是 **Java 私货**（`D:\2026\java\mmda-core\mmda-core-metadata\...\enums\DataTypeAttribute.java`，位标志 `1 << bit`）。**提到语言层 ⇒ 成为类型系统的一部分**：① **每个逻辑类型声明适用哪些轴**（`varchar` = `MAX_LENGTH`；`decimal` = `PRECISION` + `SCALE`；`BitVector(n)` = `STORAGE_BITS`；`identity` 字段 = `AUTO_INCR`）；② **每个方言必须逐一回答这 8 个轴**（支持 / 怎么投影 / 怎么降级）。
 
-> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。 **`PRECISION` 的语言层范围 = §5 表**（`Time` `0–7`；`DateTime` / `Timestamp` 等 `0–9`）；**方言上限表仅作参考**（MySQL / PG / 达梦 `6`、SQL Server `7`、Oracle `9`、DB2 `12`）。
+> ✔ **四轴 = 校验托底，不只是映射提示（✔ 2026-09-26 作者：「8 轴中 `MAX_LENGTH` / `PRECISION` / `SCALE` / `VALUE_RANGE` 其实也起到 validator 的托底作用 —— 你超出这个范围，是存不进去的，或者数据库存储会自动截断」）**：这四轴是**语言层 / 元数据层的校验契约** ⇒ **越界 = 校验失败（解析 / 校验期 error），语言层绝不静默截断**；**只有「目标端表达不了」（上限更小、精度不足、无 unsigned …）才走降级**（§11.3：每端声明 + 内核 `M07xx` warning + Profile 可关）。「存不进去 / 自动截断」是**没说清降级时的坏结果，不是设计口径**。 **`PRECISION` 的语言层范围 = §5 表**（时间类 **`0–6`**，`Timestamp` 默认 `6`）；**方言上限 ≥ 6 ⇒ 不降级**（Oracle `9` / SQL Server `7` / DB2 `12` 为超集、方言自行回答）。
 
 > ✔ **轴 6 由 `BYTE_RANGE` 改名 `STORAGE_BITS`，量纲 = 位（✔ 2026-09-26 作者：「`byte_range` 实际我想用 `storage_bits` 用来搞清楚底层存储，因为 bit 类型数据库的实现不一样，可能不是 8 位，`byte_range` 无法覆盖……`fixedBytes(8)` = `fixedBits(64)`，仅仅存储计量单位转换而已」）**：**轴值一律写位（bit）**，需要字节就 **÷8**（`fixedBytes(8)` ≡ `fixedBits(64)`）；**`bit` 在语言层概念里就是 1 位**，具体是 `bool` / `BIT(1)` / 达梦等哪一形态**是底层实现的事**（作者在 Java 代码里注释了各数据库官方文档参考）—— **mmda 只做转义，合适就好**（作者原话）。
 
@@ -382,7 +382,7 @@ var a = [0..20];    // range
 | `double` / `float64` / `f64` | `double` | 64 位；三写法同义（§4） |
 | `Float32Vector(n)` / `Float64Vector(n)`（别名 `FloatVector(n)` ≡ `Float32Vector(n)`） | `vector<float>` / `vector<double>` | **元素序 = 下标 0 起、连续（写死）**；**字节序 = 小端**（FlatBuffers 格式本身即小端；大端宿主由生成代码字节交换）；见 §4（浮点向量块，✔ 已裁）|
 | `Date` | `int32`（UTC 日序） | 定长 4 字节（DB 侧的 `fixedBytes(3)` 是**存储**口径，不是 IR 口径） |
-| `Time` | `int64`（当日纳秒） | 定长、可比较 |
+| `Time` | `int64`（当日刻度，**单位随 `precision`**） | 定长、可比较 |
 | `DateTime` / `Timestamp` | `int64` epoch（单位进 schema） | **IR 走 epoch 整数**；JSON 侧仍 `string`（[`api.md`](../api.md) §3.5 已裁：可读性优先） |
 | `DateTimeOffset` / `DateTimeZoned` | `int64` epoch + `int16` 偏移（分钟） | 偏移只在有语义的类型上带（不污染 `DateTime`） |
 | `char(n)` / `varchar(n)` / `nvarchar(n)` / `string` / `clob` / `text` / `json` / `jsonb` | `string` | UTF-8；**`nvarchar` 不做区分**；长度约束由 schema 外的校验规则带（FlatBuffers 无 `maxLength`） |
