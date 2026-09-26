@@ -1,7 +1,7 @@
 # 运维与可观测性（运维篇）
 
 > 版本 0.1 · 2026-09-24 · 真源：**运维面**（标准出口协议、自动打点、DevOps 流水线、配置管理、应急处理）
-> **与相邻文档的分工**：本文管**怎么被观测、怎么被发布、怎么被应急**；[`quality.md`](quality.md) §2.3 管**指标清单与采集面**（本文不重列指标）；[`event_bus.md`](event_bus.md) §12 管**总线采集面与总线 UI**；[`runtime.md`](runtime.md) §1 管**四层运行架构**（打点位置就是它）；[`api.md`](api.md) §7 管 API 契约与对账；[`vision.md`](vision.md) §5.3 已裁「部署方式不进语言层」。
+> **与相邻文档的分工**：本文管**怎么被观测、怎么被发布、怎么被应急**；[`quality.md`](quality.md) §2.3 管**指标清单与采集面**（本文不重列指标）；[`event_bus.md`](lang/event_bus.md §12 管**总线采集面与总线 UI**；[`runtime.md`](runtime.md) §1 管**四层运行架构**（打点位置就是它）；[`api.md`](api.md) §7 管 API 契约与对账；[`vision.md`](vision.md) §5.3 已裁「部署方式不进语言层」。
 > **已裁前提（沿用，不重开）**：① **微服务 / 容器化 / 热插拔 / 高可用 = 部署方式，语言层零新增**（判据：**凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍**）；② **API 边界 = module 边界 = 权限边界 = 文档分组边界**；③ **凭据只引用不落盘**（`mmda doctor` 自检）；④ **L2 国产化矩阵**（x86_64 + aarch64；验收麒麟 V10 SP3 / 统信 UOS V20；**离线交付包** + 校验和清单）；⑤ **OWASP ASVS L1 自动化子集进 `mmda quality gate` 硬门禁**，引用必须写版本号。
 
 **作者口径（原话，2026-09-24）**：
@@ -62,7 +62,7 @@
 | **业务层监控** | **底座自动**（零打点） | `Action` 元数据 + 事件声明 | `mmda_action_total{module,action,result}`、`mmda_event_published_total{module,event}` —— **登录 / 注册 / 下单 / 支付就是 Action**，不需要程序员埋点 |
 | **应用层监控** | **底座自动** | [`runtime.md`](runtime.md) §1 四层 | API → `mmda_api_requests_total{module,endpoint,method,status}`；Service → `mmda_action_duration_seconds`；Repository → `mmda_sql_duration_seconds{module,repository,op}` + 慢查询计数；缓存 → `mmda_cache_requests_total{module,name,result}`（QPS 由 `_total` 求导） |
 | **系统层监控** | **外部采集器**（node_exporter / Zabbix agent / Categraf） | 宿主机 | **底座不管**；只要求：**同机打 `tenant` / `service` 标签** + **统一时间源（NTP）**，否则指标无法与业务指标对齐 |
-| **网络层监控** | **外部采集器**（SNMP exporter / 网关自带 Prometheus 出口 / Zabbix SNMP） | 网关、交换机、链路 | 底座只出**端点侧**：入/出端点连接数、重试次数、退避次数、积压与失败队列长度（[`event_bus.md`](event_bus.md) §12.1），**丢包率 / 错包率属网络设备，不归我们** |
+| **网络层监控** | **外部采集器**（SNMP exporter / 网关自带 Prometheus 出口 / Zabbix SNMP） | 网关、交换机、链路 | 底座只出**端点侧**：入/出端点连接数、重试次数、退避次数、积压与失败队列长度（[`event_bus.md`](lang/event_bus.md §12.1），**丢包率 / 错包率属网络设备，不归我们** |
 
 **三条可判定边界（写进运维手册）**：
 
@@ -88,7 +88,7 @@
 | 应用 | `mmda_action_duration_seconds{module,action}` | Service 层（`runtime.md` §1） |
 | 数据 | `mmda_sql_duration_seconds{module,repository,op}` · `mmda_slow_query_total{module,repository}` | Repository 层 |
 | 数据 | `mmda_cache_requests_total{module,name,result}` | 缓存横切面 |
-| 集成 | 入 / 流 / 出 / 可靠 / 租户五组 | [`event_bus.md`](event_bus.md) **§12.1**（不在此重列） |
+| 集成 | 入 / 流 / 出 / 可靠 / 租户五组 | [`event_bus.md`](lang/event_bus.md **§12.1**（不在此重列） |
 | 可靠性 | `mmda_outbox_pending` · `mmda_inbox_duplicated_total` · `mmda_dead_letter_size` | Outbox / Inbox / 失败队列（[`glossary.md`](glossary.md) §3.2.3） |
 
 **高基数铁律（会毁掉监控库的一条）**：
@@ -100,7 +100,7 @@
 ### 3.2 Logs（日志）
 
 - **结构化 JSON，一行一事件**；必带字段：`ts` · `level` · `tenant` · `module` · `traceId` · `eventId` · `endpoint` · `msg`；
-- **`eventId` 与 Outbox / Inbox 对账贯通**（[`event_bus.md`](event_bus.md) §9.2/§9.3）：日志能直接对上「这条消息到底发出去没有、是否被去重」；
+- **`eventId` 与 Outbox / Inbox 对账贯通**（[`event_bus.md`](lang/event_bus.md §9.2/§9.3）：日志能直接对上「这条消息到底发出去没有、是否被去重」；
 - **敏感字段按元数据标记脱敏**（字段标记已裁，[`api.md`](api.md) 序列化口径同源）；
 - 出口：**OTLP 优先**（§4），syslog / Kafka 为可选；**默认不落公网**。
 
@@ -208,7 +208,7 @@
 ### 7.2 定位路径（SOP：从告警到根因）
 
 1. **看采集面**：哪一层异常（客户端 / 业务 / 应用 / 数据 / 系统 / 网络）；
-2. **看失败队列与重放记录**：失败事件带来源节点 + 错误 + 尝试次数（[`event_bus.md`](event_bus.md) §9.4）；
+2. **看失败队列与重放记录**：失败事件带来源节点 + 错误 + 尝试次数（[`event_bus.md`](lang/event_bus.md §9.4）；
 3. **按 `traceId` / `correlationId` 取链路**（事件断链处用 `correlationId` 续）；
 4. **看变更**：最近一次元数据 / 生成物 / Profile 变更（漂移检测结果）；
 5. **止损**：熔断 / 限流 / 降级 / 切端点（配置项，不需要改代码）；
@@ -228,7 +228,7 @@
 | 项 | 口径 |
 | --- | --- |
 | **监控端点** | `/metrics` · `/health` · 诊断端点 **默认只绑内网 / 回环 + 必须鉴权**（ASVS L1 认证与会话 / 访问控制类目，**进硬门禁**） |
-| **多租户** | 指标带 `tenant` 标签；**查询侧隔离**；监控库不许成为跨租户数据泄露通道（与 [`event_bus.md`](event_bus.md) §10 三档一致） |
+| **多租户** | 指标带 `tenant` 标签；**查询侧隔离**；监控库不许成为跨租户数据泄露通道（与 [`event_bus.md`](lang/event_bus.md §10 三档一致） |
 | **审计** | 谁重放了事件、谁改了配置、谁看了哪个租户的指标——**重放与配置变更必须留审计** |
 | **合规** | **不采集业务明细**（§0）；敏感字段按元数据标记脱敏；**引用 OWASP ASVS 必须写版本号**（既有口径） |
 | **默认不外发** | 指标与日志**默认不出公网**；云托管监控为可选开关，需显式开启并写进交付说明 |
@@ -237,7 +237,7 @@
 
 ## 9. 多租户 / 国产化 / 离线
 
-- **多租户三档**（与 [`event_bus.md`](event_bus.md) §10 同一件事）：**A 共享采集 + `tenant` 标签**（**✔ 已裁 2026-09-24：`event_bus.md` §15-5 取 A，本条随之收口**）／ B 每租户独立监控实例 ／ C 每租户独立环境（按客户）；
+- **多租户三档**（与 [`event_bus.md`](lang/event_bus.md §10 同一件事）：**A 共享采集 + `tenant` 标签**（**✔ 已裁 2026-09-24：`event_bus.md` §15-5 取 A，本条随之收口**）／ B 每租户独立监控实例 ／ C 每租户独立环境（按客户）；
 - **国产化**：监控栈必须**可离线部署**（镜像 tar + 离线规则 / 模板文件）；采集器架构矩阵 = **x86_64 + aarch64**（与 L2 矩阵一致），**龙芯不承诺**；验收 OS（麒麟 V10 SP3 / 统信 UOS V20）上跑通即算；
 - **离线交付包附带**（✔ 已裁 2026-09-24，**2A**）：Prometheus / node_exporter / Zabbix agent 的镜像或二进制 + 官方 dashboard JSON + 规则文件——**可选启用、默认不开**（不算「内置」）；
 - **`mmda doctor`** 现四项（内核版本 / glibc / 架构 / JDK）→ **✔ 已裁 2026-09-24（7A）：扩为六项**——+ **时间源一致性**、+ **监控出口可达性**。
@@ -253,7 +253,7 @@
 | CI 输出契约（JUnit / SARIF / quality-report / diff）+ 门禁 | **P9** | Jenkins 只用 CLI 即跑通全流水线 |
 | 离线交付包 + `doctor` | **L2（已裁）** | 离线环境装得上、自检能过 |
 | 运维诊断命令 `mmda ops`（只读） | **P9**（✔ **已裁 5A：进首版**） | 采集面 / 失败队列 / 对账差异 / 生效版本四项可查 |
-| 运维 UI（壳里的运维域） | **P7**（[`ide/specification.md`](ide/specification.md)） | 与 [`event_bus.md`](event_bus.md) §12.2 同一面板规划 |
+| 运维 UI（壳里的运维域） | **P7**（[`ide/specification.md`](ide/specification.md)） | 与 [`event_bus.md`](lang/event_bus.md §12.2 同一面板规划 |
 
 > **✔ 已裁 2026-09-24（6A）**：把 **P9 扩为「一致性 + 验收 + 运维出口」**（**不新增 P11**），避免战线拉长；`mmda ops` 只读诊断随 P9 交付（5A）。
 
@@ -279,7 +279,7 @@
 ## 12. 相关
 
 - 指标清单与采集面：[`quality.md`](quality.md) **§2.3**（14 项 + 总线采集面）
-- 总线采集面与 UI：[`event_bus.md`](event_bus.md) **§12**（§12.1 指标 / §12.2 UI / §12.3 CLI·MCP）
+- 总线采集面与 UI：[`event_bus.md`](lang/event_bus.md **§12**（§12.1 指标 / §12.2 UI / §12.3 CLI·MCP）
 - 四层运行架构（打点位置）：[`runtime.md`](runtime.md) §1；拦截点 §3
 - API 契约与对账：[`api.md`](api.md) §7；序列化与字段标记（脱敏源）
 - 质量门禁与 ASVS：[`quality.md`](quality.md) §3、§3.2

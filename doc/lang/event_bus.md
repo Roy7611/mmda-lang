@@ -1,8 +1,8 @@
 # 事件总线与集成编排（底座 ESB 能力）
 
 > 版本 0.1 · 2026-09-24 · 真源：**运行时与集成面**（总线、端点、数据流编排、一致性、运维）
-> **与 [`events.md`](events.md) 的分工**：`events.md` 管**语言面**（`event` / `channel` / `subscribe` 的声明与语义）；本文管**运行时与集成面**（总线怎么装、端点怎么配、数据流怎么编、一致性怎么保、怎么监控）。`events.md` §「事件总线 / 事件流 / 事件过滤器 / 日志 / 可靠计算」几节讲的是**机制需求**，其**实现口径以本文为准**。
-> **已裁前提（沿用，不在本文重开）**：① **B3 —— 事件层由 Java / C# 各自实现底座，m 语言只抽象接口**（[`..\PLAN.md`](..\PLAN.md) §0）；② **内核（Rust）不重造总线**（`..\PLAN.md` §1.2 反面清单：「❌ 事件总线、重放、Exactly Once 由 Java/C# 底座实现」）；③ **微服务 / 容器化 / 热插拔 = 部署方式，不进语言层**（[`vision.md`](vision.md) §5.3）；④ **API 边界 = module 边界 = 权限边界 = 文档分组边界**（[`api.md`](api.md) §1.1）；⑤ **业务功能模块插件 = `module`，不新造概念**（[`runtime.md`](runtime.md) §7）。
+> **与 [`events.md`](/events.md 的分工**：`events.md` 管**语言面**（`event` / `channel` / `subscribe` 的声明与语义）；本文管**运行时与集成面**（总线怎么装、端点怎么配、数据流怎么编、一致性怎么保、怎么监控）。`events.md` §「事件总线 / 事件流 / 事件过滤器 / 日志 / 可靠计算」几节讲的是**机制需求**，其**实现口径以本文为准**。
+> **已裁前提（沿用，不在本文重开）**：① **B3 —— 事件层由 Java / C# 各自实现底座，m 语言只抽象接口**（[`..\PLAN.md`](..\PLAN.md) §0）；② **内核（Rust）不重造总线**（`..\PLAN.md` §1.2 反面清单：「❌ 事件总线、重放、Exactly Once 由 Java/C# 底座实现」）；③ **微服务 / 容器化 / 热插拔 = 部署方式，不进语言层**（[`vision.md`](../vision.md) §5.3）；④ **API 边界 = module 边界 = 权限边界 = 文档分组边界**（[`api.md`](../api.md) §1.1）；⑤ **业务功能模块插件 = `module`，不新造概念**（[`runtime.md`](../runtime.md) §7）。
 
 **作者口径（原话，2026-09-24）**：
 
@@ -23,7 +23,7 @@
 | --- | --- |
 | 不做中心化服务注册 + 治理 ESB（传统 XML 总线那一套） | 端点从 module 边界**推导**，注册表是**产物**；真源仍是项目目录 |
 | 不把集成逻辑写进语言语法 | 判据（已裁）：**凡能从 module / 数据模型 / 权限推导出来的，语言里不许再声明一遍**；编排是**新增信息**，落**图与配置**，不落核心语法（§7.2） |
-| 不让外部工具（YApi / Apifox / Swagger / Postman collection）成为真源 | 已裁（[`api.md`](api.md) §7）：**外部 collection 不进真源**，只作**消费者与对账对象** |
+| 不让外部工具（YApi / Apifox / Swagger / Postman collection）成为真源 | 已裁（[`api.md`](../api.md) §7）：**外部 collection 不进真源**，只作**消费者与对账对象** |
 | 不承诺「零代码覆盖一切」 | 目标是**覆盖率指标**（§3），有明确的**必须写代码**清单（§3.3） |
 | 不在 Rust 内核里实现运行时 | 内核只产**契约与 IR**；装载与执行在各端底座（§4.3） |
 
@@ -35,19 +35,19 @@
 
 | 层 | 是什么 | 谁定义 | 形态 |
 | --- | --- | --- | --- |
-| **Event** 事件 | **业务上「发生了一件事」**——语言层可声明、可建模、可被业务方读懂 | m 语言的 `event` 声明（[`events.md`](events.md) §「事件 M 语言声明」） | 事件名 + Type + Timestamp + Source + Lifecycle + Payload 投影 |
+| **Event** 事件 | **业务上「发生了一件事」**——语言层可声明、可建模、可被业务方读懂 | m 语言的 `event` 声明（[`events.md`](/events.md §「事件 M 语言声明」） | 事件名 + Type + Timestamp + Source + Lifecycle + Payload 投影 |
 | **Message** 消息 | **传输单元**——总线只认它（Spring Integration 的 `Message` = **Header + Payload**，本文沿用该结构，不自造） | 运行时：由事件**投递时生成** | Header（`messageId` / `eventId` / `tenant` / `correlationId` / `traceId` / `occurredAt` / `contentType` / `delivery` / `retryCount`）+ Payload |
-| **Data** 数据 | **载荷本体**——就是数据模型里的字段值（含映射后的外部形态） | 元数据：Record / View / Enum（[`records.md`](records.md)） | JSON / 行集 / 文件块 / 设备帧 |
+| **Data** 数据 | **载荷本体**——就是数据模型里的字段值（含映射后的外部形态） | 元数据：Record / View / Enum（[`records.md`](/records.md） | JSON / 行集 / 文件块 / 设备帧 |
 
 **关键不变量**：
 
 1. **事件是业务语义，消息是部署语义**：同一个事件可以被多个 Channel 投递成多条消息（不同协议、不同 payload 投影）——**事件与消息是 1:N**，作者原话「事件会发送消息，消息附带数据 Payload」正是这个意思。
-2. **Payload 是数据模型的投影**，不是手写 DTO：投影字段来自 `payload { ... }` 子句（已裁：不造 DTO 概念，见 [`api.md`](api.md) §1）。
+2. **Payload 是数据模型的投影**，不是手写 DTO：投影字段来自 `payload { ... }` 子句（已裁：不造 DTO 概念，见 [`api.md`](../api.md) §1）。
 3. **幂等键 = `eventId`**：所有汇端（`EventSink`）的幂等都靠它，**这是 exactly-once 口径的落点**（§9.3）。
 
 ### 1.1 术语统一（先读这一节，别让名字骗了你）
 
-**命名真源 = [`glossary.md`](glossary.md) §3.1**（作者 2026-09-24 裁：认同 `Validator` / `Converter` / `Filter` / `Aggregator` / `Endpoint` / `Channel` / `EventSource`；**「我不用 Transformer，免得与那个 AI 的 Transformer 架构混淆」**）。本节只讲**这些名字站在流的哪个位置**：
+**命名真源 = [`glossary.md`](../glossary.md) §3.1**（作者 2026-09-24 裁：认同 `Validator` / `Converter` / `Filter` / `Aggregator` / `Endpoint` / `Channel` / `EventSource`；**「我不用 Transformer，免得与那个 AI 的 Transformer 架构混淆」**）。本节只讲**这些名字站在流的哪个位置**：
 
 ```
 EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ EventSink
@@ -70,7 +70,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | Spring 的 `Message Channel` / Kafka Topic | **Channel（通道）** | 队列/主题只是它的**投递语义**，不另立概念 |
 | ETL 的「映射 / 转换规则」 | **DataMapper（数据映射器）** | 它是**配置面**（数据映射图），**不是节点**——配给 Converter / Validator 用 |
 
-> ⚠️ **四对最容易混的概念另见 [`glossary.md`](glossary.md) §3.2**：`publish/subscribe` ↔ `produce/consume`（业务可见性 vs 传输拿走）、`channel` ↔ `pipe`（我们只用 Channel）、`inbound/outbound` ↔ **`inbox/outbox`**（方向 vs 落库的机构）、`stream`。
+> ⚠️ **四对最容易混的概念另见 [`glossary.md`](../glossary.md) §3.2**：`publish/subscribe` ↔ `produce/consume`（业务可见性 vs 传输拿走）、`channel` ↔ `pipe`（我们只用 Channel）、`inbound/outbound` ↔ **`inbox/outbox`**（方向 vs 落库的机构）、`stream`。
 
 ---
 
@@ -81,8 +81,8 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | 类 | 一句话 | 典型场景 | 载体（既有机制） | 真源落点 |
 | --- | --- | --- | --- | --- |
 | **数据集成** | **基础数据同步**：表 → 表，少逻辑、要准 | 主数据下发（物料 / 客户 / 组织）到各车间库；车间产出回总部 | 数据模型 + 映射 + `@trigger`；外部库走 DB/CDC 端点 | `data/models/*.mm` + DataFlow 图 |
-| **流程集成** | **事件流带数据**：状态变化驱动下一步 | 到货 → 质检 → 上架；设备动作完成 → 报工 | `event` / `channel` / `subscribe`（[`events.md`](events.md)）+ ModuleFlow | `flow/*.mf` + 图 |
-| **接口集成** | **接口调用**：编排外部/内部 API | 缺料时调供应商/集团 ERP 的物料接口；调用外部物流轨迹 | [`api.md`](api.md) 的端点（内部）+ 外部端点适配器 | API 契约 + DataFlow 图 |
+| **流程集成** | **事件流带数据**：状态变化驱动下一步 | 到货 → 质检 → 上架；设备动作完成 → 报工 | `event` / `channel` / `subscribe`（[`events.md`](/events.md）+ ModuleFlow | `flow/*.mf` + 图 |
+| **接口集成** | **接口调用**：编排外部/内部 API | 缺料时调供应商/集团 ERP 的物料接口；调用外部物流轨迹 | [`api.md`](../api.md) 的端点（内部）+ 外部端点适配器 | API 契约 + DataFlow 图 |
 
 三者**共用同一套运行时**（通道、状态、重试、监控），差别只在**节点类型**（`Data` 节点 / `Event` 节点 / `Call` 节点，§7.3）——这是「一套东西」而不是三个子产品的原因。
 
@@ -92,7 +92,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 ### 3.1 「80% 配置化」怎么算
 
-口径与 [`quality.md`](quality.md) §3.1（业务可测指标，**只进报告不进硬门禁**）一致：
+口径与 [`quality.md`](../quality.md) §3.1（业务可测指标，**只进报告不进硬门禁**）一致：
 
 | 指标 | 定义 | 首版目标 |
 | --- | --- | --- |
@@ -103,7 +103,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 ### 3.2 内部/外部端点的「配置」含义不同（重要）
 
-- **内部端点**：**零配置**——module 边界 + `expose` 一裁，端点自动成立（[`api.md`](api.md) §1.1）。
+- **内部端点**：**零配置**——module 边界 + `expose` 一裁，端点自动成立（[`api.md`](../api.md) §1.1）。
 - **外部端点**：**要配置**——地址、协议、认证、映射、对账。
 - **结论**：覆盖率的分母主要是**外部端点**（内部端点是白送的）。这也是「减少集成成本」的真实战场。
 
@@ -139,11 +139,11 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 
 ### 4.2 与既有四层运行架构的关系
 
-[`runtime.md`](runtime.md) §1 的四层（Controller / Service / Repository / 缓存）**不变**，总线**不插进业务调用链**，而是**围绕它**：
+[`runtime.md`](../runtime.md) §1 的四层（Controller / Service / Repository / 缓存）**不变**，总线**不插进业务调用链**，而是**围绕它**：
 
 - **发布**：Service 提交事务时写 **Outbox**（同库同事务），由投递器发到 Channel（§9.2）——**业务代码不感知总线**。
-- **订阅**：总线回调 Service / Handler（生成接口 + KEEP 区实现，[`events.md`](events.md) §3）。
-- **拦截点**：`after*`（提交后、幂等）是**业务内**的钩子；消息投递是**跨进程**的，二者**不许互相冒充**（[`runtime.md`](runtime.md) §3 事务边界已裁：跨进程后「事务夹在 before/after 中间」不成立）。
+- **订阅**：总线回调 Service / Handler（生成接口 + KEEP 区实现，[`events.md`](/events.md §3）。
+- **拦截点**：`after*`（提交后、幂等）是**业务内**的钩子；消息投递是**跨进程**的，二者**不许互相冒充**（[`runtime.md`](../runtime.md) §3 事务边界已裁：跨进程后「事务夹在 before/after 中间」不成立）。
 
 ### 4.3 三层职责（谁拥有什么）
 
@@ -151,7 +151,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | --- | --- | --- | --- |
 | **语言/契约层（内核）** | 事件、通道、订阅、端点、数据流的**声明与语义**；IR；OAS/AsyncAPI 产物；校验 | **不实现运行时**（不连库、不发消息） | 已裁：内核不重造总线（`..\PLAN.md` §1.2） |
 | **执行层（底座）** | 装载、连接、投递、重试、状态、检查点、监控埋点 | **不定义语义**（语义以 IR 为准） | B3：两端各自实现、接口由生成器产出 |
-| **配置面（Profile）** | 环境相关：地址、凭据引用、并发、批次、保留期 | **不进语言真源** | 同一份设计跑多环境（[`project.md`](project.md) 多租户 / Profile 口径） |
+| **配置面（Profile）** | 环境相关：地址、凭据引用、并发、批次、保留期 | **不进语言真源** | 同一份设计跑多环境（[`project.md`](/project.md 多租户 / Profile 口径） |
 
 ---
 
@@ -172,7 +172,7 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 ### 5.2 两个硬事实（决定了选型不能是「直接选 Flink」）
 
 1. **Flink 的运行时是 JVM 集群**，官方只有 Java/Scala 与 Python 面，**没有 .NET/C# 实现** → 若把 Flink 定为**底座唯一引擎**，**C# 底座就没有对应实现**，直接违反已裁的 **B3（Java / C# 各自实现底座，m 只抽象接口）**，也违背你做 mmda-lang 的初衷（**统一 Java 与 C# 底座的接口方式**）。
-2. **我们的底座是「随业务系统部署的库」，不是独立集群**：Flink 需要 JobManager/TaskManager 集群 + 检查点存储（HDFS/S3 类），而 MMDA 的交付形态是**应用自带底座**（[`vision.md`](vision.md) §5.3）。**把 Flink 塞进每个业务系统是不现实的**；反过来，**没有状态与时间语义的进程内框架**（Spring Integration 那一档）又给不了你要的 Watermark / Window / Exactly-once。
+2. **我们的底座是「随业务系统部署的库」，不是独立集群**：Flink 需要 JobManager/TaskManager 集群 + 检查点存储（HDFS/S3 类），而 MMDA 的交付形态是**应用自带底座**（[`vision.md`](../vision.md) §5.3）。**把 Flink 塞进每个业务系统是不现实的**；反过来，**没有状态与时间语义的进程内框架**（Spring Integration 那一档）又给不了你要的 Watermark / Window / Exactly-once。
 
 ### 5.3 裁决：**借 Flink 的语义，不绑 Flink 的运行时**
 
@@ -191,10 +191,10 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | **State** | 算子本地状态（去重集、会话、累计量） | 底座库表 / Redis；键 = `tenant + flowId + key` |
 | **Event Time** | 事件发生时间（`event.Timestamp`），**不是处理时间** | 由 Header `occurredAt` 承载 |
 | **Watermark** | 「时间已到哪」的推进标记 | 由调度器按 `max(occurredAt) - allowedLateness` 推进（迟到阈值可配） |
-| **Window** | 滚动 / 滑动 / 会话窗（限流、聚合、超时判定） | 调度器 + 状态表实现；事件过滤器「限流」即滚动窗（[`events.md`](events.md) 已提） |
+| **Window** | 滚动 / 滑动 / 会话窗（限流、聚合、超时判定） | 调度器 + 状态表实现；事件过滤器「限流」即滚动窗（[`events.md`](/events.md 已提） |
 | **Checkpoint** | 状态快照 | 增量快照到状态表（记录偏移与去重键水位） |
 | **Exactly-once** | **口径见 §9.3**（状态 exactly-once + 汇端幂等） | Outbox + 幂等键 + 状态快照 |
-| **Backpressure / 失败队列** | 反压与死信 | 通道水位 + 失败队列 + 重放（[`events.md`](events.md) §可靠计算） |
+| **Backpressure / 失败队列** | 反压与死信 | 通道水位 + 失败队列 + 重放（[`events.md`](/events.md §可靠计算） |
 
 ---
 
@@ -212,11 +212,18 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 | **外部端点** | 外部系统的接口/表/文件/消息 | **要配**（地址、认证、映射、重试、对账） | 集团 ERP 物料接口、供应商 WebService、车间 PLC/OPC-UA、Kafka、FTP |
 | **底座端点** | 平台内置的源与汇 | 少量 | 定时器（Tick）、本地库表、文件、邮件/短信/钉钉（已有通知器可复用）、SignalR |
 
-**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / **`kind`（实现）** 与 **Connector（端点的实现：内置或插件提供，如 Kafka / RabbitMQ / OPC-UA / HTTP / 文件）** / 方向（**入端点｜出端点**——**入/出是方向，不是 Inbox/Outbox**，辨析见 [`glossary.md`](glossary.md) §3.2.3）/ 协议 / 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
+**端点契约（每个端点必须声明，缺项即校验失败）**：`id` / **`kind`（实现）** 与 **Connector（端点的实现：内置或插件提供，如 Kafka / RabbitMQ / OPC-UA / HTTP / 文件）** / 方向（**入端点｜出端点**——**入/出是方向，不是 Inbox/Outbox**，辨析见 [`glossary.md`](../glossary.md) §3.2.3）/ 协议 / **端序 `byteOrder`**（**连接层**声明，见下方 ✔ 块；默认 `little`）/ 地址与凭据**引用**（引用环境变量或密钥库，**明文口令不得入库**——与仓治理同口径）/ 数据形态（`record`｜`view`｜`json`｜`rowset`｜`file`）/ **幂等键**（默认 `eventId`）/ 超时 / 重试与退避 / 限流 / 熔断 / 保留期 / `lifecycle`。
+
+> ✔ **端序（`byteOrder`）—— 连接层声明，语言层不设端序轴（2026-09-26 定稿，作者「同意」）**：作者原话：「**关于字节序的小端大端，windows 和 linux 是不是就不一样？这个怎么平台无关，例如 flatbuffers 怎么规定的？我在 iot 和 plc 数据采集的程序中其实是定义了对方的字节序的**」⇒ **裁定**：
+>
+> - **语言层 / 类型系统不设端序轴**（8 轴不含、不加）：端序是**通道 / 存储实现**的事，不是「值」的事。我们的 **IR / 线上 / 存储格式一律写死小端**（与 FlatBuffers / protobuf 同口径，落 [`datatypes.md`](/datatypes.md §11.5），**大端宿主由生成代码在边界字节交换**（FlatBuffers 的 `EndianScalar`）⇒ **「平台无关」= 规定一个 wire order + 边界转换**，不靠 native endian（**Windows / Linux 不是分界**：x86 / x64 / ARM64 在两家 OS 上都是小端；大端是 CPU 架构的事 —— s390x、部分 PPC / MIPS）。
+> - **外部协议的端序 = 端点的 `byteOrder` 声明**（就是本节的契约字段），落在 **Connector 配置**上；`mmda import` 从设备 / 协议声明读 —— **不许猜、不许静默**（猜错 = 数据全错且无报错）。
+> - **三条实证（为什么不能写死在类型里）**：**Modbus / S7 = 大端**、**OPC UA 二进制编码 = 小端**（方向相反）；且 Modbus 的 32 / 64 位值**字序有四种**（按厂家）：`ABCD`（大端字序）/ `CDAB`（字交换）/ `BADC`（字节交换）/ `DCBA`（小端字序）—— **同一个寄存器值，不同设备的组合顺序不同**。
+> - **三件事分开**：**位序**（`BitVector` LSB-first，语言层已定）/ **元素序**（`Float32Vector` 下标 0 起，语言层已定）/ **端序**（本节，连接层）。
 
 **边界（已裁，别越）**：
 
-- **✔ 已裁 2026-09-24（§15-2 取 B）**：外部端点的定义**反向导入成语言声明**——走的是 [`api.md`](api.md) §6 已裁的同一条路：**先出导入报告 + 骨架、人审后入真源**。与「外部 collection 不进真源」**不冲突**：外部工具里的 collection **本身仍不是真源**，进真源的只有**人审通过的导入结果**；外部系统的变化**不自动跟随**，靠**再导入 + `mmda diff`** 跟进。对账口径不变（`api.md` §7：导出 ✅ / 逆向导入 ✅ / **回写 ❌** / 对账 ✅）；
+- **✔ 已裁 2026-09-24（§15-2 取 B）**：外部端点的定义**反向导入成语言声明**——走的是 [`api.md`](../api.md) §6 已裁的同一条路：**先出导入报告 + 骨架、人审后入真源**。与「外部 collection 不进真源」**不冲突**：外部工具里的 collection **本身仍不是真源**，进真源的只有**人审通过的导入结果**；外部系统的变化**不自动跟随**，靠**再导入 + `mmda diff`** 跟进。对账口径不变（`api.md` §7：导出 ✅ / 逆向导入 ✅ / **回写 ❌** / 对账 ✅）；
 - 内部端点**不许**在端点配置里「再声明一遍」——它由 module 推导，配置只能调**暴露开关与限流**这类环境参数。
 
 ---
@@ -240,12 +247,12 @@ EventSource ──▶ Channel ──▶ Processor ──▶ Channel ──▶ Ev
 - **`.mf`（Meta Flow）= 数据流（DataFlow）**：一个文件一份数据流编排；其 `*.mf.g` **多 sheet** = **`mf-flow`（节点图）· `mf-dfd`（数据流图）· `mf-map`（数据映射图）**；
 - **`.mb`（Meta BPMN）= 跨模块流程**：BPMN **从 `.mf.g` 的一个 sheet 升格为独立文件类型**，投影 `*.mb.g`（sheet `mb-bpmn`）。
 
-`flow/` 目录不变（`roles/` · `converters/` · `*.mf` · `*.mb`）；`.g` 族扩为 **`{ma, mm, ms, mf, mb}`**（见 [`project.md`](project.md) §1.1–§1.2、[`ide/graph-files.md`](ide/graph-files.md) §2 / §4.5 / §6）。
-**语言层新增 = 0**：`event` / `channel` / `subscribe` 已能声明（[`events.md`](events.md)）；编排属于**元数据图**（可推导的部分零声明，编排是新增信息，落图不落语法）。
+`flow/` 目录不变（`roles/` · `converters/` · `*.mf` · `*.mb`）；`.g` 族扩为 **`{ma, mm, ms, mf, mb}`**（见 [`project.md`](/project.md §1.1–§1.2、[`ide/graph-files.md`](../ide/graph-files.md) §2 / §4.5 / §6）。
+**语言层新增 = 0**：`event` / `channel` / `subscribe` 已能声明（[`events.md`](/events.md）；编排属于**元数据图**（可推导的部分零声明，编排是新增信息，落图不落语法）。
 
 ### 7.3 节点类型（算子清单，收敛到标准词汇）
 
-| 类 | 节点（统一名，见 [`glossary.md`](glossary.md) §3.1） | 说明 | 外部对应词（**只作对照，不进 MMDA 文档**） |
+| 类 | 节点（统一名，见 [`glossary.md`](../glossary.md) §3.1） | 说明 | 外部对应词（**只作对照，不进 MMDA 文档**） |
 | --- | --- | --- | --- |
 | 入口 | **EventSource（事件源）** | 流从这里开始；`kind` = 设备源 · 定时源 · 回调源 · 库变更源 · 文件源 · 消息源 · 进程内事件源 | Flink `Source` / SI `Inbound Adapter` |
 | 处理 | **Validator** · **Converter** · **Filter** · **Aggregator** | 作者认同的四类算子；**Converter 覆盖字段映射/换算/格式/计算**（配置面 = DataMapper） | Flink `Transformation` / SI `Transformer`·`Filter`·`Aggregator` |
@@ -277,7 +284,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 - 图**编译成 IR 的数据流**（内核产出，执行层装载）——图与代码同源，**改图即改运行**；
 - 每个节点有 **ID + 血缘**（进出字段级），失败与监控**定位到节点**（§12）；
-- **子流程**（`SubFlow`）可复用：跨模块的一致性补偿链就是一个 SubFlow（[`runtime.md`](runtime.md) 事务传播：跨模块走事件补偿）。
+- **子流程**（`SubFlow`）可复用：跨模块的一致性补偿链就是一个 SubFlow（[`runtime.md`](../runtime.md) 事务传播：跨模块走事件补偿）。
 
 ---
 
@@ -287,12 +294,12 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 | 算子类 | 输入 | 输出 | 首版能力 |
 | --- | --- | --- | --- |
-| **校验** Validate | 上游字段 | 通过 / 拦截（报错项 + 定位） | 必填、类型、长度、枚举、正则、跨字段约束（复用 [`records.md`](records.md) 约束关键字） |
+| **校验** Validate | 上游字段 | 通过 / 拦截（报错项 + 定位） | 必填、类型、长度、枚举、正则、跨字段约束（复用 [`records.md`](/records.md 约束关键字） |
 | **过滤** Filter | 行/消息 | 通过 / 丢弃（可计数） | 条件表达式（纯函数） |
 | **转换** Transform | 字段值 | 新值 | 单位换算、编码映射、日期格式、枚举映射、拆合字段、JSON ↔ 行集 |
 | **计算** Compute | 多字段 | 计算结果 | 四则、聚合、表达式（复用 `@Computed` 的表达式层） |
 
-**硬约束**：参与事件重放与存储下推的表达式**必须是纯函数**（无 IO、无随机、无隐式时间依赖）——已裁（[`readme.md`](readme.md) §2 原则 7、[`events.md`](events.md) 纯度要求）。
+**硬约束**：参与事件重放与存储下推的表达式**必须是纯函数**（无 IO、无随机、无隐式时间依赖）——已裁（[`readme.md`](../readme.md) §2 原则 7、[`events.md`](/events.md 纯度要求）。
 
 **映射图 = 字段级可 diff 的资产**：一进一出两个形态（本地 Record ↔ 外部报文），中间是映射规则；对外部报文用 **JSON Schema / XSD** 描述（**✔ 已裁 2026-09-24，§15-7 取 A：可含外部报文形态**，外部形态**不进语言真源**，作适配资产）。
 
@@ -314,7 +321,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 2. 事务提交后，**投递器**扫 outbox → 发到 Channel → 标记已投递（**至少一次**）；
 3. 消费端按 **`eventId` 幂等**去重。
 
-这样「**after\* 提交后幂等**」的既有裁决（[`runtime.md`](runtime.md) §3）与总线**天然咬合**，业务代码不感知总线。
+这样「**after\* 提交后幂等**」的既有裁决（[`runtime.md`](../runtime.md) §3）与总线**天然咬合**，业务代码不感知总线。
 
 ### 9.3 Exactly-once 的现实口径（要写清楚，别吹）
 
@@ -326,11 +333,11 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **汇端（外部系统）** | **最多到「至少一次 + 幂等」** | 外部系统支持事务/幂等键时用 `TwoPhaseCommit` 语义（Flink 的 `TwoPhaseCommitSinkFunction` 是参照）；否则必须要求对方提供幂等键，**否则只能人工对账** |
 | **端到端**（**✔ 已裁 §15-4 取 A：只写这一档，不吹全链**） | **「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once** | 不承诺「任何外部系统都 exactly-once」——这是物理限制，不是实现偷懒 |
 
-**把两个词记牢（辨析见 [`glossary.md`](glossary.md) §3.2.3）**：**Outbox 保「不丢」（发），Inbox 保「不重」（收）**。发侧的唯一正解是 §9.2 的 Outbox；**收侧对应物是 Inbox（去重表）**——按 `eventId` 落行、重复即丢。两者相加才是上表最后一行那句「业务上的 exactly-once」，**只有一个都不成立**。
+**把两个词记牢（辨析见 [`glossary.md`](../glossary.md) §3.2.3）**：**Outbox 保「不丢」（发），Inbox 保「不重」（收）**。发侧的唯一正解是 §9.2 的 Outbox；**收侧对应物是 Inbox（去重表）**——按 `eventId` 落行、重复即丢。两者相加才是上表最后一行那句「业务上的 exactly-once」，**只有一个都不成立**。
 
 ### 9.4 失败与重放
 
-**失败队列（Dead Letter）+ 重放**是硬需求（[`events.md`](events.md) §回调和处理结果）：失败事件带**来源节点 + 错误 + 尝试次数**，支持 ①自动重试（退避）② 丢弃（记审计）③ **人工重放**（重放前校验前提条件，重放走同一幂等键）。
+**失败队列（Dead Letter）+ 重放**是硬需求（[`events.md`](/events.md §回调和处理结果）：失败事件带**来源节点 + 错误 + 尝试次数**，支持 ①自动重试（退避）② 丢弃（记审计）③ **人工重放**（重放前校验前提条件，重放走同一幂等键）。
 
 ---
 
@@ -344,21 +351,21 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **B 每租户独立作业** | 数据流按租户实例化，配额与限流按租户 | 中 | 大客户可选 |
 | **C 每租户独立运行环境** | 独立库/独立进程（信创私有化常见） | 高 | 私有化交付时用 |
 
-**必须在首版就做对的**（否则后期改不动）：① 每条消息 Header **必带 `tenant`**；② 状态与幂等键**都以 `tenant` 为前缀**；③ 通道/端点/映射的**命名空间按租户**；④ **插件装载按租户**（租户 A 的插件不许影响租户 B）——与 [`runtime.md`](runtime.md) §9-8（插件隔离级别）**同一个待裁项**，别开两个口子。
+**必须在首版就做对的**（否则后期改不动）：① 每条消息 Header **必带 `tenant`**；② 状态与幂等键**都以 `tenant` 为前缀**；③ 通道/端点/映射的**命名空间按租户**；④ **插件装载按租户**（租户 A 的插件不许影响租户 B）——与 [`runtime.md`](../runtime.md) §9-8（插件隔离级别）**同一个待裁项**，别开两个口子。
 
 ---
 
 ## 11. 插件与扩展点（作者原话：借助插件体系增加扩展点，发布事件）
 
-插件**就是业务功能模块插件**（已裁，[`runtime.md`](runtime.md) §7），总线给它的扩展点是**三类**：
+插件**就是业务功能模块插件**（已裁，[`runtime.md`](../runtime.md) §7），总线给它的扩展点是**三类**：
 
 | 扩展点 | 插件里是什么 | 清单声明示例 |
 | --- | --- | --- |
 | **Connector**（源/汇） | 自定义端点实现（私有协议、行业设备） | `capabilities: ["bus.connector", "io.net"]` |
 | **Function**（算子） | 自定义校验收/转换器（**纯函数**，可进映射图） | `capabilities: ["bus.function"]` |
-| **Panel**（运维面板） | 总线监控的自定义面板（如设备看板） | `capabilities: ["ide.panel"]`，见 [`ide/plugins.md`](ide/plugins.md) §10 |
+| **Panel**（运维面板） | 总线监控的自定义面板（如设备看板） | `capabilities: ["ide.panel"]`，见 [`ide/plugins.md`](../ide/plugins.md) §10 |
 
-**发布事件**：插件在自己 module 内 `Publish` 事件**无需特权**（就是跨 module 调用的一种）；**订阅他人事件**按权限授予（scope）——与「插件不许改他人数据模型」同一条硬约束（[`runtime.md`](runtime.md) §7.3）。
+**发布事件**：插件在自己 module 内 `Publish` 事件**无需特权**（就是跨 module 调用的一种）；**订阅他人事件**按权限授予（scope）——与「插件不许改他人数据模型」同一条硬约束（[`runtime.md`](../runtime.md) §7.3）。
 
 **红线（沿用已裁口径）**：插件**不许**写语言文件（内核按后缀拒绝 + 审计）、不许成为第二真源、校验只出 `warning`/`suggestion`。
 
@@ -366,9 +373,9 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ## 12. 可观测性与 UI（作者原话：入/出可监控、有日志、有自己的 UI）
 
-> **运维面（标准出口协议、DevOps 流水线、配置管理、应急处理）见 [`operations.md`](operations.md)**；本节只讲**总线自己的采集面与面板**。
+> **运维面（标准出口协议、DevOps 流水线、配置管理、应急处理）见 [`operations.md`](../operations.md)**；本节只讲**总线自己的采集面与面板**。
 
-### 12.1 指标（进 [`quality.md`](quality.md) §2.3 运行期指标族）
+### 12.1 指标（进 [`quality.md`](../quality.md) §2.3 运行期指标族）
 
 | 面 | 指标 |
 | --- | --- |
@@ -386,11 +393,11 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **端点管理** | 外部端点配置、连通性测试、凭据引用状态 |
 | **运行监控** | 上述指标看板 + 按租户下钻 |
 | **失败队列与重放** | 失败事件列表（节点定位 + 错误 + Payload 预览）、单条/批量重放、审计留痕 |
-| **对账** | 与外部系统的契约快照比对差异（[`api.md`](api.md) §7 对账面） |
+| **对账** | 与外部系统的契约快照比对差异（[`api.md`](../api.md) §7 对账面） |
 
 ### 12.3 CLI / MCP
 
-`mmda bus list|endpoints|stats|trace|replay|dead-letter`；MCP 侧同名工具（按 [`ai/tools.md`](ai/tools.md) 风格，AI 可读监控、**重放属写操作需确认**）。
+`mmda bus list|endpoints|stats|trace|replay|dead-letter`；MCP 侧同名工具（按 [`ai/tools.md`](../ai/tools.md) 风格，AI 可读监控、**重放属写操作需确认**）。
 
 ---
 
@@ -402,7 +409,7 @@ EventSource(到货事件 WMS.GoodsArrived)
 | 集成逻辑写在总线里（黑盒、不可 diff） | 集成逻辑是**图**（`*.mf.g`），与设计同源、**可 diff 可评审可回滚** |
 | 映射靠拖拽，产物是平台私有的 | 映射是**字段级资产**，与数据模型同源 |
 | 数据模型另建一份 | **同一份元数据**：数据模型、API、事件、UI 都从它推导 |
-| 与开发体系割裂 | 生成物进你们自己的仓库 + KEEP 区协议（[`readme.md`](readme.md) §7） |
+| 与开发体系割裂 | 生成物进你们自己的仓库 + KEEP 区协议（[`readme.md`](../readme.md) §7） |
 
 ---
 
@@ -414,25 +421,26 @@ EventSource(到货事件 WMS.GoodsArrived)
 | **P9** | 一致性套件加**事件维度**（跨端事件一致性）+ 总线指标进质量报告 | 指标可采、可报告 |
 | **P10**（新，可选） | `RuntimeProfile.engine = flink` 可选后端 + C# 桥接 | 真实 IOT 场景压测达标后再开 |
 
-**依赖**：P8 依赖 P4（IR + 宿主加载）与 P6（代码生成出 Handler 接口）；**总线不是 P8 从零开始**——C# 侧有既有实现可对齐（`IEvent.cs` / `IEventBus.cs` / `IEventHub.cs` / `ISignalREventHub.cs` / `RedisEventHub.cs` / `EventLogger.cs`，见 [`contracts-inventory.md`](contracts-inventory.md) §4），**Java 侧是真空白**（`mmda-core-messaging` 36 个文件全是通知发送器：钉钉/邮件/短信/电话/微信/Push）。
+**依赖**：P8 依赖 P4（IR + 宿主加载）与 P6（代码生成出 Handler 接口）；**总线不是 P8 从零开始**——C# 侧有既有实现可对齐（`IEvent.cs` / `IEventBus.cs` / `IEventHub.cs` / `ISignalREventHub.cs` / `RedisEventHub.cs` / `EventLogger.cs`，见 [`contracts-inventory.md`](../contracts-inventory.md) §4），**Java 侧是真空白**（`mmda-core-messaging` 36 个文件全是通知发送器：钉钉/邮件/短信/电话/微信/Push）。
 
 ---
 
-## 15. ✔ 已裁（2026-09-24，**9 条全部已裁**）
+## 15. ✔ 已裁（2026-09-24，**9 条全部已裁**；**⤴ 2026-09-26 追加第 10 条**）
 
 > 作者原话：「**1A, 2B, 4A, 5A, 6A,7A,8C, 9A端点是要在API的基础上增加定义数据的转化、过滤规则的**」；第 3 条先回「**3 待定**」，随后另给方案：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」——**9 条至此全部收口**。
 
 | # | 议题 | 裁决（2026-09-24） | 落点 |
 | --- | --- | --- | --- |
 | 1 | **执行层引擎**（本文最重） | **1A**：**内嵌轻量执行器**（语义逐条对齐 Flink）——随应用部署；`flink` 集群留 **P10** 口子；**第三方消息框架（C）不做** | §5.3、§9.1 |
-| 2 | **外部端点的定义存哪** | **2B**：**反向导入成语言声明**（**与 2A 相对的取法**）。口径见 §6：外部工具里的 collection **仍不是真源**，进入真源只走**单向反向导入（报告 + 骨架 + 人审后入库）**那条已被 API 契约裁定的路；导入后的端点声明**是语言层产物**，外部系统变化靠**再导入 + diff** 跟进（**不自动跟随**） | §6、[`api.md`](api.md) §6 |
-| 3 | **数据流的图元落点** | **✔ 已裁（2026-09-24，作者另给方案）**：**扩展名职责重划**——**`.mf` = 数据流（DataFlow，含节点图 / DFD / 数据映射图，靠 `*.mf.g` 多 sheet）**；**跨模块流程（BPMN）另立 `.mb`（+ `*.mb.g`）**。作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」。**比原选项更明确**：既没有新增 `.mx`，也不是「只放 Profile」——而是**把两种流程拆成两个文件类型** | §7.2、[`project.md`](project.md) §1.2、[`ide/graph-files.md`](ide/graph-files.md) §4.5 |
+| 2 | **外部端点的定义存哪** | **2B**：**反向导入成语言声明**（**与 2A 相对的取法**）。口径见 §6：外部工具里的 collection **仍不是真源**，进入真源只走**单向反向导入（报告 + 骨架 + 人审后入库）**那条已被 API 契约裁定的路；导入后的端点声明**是语言层产物**，外部系统变化靠**再导入 + diff** 跟进（**不自动跟随**） | §6、[`api.md`](../api.md) §6 |
+| 3 | **数据流的图元落点** | **✔ 已裁（2026-09-24，作者另给方案）**：**扩展名职责重划**——**`.mf` = 数据流（DataFlow，含节点图 / DFD / 数据映射图，靠 `*.mf.g` 多 sheet）**；**跨模块流程（BPMN）另立 `.mb`（+ `*.mb.g`）**。作者原话：「**我想把 `.mf` 给数据流图用，跨模块流程 `.mb`**」。**比原选项更明确**：既没有新增 `.mx`，也不是「只放 Profile」——而是**把两种流程拆成两个文件类型** | §7.2、[`project.md`](/project.md §1.2、[`ide/graph-files.md`](../ide/graph-files.md) §4.5 |
 | 4 | **端到端一致性承诺写到哪一档** | **4A**：**「状态 exactly-once + 汇端幂等」= 业务上的 exactly-once**（诚实档）；不宣称全链、不止步于至少一次 | §9.3 |
-| 5 | **多租户隔离档** | **5A**：**共享执行 + 租户键**（`tenant` 进 Header、状态与幂等键带租户前缀、命名空间按租户）；**B / C 按客户**（大客户与私有化交付时用）。**本条的裁决同时收口了 [`operations.md`](operations.md) §9 的同一三档** | §10、[`operations.md`](operations.md) §9 |
+| 5 | **多租户隔离档** | **5A**：**共享执行 + 租户键**（`tenant` 进 Header、状态与幂等键带租户前缀、命名空间按租户）；**B / C 按客户**（大客户与私有化交付时用）。**本条的裁决同时收口了 [`operations.md`](../operations.md) §9 的同一三档** | §10、[`operations.md`](../operations.md) §9 |
 | 6 | **水位线与迟到数据默认策略** | **6A**：**迟到进侧输出 / 迟到队列**（可配丢弃或补算），水位线 = `max(occurredAt) − allowedLateness` | §9.1 |
 | 7 | **数据映射可否含外部报文形态** | **7A**：**可含**（JSON Schema / XSD），作**适配资产**、**不进语言真源** | §7.2 / §8 |
-| 8 | **Sink 的正式名** | **8C**：**`EventSink`**（与 `EventSource` 对称，作者未采纳助手建议的 8A）。**用法纪律**：契约、生成物与正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字，不是我们的概念） | [`glossary.md`](glossary.md) §3.1、§1.1 / §7.3 |
-| 9 | **「端点」的限定规则** | **9A**：**HTTP 接口写「API / 接口」、集成连接写「端点」**（强调时「集成端点」）；**并补一层实义**（作者原话）——「**端点是要在 API 的基础上增加定义数据的转化、过滤规则的**」→ **端点 = API + 集成定义**（转化 / 过滤 / 投递方式 / 触发与重试），**不改 API 的业务语义** | §6、[`glossary.md`](glossary.md) §3.1 |
+| 8 | **Sink 的正式名** | **8C**：**`EventSink`**（与 `EventSource` 对称，作者未采纳助手建议的 8A）。**用法纪律**：契约、生成物与正文首次出现一律 `EventSink`；**引用 Flink / Kafka 官方词时保留 `Sink`**（那是它们的名字，不是我们的概念） | [`glossary.md`](../glossary.md) §3.1、§1.1 / §7.3 |
+| 9 | **「端点」的限定规则** | **9A**：**HTTP 接口写「API / 接口」、集成连接写「端点」**（强调时「集成端点」）；**并补一层实义**（作者原话）——「**端点是要在 API 的基础上增加定义数据的转化、过滤规则的**」→ **端点 = API + 集成定义**（转化 / 过滤 / 投递方式 / 触发与重试），**不改 API 的业务语义** | §6、[`glossary.md`](../glossary.md) §3.1 |
+| 10 | **端序（`byteOrder`）的归属** | **✔ 已裁（2026-09-26，作者「同意」）**：**语言层 / 类型系统不设端序轴**；**IR / 线上 / 存储写死小端**（大端宿主边界字节交换）；**外部协议的端序 = 端点的 `byteOrder` 声明**（`little` 默认｜`big`｜`wordSwap(ABCD / CDAB / BADC / DCBA)`）—— 作者在 IoT / PLC 采集程序里「定义对方字节序」的既有实践升为**声明式配置**；**三件事分开**：位序 / 元素序 / 端序 | §6、[`datatypes.md`](/datatypes.md §4 / §11.5、[`errata.md`](../errata.md) §五-114 |
 
 **与既有待裁的交叉**：`runtime.md` §9-8（**插件隔离级别**）**已裁**（首版进程内 + 命名空间与冲突检测），与本文 §10 的多租户隔离档**不是同一件事**（一个管进程内外、一个管数据面），**两条现已各自收口**。商业条款（分成 / 伙伴分级）不进技术契约。
 
@@ -440,12 +448,12 @@ EventSource(到货事件 WMS.GoodsArrived)
 
 ## 16. 相关
 
-- [`events.md`](events.md) — **语言面真源**：事件声明、订阅语义、失败队列需求（机制实现以本文为准）
-- [`runtime.md`](runtime.md) — 四层职责、**事务边界**（§3）、拦截点（§4）、**业务功能模块插件**（§7）、待裁（§9）
-- [`api.md`](api.md) — API 契约、OAS 3.1.0 原生、**与外部工具单向互动**（§7）、待裁清单（§8.2）
-- [`statements.md`](statements.md) / [`records.md`](records.md) — STM、`@trigger`、约束关键字（DataMapper 复用）
-- [`ide/diagrams.md`](ide/diagrams.md) §4 / [`ide/graph-files.md`](ide/graph-files.md) §4.5 — DFD 语义映射与 `*.mf.g` / `*.mb.g` 多 sheet
-- [`ide/specification.md`](ide/specification.md) §4.8 域 6 — 业务流程建模域（BPMN / DFD / 映射）
-- [`ide/plugins.md`](ide/plugins.md) §10 — 扩展点清单；[`quality.md`](quality.md) §2.3 / §3.1 — 运行期指标与业务指标
-- [`contracts-inventory.md`](contracts-inventory.md) §4 — 两端消息与集成能力实测（**C# 有、Java 无**）
-- [`vision.md`](vision.md) §5.3 — 部署方式口径（微服务 / 容器化 / 高可用只是部署支持）；`..\PLAN.md` §4 — 阶段计划
+- [`events.md`](/events.md — **语言面真源**：事件声明、订阅语义、失败队列需求（机制实现以本文为准）
+- [`runtime.md`](../runtime.md) — 四层职责、**事务边界**（§3）、拦截点（§4）、**业务功能模块插件**（§7）、待裁（§9）
+- [`api.md`](../api.md) — API 契约、OAS 3.1.0 原生、**与外部工具单向互动**（§7）、待裁清单（§8.2）
+- [`statements.md`](/statements.md / [`records.md`](/records.md — STM、`@trigger`、约束关键字（DataMapper 复用）
+- [`ide/diagrams.md`](../ide/diagrams.md) §4 / [`ide/graph-files.md`](../ide/graph-files.md) §4.5 — DFD 语义映射与 `*.mf.g` / `*.mb.g` 多 sheet
+- [`ide/specification.md`](../ide/specification.md) §4.8 域 6 — 业务流程建模域（BPMN / DFD / 映射）
+- [`ide/plugins.md`](../ide/plugins.md) §10 — 扩展点清单；[`quality.md`](../quality.md) §2.3 / §3.1 — 运行期指标与业务指标
+- [`contracts-inventory.md`](../contracts-inventory.md) §4 — 两端消息与集成能力实测（**C# 有、Java 无**）
+- [`vision.md`](../vision.md) §5.3 — 部署方式口径（微服务 / 容器化 / 高可用只是部署支持）；`..\PLAN.md` §4 — 阶段计划

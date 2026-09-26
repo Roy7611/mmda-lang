@@ -88,7 +88,7 @@ flowchart TB
 | 文档 | 用途 |
 |------|------|
 | [architect/specification.md](architect/specification.md) | Architect 工具规格 |
-| [architect/meta-model.md](architect/meta-model.md) | 元模型定义 |
+| [architect/meta-model.md](../../lang/meta-model.md | 元模型定义 |
 | [architect/project-format.md](architect/project-format.md) | 项目目录结构 |
 | [language/](language/overview.md) | M语言 |
 | [legacy/](legacy/README.md) | 旧版 Java/DDL 补充（非 SSOT） |

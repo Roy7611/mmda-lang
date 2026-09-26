@@ -82,4 +82,4 @@ var c = a as Point?;    // 声明中的 as 是别名；此处为转换
 ## 10. 相关
 
 - [types.md](types.md)
-- [records.md](records.md)
+- [records.md](../../../lang/records.md

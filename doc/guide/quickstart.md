@@ -1,7 +1,8 @@
 # 快速上手
 
 > 本文是**上手入口**：先看五阶段全貌（§0），再以仓库示例 **`examples/mmda-mes`** 走一遍（§1–§6），最后是**配置面速查（§7）**、**载荷形态（§8）**、**定制点全景（§9）**与**常见坑（§12）**——后四节来自 2023 版《MMDA 快速上手》用户手册，是可上手的既有约定。
-> 元模型定义见 [meta-model.md](../meta-model.md)，勿与 Legacy 导入混淆；旧手册与本篇的差异见 [legacy/README.md](../legacy/README.md)。
+> 元模型定义见 [meta-model.md](../lang/meta-model.md，勿与 Legacy 导入混淆；旧手册与本篇的差异见 [legacy/README.md](../legacy/README.md)。
+> **定位（作者 2026-09-26 裁定）**：本文与 `guide/` 其余各篇是**程序员视角的开发手册（非语言规范）** —— 只讲「照着怎么做」；**语言定义以 `doc/` 各规范篇为准**（[`../records.md`](../lang/records.md / [`../datatypes.md`](../lang/datatypes.md / [`../statements.md`](../lang/statements.md…），两者冲突以规范篇为准。
 
 ---
 
@@ -14,7 +15,7 @@
 | 阶段 | 谁做 | 做什么 | 产物 | 真源 |
 | --- | --- | --- | --- | --- |
 | **S1 意图** | 业务 + 架构师（AI 辅助；**人类参与最多**） | 解决 **why / what**：三层需求 → SERU 四要素；**在需求阶段识别关键用户（Role）**；**定 UAT（验收准则，可执行）** | SRS / 用例、**Role 清单**、**可执行 UAT** | [requirements.md](../requirements.md)、[workflows.md](../workflows.md) |
-| **S2 建模** | **架构师 + 设计师**（图形化工具；AI 起草）+ **程序员**（KEEP 区） | 解决 **how**：① 功能模块分解 + Action ② 数据结构设计（类 / E-R / 枚举 / STM）③ 元数据生成与修改（五视图、字段呈现、Flow / DataFlow / BPMN）④ **原型自动生成**（`mmda generate`：三端产物 + DDL + 接口骨架 + TS 类型，「跑起来看看」）⑤ 逻辑代码实现（GENERATED 区外的 KEEP 区 / `handlers/`） | `.mmda` 项目 + 声明（`intents/**`、`models/**`）+ `generated/` + `handlers/` | [meta-model.md](../meta-model.md)、[presentation.md](../presentation.md)、[runtime.md](../runtime.md) §9、[targets.md](../targets.md)（P5–P6） |
+| **S2 建模** | **架构师 + 设计师**（图形化工具；AI 起草）+ **程序员**（KEEP 区） | 解决 **how**：① 功能模块分解 + Action ② 数据结构设计（类 / E-R / 枚举 / STM）③ 元数据生成与修改（五视图、字段呈现、Flow / DataFlow / BPMN）④ **原型自动生成**（`mmda generate`：三端产物 + DDL + 接口骨架 + TS 类型，「跑起来看看」）⑤ 逻辑代码实现（GENERATED 区外的 KEEP 区 / `handlers/`） | `.mmda` 项目 + 声明（`intents/**`、`models/**`）+ `generated/` + `handlers/` | [meta-model.md](../lang/meta-model.md、[presentation.md](../lang/presentation.md、[runtime.md](../runtime.md) §9、[targets.md](../targets.md)（P5–P6） |
 | **S3 验收** | **人定标准 + 审核；AI 跑与诊断** | 测试与验证：用例从声明**机械生成**、AI 造数（人审）、三端一致性、覆盖率与变异、**UAT 全绿 + 验收单签字** | 用例 + 基线 + 覆盖率 + 验收单 + 质量报告 | [testing.md](../testing.md)、[quality.md](../quality.md) §5、[targets.md](../targets.md) §5 |
 | **S4 交付** | 框架 + 交付负责人 | 交付物与部署：离线交付包 + `mmda doctor` 自检 + 版本与交付清单（**每轮迭代可追溯、可回滚**） | 生成物 / 镜像 / `SHA256SUMS` / 版本清单 | [workflows-phase.md](../workflows-phase.md) §3.5、[vision.md](../vision.md) §5.2.1 |
 
@@ -77,7 +78,7 @@ examples/mmda-mes/
 
 Feature 必须绑定 Record；Action 写在 `data/stms/*.ms`，与 Module 的 `stm:` 引用一致。
 
-**编号即导航路径**：`M.01.032` = 子系统字母 + 两级序号；旧版手册的写法（`H` 人力资源 → `H.02` 组织人事 → `H.02.003` 职员）是同一套约定，**模块编码同时决定菜单顺序**。**Action 是 Feature 上的操作**，例如职员模块的 `promote`（升职）/ `leave`（离职）/ `dismiss`（辞退），属性见 [meta-model.md](../meta-model.md) §9。
+**编号即导航路径**：`M.01.032` = 子系统字母 + 两级序号；旧版手册的写法（`H` 人力资源 → `H.02` 组织人事 → `H.02.003` 职员）是同一套约定，**模块编码同时决定菜单顺序**。**Action 是 Feature 上的操作**，例如职员模块的 `promote`（升职）/ `leave`（离职）/ `dismiss`（辞退），属性见 [meta-model.md](../lang/meta-model.md §9。
 
 ## 4. 数据库设计也是入口之一（DDL 注释 → `.m`）
 
@@ -105,7 +106,7 @@ CREATE TABLE `department` (
 | `AS (…expr…) STORED` | 计算列 | `computed` + `formula` |
 | 索引名 `IDX_<表>_<列>` | 索引命名建议（不硬约束） | 见 [naming.md](../naming.md) §3.3 |
 
-> 完整对照表（含多租户 ID 位分配、与 M 语言互转表、逆向流程图）见 [legacy/import-from-ddl.md](../legacy/import-from-ddl.md)。`.m` 里的写法见 [records.md](../records.md) 与 [datatypes.md](../datatypes.md)。
+> 完整对照表（含多租户 ID 位分配、与 M 语言互转表、逆向流程图）见 [legacy/import-from-ddl.md](../legacy/import-from-ddl.md)。`.m` 里的写法见 [records.md](../lang/records.md 与 [datatypes.md](../lang/datatypes.md。
 
 ## 5. 编写 M语言（片段）
 
@@ -122,7 +123,7 @@ record Bom {
 }
 ```
 
-语法详见 [records.md](../records.md)、[statements.md](../statements.md)。
+语法详见 [records.md](../lang/records.md、[statements.md](../lang/statements.md。
 
 ## 6. 命令
 
@@ -148,7 +149,7 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 
 ## 7. 元数据配置面速查（设计期最常改的都在这里）
 
-**Field（元列）**——存储语义（[meta-model.md](../meta-model.md) §4）与呈现语义（[presentation.md](../presentation.md) §2）**分离**：
+**Field（元列）**——存储语义（[meta-model.md](../lang/meta-model.md §4）与呈现语义（[presentation.md](../lang/presentation.md §2）**分离**：
 
 | 属性 | 管什么 | 典型值 |
 | --- | --- | --- |
@@ -160,8 +161,8 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 | `fixedFilter` | **子类型/视图固定过滤**：在列表视图上呈现为**顶端页签**，习惯用状态字段（如「组建中 / 运作中 / 已关闭」） | Record 级属性 |
 | `formatter` / `align` / `renderer` / `editor` / `placeholder` | 只读格式化（`D` 日期、`N3` 三位小数）、对齐（`0` 左 / `1` 右 / `2` 居中）、只读呈现器、编辑控件（`dropdown` / `searchBox` / `numberInput`）、占位符 | UiField 侧；`fieldName` **可跨 Record 复用、自动生成勿手改** |
 
-**关系**（[meta-model.md](../meta-model.md) §4.3 / §5）：`@Ref`（外键 + 显示值对象，**无导航**，小表走缓存，UI 默认 dropdown）↔ `@One`（**有导航属性**，UI 默认 searchBox）↔ `@Many`（子表/子网格）；**同一个外键列因关系类型不同会生成不同的 UiField，呈现可以不一样**。
-一对多关系是**手写的一等声明**（旧版是库里的一个字符串，见 [meta-model.md](../meta-model.md) §5），属性含连接条件 `joinOn`（`remoteKey=@localKey`）、**UI 布局顺序**（`relationIdx`，对应旧版手册的 `relationIdx`）、显示标题（`label`）、`defaultFilter` / `defaultSort`、加载策略（`eager`/`lazy`）。
+**关系**（[meta-model.md](../lang/meta-model.md §4.3 / §5）：`@Ref`（外键 + 显示值对象，**无导航**，小表走缓存，UI 默认 dropdown）↔ `@One`（**有导航属性**，UI 默认 searchBox）↔ `@Many`（子表/子网格）；**同一个外键列因关系类型不同会生成不同的 UiField，呈现可以不一样**。
+一对多关系是**手写的一等声明**（旧版是库里的一个字符串，见 [meta-model.md](../lang/meta-model.md §5），属性含连接条件 `joinOn`（`remoteKey=@localKey`）、**UI 布局顺序**（`relationIdx`，对应旧版手册的 `relationIdx`）、显示标题（`label`）、`defaultFilter` / `defaultSort`、加载策略（`eager`/`lazy`）。
 
 **多租户**：`partitionKey` 指向带 `@Partitioned` 的主键列（**完整 ID = 高 28 位 tenantId（27 位有效）+ 低 36 位 realId**；✔ 2026-09-25 改正，原写「高 16 位 / 低 48 位」是旧布局残留）；**物理表分区**（`partitioned`）时按当前租户生成分区内查询以优化性能，未分区时用 `id BETWEEN minID AND maxID` 隔离；**应为租户内唯一键（`uniqueKey`）建索引**。
 
@@ -179,8 +180,7 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
   "gender": "MALE",
   "workDeptID": "812349029233108",
   "workDepartment": { "deptID": "812349029233108", "deptName": "采购部" },
-  "techTitleID": 1205,
-  "customProperties": { "$gender": "男", "$techTitleID": "经济师" }
+  "techTitleID": 1205
 }
 ```
 
@@ -189,7 +189,8 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 | **大整数 → 字符串** | `BIGINT` 超 JS 安全整数范围时以 `string` 传输（`"empID": "812349029222309"`），**精度优先**（[api.md](../api.md) §3.5） |
 | **枚举按名** | `gender` 序列化为 `"MALE"`（枚举成员名 `UPPER_SNAKE`，见 [naming.md](../naming.md) §1） |
 | **`@One` → 嵌套对象** | 一对一导航变成对象属性（`workDepartment`） |
-| **`@Ref` / 枚举的显示标签** | 放 `customProperties.$<字段名>`（**不污染主字段类型**，且随 locale 变） |
+| **`@Ref` / 枚举的显示标签** | **⤴ 2026-09-26 修订：不再随载荷下发** —— 原 `customProperties.$<字段名>` 形态**取消**；**业务载荷只有语义值**（枚举 = 成员名、`@Ref` = 外键值）；**`label` 走词条**（按 locale 分片）、**`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：**走不了词条**）；**`description` 连 JSON 都不进**（另存 comments 层） |
+| **呈现信息一律不进载荷** | `label` / `description` / `color` / `icon` **不逐条下发**（✔ 2026-09-26 作者：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」）；**`description` 连元数据 JSON 都不进**（另存 comments 层，只进 `mmda doc` / IDE）。**✔ 2026-09-26 已裁**：① **`label` / `color` / `icon` 走词条（Model i18n）通道，按用户 locale 只下发一份** —— 作者：「**通常一个用户习惯用一种语言，下发那个 locale 即可**」，**不做多 locale 并存的元数据**；② **服务端组装作废**：旧实现 `assembleEnumProperties`（作者口语 `assembleEnums`）把枚举显示文本写进实体影子属性并打 `ASSEMBLE_ENUM` 标记 —— **再也不用**（`D:{java} EntityRepository.java:411`、`DomainService.java:330/343`，见 [`legacy/runtime-java.md`](legacy/runtime-java.md)）；③ **引用数据（`@Ref` / `@One`）的国际化 = 数据层的事**：作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **引用表按 locale 分行存储，查询按用户 locale 取那一行**，载荷里只有 FK / 嵌套对象，**不组装标签、不新增机制**（视图仍可自由声明字段，那不是本裁定的要求）。 |
 
 ---
 
@@ -202,7 +203,7 @@ cargo run -p mmda-cli -- unpack dist/mmda-mes.mmdax -o ./mmda-mes-restored
 | **后端** | 生命周期钩子（**封闭枚举**） | `beforeSave` / `beforeInsert` / `beforeValidate` / `validate` / `beforeDelete` … 与 `afterSaved` / `afterInserted` / `afterDeleted` …；`before*` 在事务内、`after*` 在提交后（**`after*` 必须幂等**）——见 [runtime.md](../runtime.md) §3–§4、[architecture-review.md](../architecture-review.md) ARCH-109 |
 | **前端（mmda-vue）** | `UiLogic` 视图钩子 | `beforeIndex`（列表）/ `beforeEdit`（编辑）/ `beforeDetails`（详情）/ `beforeSearch`（查询）；每个视图返回该视图的字段与交互逻辑。**⚑ 前端工程的目录与文件划分（`src/modules/*_logic.ts` / `*_view.ts` / `*_listview.ts` 等）不是规范内容**（✔ 2026-09-24 裁），属 mmda-vue 项目内部约定——规范只保证 `MetaUi` |
 | **前端** | 字段级 API | `lockIf`（条件锁定）、`hideIf` / `hideIfEmpty`（条件隐藏）、`onChange`（联动清值）、`onValidate`（关联校验，默认已有 required / maxLength / 类型校验）、`requiredIf`（条件必填，`onValidate` 的快捷方式） |
-| **前端** | 视图级替换 | `setCustomEditor(...)` / `setCustomRenderer(...)`（替换生成的标准编辑/呈现控件；皮肤内部的自由，见 [presentation.md](../presentation.md) §5.1） |
+| **前端** | 视图级替换 | `setCustomEditor(...)` / `setCustomRenderer(...)`（替换生成的标准编辑/呈现控件；皮肤内部的自由，见 [presentation.md](../lang/presentation.md §5.1） |
 
 参考实现摘要见 [legacy/runtime-java.md](../legacy/runtime-java.md) §UiLogic 钩子；语言侧的声明形态待裁（[errata.md](../errata.md) §三-20）。
 

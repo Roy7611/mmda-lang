@@ -13,4 +13,4 @@
 
 ## 旧版教程对照
 
-早期快速上手以 **HRM Employee** 为主线（`mmda meta hrm` → `mmda java/vui hrm`）。新规范等价流程见 [guide/quickstart.md](../guide/quickstart.md)（**mmda-mes** 示例）。概念（MetaObject、REF/HAS_ONE、ModuleAction）已并入 [meta-model.md](../meta-model.md)。
+早期快速上手以 **HRM Employee** 为主线（`mmda meta hrm` → `mmda java/vui hrm`）。新规范等价流程见 [guide/quickstart.md](../guide/quickstart.md)（**mmda-mes** 示例）。概念（MetaObject、REF/HAS_ONE、ModuleAction）已并入 [meta-model.md](../lang/meta-model.md。

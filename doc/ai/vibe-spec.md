@@ -91,5 +91,5 @@ Draw.io 等可作附件，但必须回写到 SSOT。
 ## 7. 相关
 
 - [tools.md](tools.md)
-- [../project.md](../project.md)
+- [../project.md](../lang/project.md
 - [../readme.md](../readme.md)

@@ -1,7 +1,7 @@
 ﻿# UiField 与表单呈现
 
 UiField 描述字段在**列表/详情/编辑**场景的呈现方式，与 Field 的存储语义分离。  
-Field 上的 `groupLabel`、`listed`、`filterable`、`hidden` 见 [meta-model.md](../architect/meta-model.md#4-field元列--metacol)。
+Field 上的 `groupLabel`、`listed`、`filterable`、`hidden` 见 [meta-model.md](../../../lang/meta-model.md。
 
 ## MetaUiField 属性
 

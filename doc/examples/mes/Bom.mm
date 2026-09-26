@@ -2,7 +2,7 @@
 record Bom {
     /// BOM标识
     @Partitioned [10000,0x000F_FFFF]
-    bomId uint64 identity generated readonly hidden,
+    bomId int64 identity generated readonly hidden,
     /// BOM类型: 0;PRIMARY;主配方|1;ALTERNATE;替代配方|2;VARIANT;变种配方
     bomType BomType default 0,
     /// 配方组: 变种和替代配方都属于同一组BOM
@@ -16,13 +16,13 @@ record Bom {
     bomUsage BomUsage default 2,
     /// 工程项目: HAS_ONE Project(projectID,projectNo,projectName)
     @One Project(projectId,projectNo,projectName)
-    projectId uint64? indexed,
+    projectId int64? indexed,
     /// 制品标识: 定制产品一开始为空，审核后自动生成关联的materialID
     @Ref base.Material(materialId,materialFullName)
-    productId uint64? indexed,
+    productId int64? indexed,
     /// 制品类别: HAS_ONE base.MaterialCat(categoryID,categoryName) AS productCategory
     @One base.MaterialCat(categoryId,categoryName) as productCategory
-    productCategoryId uint64? indexed,
+    productCategoryId int64? indexed,
     /// 制品图片
     @Thumbnail
     productPic varchar(255)?,
@@ -51,15 +51,15 @@ record Bom {
     expirationDays int16?,
     /// 工艺文档: HAS_ONE Doc(docID,docNo)
     @One Doc(docId,docNo)
-    docId uint64? indexed,
+    docId int64? indexed,
     /// 生效日期
     validFrom date readonly,
     /// 限用工厂: REF Plant(plantID,plantCode,plantName)
     @Ref Plant(plantId,plantName)
-    plantId uint64? indexed,
+    plantId int64? indexed,
     /// 工艺路线: HAS_ONE Routing(routingID,routingCode,routingName)
     @One Routing(routingId,routingCode,routingName)
-    routingId uint64? indexed,
+    routingId int64? indexed,
     @State BomApproval
     /// 状态: 0;NEW;新|1;DRAFTED;已起草|2;CERTIFIED;已审核|4;APPROVED;已批准|5;REVISING;变更中|-1;ABANDONED;已弃用
     status BomStatus default 0 indexed readonly,
@@ -74,34 +74,34 @@ record Bom {
     /// 修订版本
     revision int32? default 0 readonly,
     /// 修改日志标识: 引用ChangeLog.logID
-    changeLogId uint64? readonly hidden,
+    changeLogId int64? readonly hidden,
     /// 创建部门: REF Department(deptID,deptName)
     @Ref base.Department(deptId,deptName)
-    deptId uint64? indexed readonly,
+    deptId int64? indexed readonly,
     /// 创建人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    creatorId uint64? indexed readonly,
+    creatorId int64? indexed readonly,
     /// 创建日期
     createDate timestamp? default now readonly,
     /// 修改人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    lastModifierId uint64? indexed readonly,
+    lastModifierId int64? indexed readonly,
     /// 最后修改
     lastModified timestamp? default now readonly,
     /// 负责部门: REF Department(deptID,deptName)
     @Ref base.Department(deptId,deptName)
-    ownerDeptId uint64? indexed readonly,
+    ownerDeptId int64? indexed readonly,
     /// 负责人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    ownerId uint64? indexed readonly,
+    ownerId int64? indexed readonly,
     /// 基于BOM
-    refBomId uint64? readonly,
+    refBomId int64? readonly,
     /// 引用名称: 例如工作包
     refName varchar(30)? readonly hidden,
     /// 引用单号: 例如工作包任务号
     refNo varchar(32)? readonly hidden,
     /// 引用标识
-    refId uint64? readonly hidden,
+    refId int64? readonly hidden,
     /// 引用序号
     refItemId int16? readonly hidden,
     @Many

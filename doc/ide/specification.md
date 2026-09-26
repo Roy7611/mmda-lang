@@ -27,7 +27,7 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 ### 3.1 目标
 
 - 图形 + 文本双通道编辑，**SSOT 为 MMDA 项目**（默认展开目录；可选 `.mmdax` 归档包交换）
-- 支持 L1/L2/L3 三层元模型（见 [meta-model.md](../meta-model.md)）
+- 支持 L1/L2/L3 三层元模型（见 [meta-model.md](../lang/meta-model.md）
 - 内置校验器（命名、关系、状态机、类型映射）
 - 可插拔 **Codegen Profile** 生成多语言/多栈原型
 - **Design Change Log**：每次保存可回溯、可撤销
@@ -129,17 +129,17 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 | # | 建模域 | 随想录的要求 | 现状 | 缺口 / 待裁 |
 | --- | --- | --- | --- | --- |
 | 1 | **系统模块分解** | 即 SERU 的 `S`：系统逻辑架构图 + 层级菜单 | 模块三级树、功能架构图（[`workflow.md`](workflow.md) 第 1 步、[`../design-notes.md`](../design-notes.md)） | 层级菜单是**声明**还是**投影**？（待裁） |
-| 2 | **组织架构建模** | 图形化输入组织架构图、岗位矩阵图，导入职员清单；用**最佳实践/标杆模板**加速建模 | 旧实现有「岗位」概念（`design-notes.md` 的 `H.02.002 岗位`）、`flow/roles/*.mr` | **✔ 已裁（2026-09-24）两层分治**：**Role（关键用户）是语言元素、与 Module 分解同级**（需求阶段识别关键用户 → 架构设计时 Role 与 Module 同等重要，[`../meta-model.md`](../meta-model.md) §8.1）；**组织架构 / 岗位 / 职员是「数据」**（普通 `Record` + 关系，部门树 / 岗位 / 任职，**不新增元模型元素**），是角色的实例来源。设计器提供图形化输入（组织架构图 / 岗位矩阵图）与职员清单导入，**产物是数据模型文件**。余：**岗位 → Role 的映射规则**待裁（一个岗位可对应多个 Role） |
+| 2 | **组织架构建模** | 图形化输入组织架构图、岗位矩阵图，导入职员清单；用**最佳实践/标杆模板**加速建模 | 旧实现有「岗位」概念（`design-notes.md` 的 `H.02.002 岗位`）、`flow/roles/*.mr` | **✔ 已裁（2026-09-24）两层分治**：**Role（关键用户）是语言元素、与 Module 分解同级**（需求阶段识别关键用户 → 架构设计时 Role 与 Module 同等重要，[`../meta-model.md`](../lang/meta-model.md §8.1）；**组织架构 / 岗位 / 职员是「数据」**（普通 `Record` + 关系，部门树 / 岗位 / 任职，**不新增元模型元素**），是角色的实例来源。设计器提供图形化输入（组织架构图 / 岗位矩阵图）与职员清单导入，**产物是数据模型文件**。余：**岗位 → Role 的映射规则**待裁（一个岗位可对应多个 Role） |
 | 3 | **业务对象建模** | 元数据编辑，**针对模块小范围**定义局部数据模型（ER 图） | E-R 图 ↔ AST 双向、`data/models/**`（§4.3、[`diagrams.md`](diagrams.md) §2） | 局部（模块级）ER 与全局 ER 的合并规则 |
-| 4 | **业务主题建模** | 为 BI 提供数据源；**枚举可定义为维度，生成固定维度模型** | 呈现层五视图（[`../presentation.md`](../presentation.md)） | **✔ 方向已裁（2026-09-24）：BI 要有元数据、架构师要能建模**（本域属元模型）；**`MetaBiCube` 族目前只在 C# 侧且不成熟 → 回填语言的具体形态「容后再议」**。可先落：枚举 → 维度 |
+| 4 | **业务主题建模** | 为 BI 提供数据源；**枚举可定义为维度，生成固定维度模型** | 呈现层五视图（[`../presentation.md`](../lang/presentation.md） | **✔ 方向已裁（2026-09-24）：BI 要有元数据、架构师要能建模**（本域属元模型）；**`MetaBiCube` 族目前只在 C# 侧且不成熟 → 回填语言的具体形态「容后再议」**。可先落：枚举 → 维度 |
 | 5 | **给模块设置数据模型** | 首页过滤器、展现器（Index、Report、Dashboard、CRUD） | 五视图（list/form/…）、Feature 绑定 | 「首页过滤器 / 展现器」与「视图」是不是同一件事？需要一个主人（待裁） |
-| 6 | **业务流程建模** | ① 图形化输入 BPMN，选输入数据源、转换器、映射、事件、任务节点与输出；② 节点任务与事件**生成代码、插件式加载**；③ 角色由岗位生成；④ Action 串联模块间数据流（DFD）；⑤ 给数据模型设状态机，**流程自动改模型状态** | ① `flow/*.mf` + DFD/BPMN 多 sheet（[`diagrams.md`](diagrams.md) §4、[`graph-files.md`](graph-files.md) §4.5）；② KEEP 区 + 插件（[`plugins.md`](plugins.md)）；④⑤ STM 与 Converter（[`../statements.md`](../statements.md)、[`../events.md`](../events.md)）；⑥ **数据流编排（底座 ESB）** = [`../event_bus.md`](../event_bus.md) §7（节点图 / 数据流图 / 数据映射图三张图；拟在 `*.mf.g` 增 `mf-flow` / `mf-map` view 种类，**待裁**）+ DataMapper（同文 §8） | **BPMN XML 互转**（与 BPMN 工具集成，`design-notes.md` 已提）；「角色由岗位生成」（域 2） |
-| 7 | **UI 设计** | ① 配色方案采用 Material Design，支持 Theme Builder，**ColorRole 作为可视化建模的基础**；② **Field Set 对 Field 分组**，按数据类型**自动生成默认的呈现器与编辑器** | ② 已有：字段分组 `groupLabel`、`UiField` 的 editor/formatter 与默认值策略（[`../presentation.md`](../presentation.md)） | **新增**：配色/ColorRole 进不进元数据（设计器级 vs 模型级）（待裁）；参考实现 <https://github.com/material-foundation/material-color-utilities>（Apache-2.0，TypeScript 可用） |
+| 6 | **业务流程建模** | ① 图形化输入 BPMN，选输入数据源、转换器、映射、事件、任务节点与输出；② 节点任务与事件**生成代码、插件式加载**；③ 角色由岗位生成；④ Action 串联模块间数据流（DFD）；⑤ 给数据模型设状态机，**流程自动改模型状态** | ① `flow/*.mf` + DFD/BPMN 多 sheet（[`diagrams.md`](diagrams.md) §4、[`graph-files.md`](graph-files.md) §4.5）；② KEEP 区 + 插件（[`plugins.md`](plugins.md)）；④⑤ STM 与 Converter（[`../statements.md`](../lang/statements.md、[`../events.md`](../lang/events.md）；⑥ **数据流编排（底座 ESB）** = [`../event_bus.md`](../lang/event_bus.md §7（节点图 / 数据流图 / 数据映射图三张图；拟在 `*.mf.g` 增 `mf-flow` / `mf-map` view 种类，**待裁**）+ DataMapper（同文 §8） | **BPMN XML 互转**（与 BPMN 工具集成，`design-notes.md` 已提）；「角色由岗位生成」（域 2） |
+| 7 | **UI 设计** | ① 配色方案采用 Material Design，支持 Theme Builder，**ColorRole 作为可视化建模的基础**；② **Field Set 对 Field 分组**，按数据类型**自动生成默认的呈现器与编辑器** | ② 已有：字段分组 `groupLabel`、`UiField` 的 editor/formatter 与默认值策略（[`../presentation.md`](../lang/presentation.md） | **新增**：配色/ColorRole 进不进元数据（设计器级 vs 模型级）（待裁）；参考实现 <https://github.com/material-foundation/material-color-utilities>（Apache-2.0，TypeScript 可用） |
 | 8 | **数据可视化** | ① 自定义报表工具（数据源、关联关系、过滤参数、查询条件、结果展现）；② BI 看板设计工具（布局、KPI 数据资产、底层 ClickHouse，学习 Power BI / Tableau） | 报表/BI 目前只在 C# 侧有元数据族，Java 的 `mmda-core-reporting` **0 文件**（[`../contracts-inventory.md`](../contracts-inventory.md) §5） | **✔ 方向已裁（2026-09-24）：BI 要有元数据，最终让架构设计师能建模**（属**元模型**范畴，不是纯 IDE 工具面）；**但既有 `MetaBiCube/Dimension/Hierarchy/Level/Measure` 很不成熟 → 具体形态与是否移植「容后再议」**；ClickHouse 是否作默认分析存储随之后议。可先落：**枚举 → 维度**、固定维度模型 |
 | 9 | **生成 → 编译 → 打包发布** | 上面几步走完即可生成源码、自动编译、打包发布（结合 DevOps） | 生成器（[`../targets.md`](../targets.md) §3、[`../PLAN.md`](../../PLAN.md) §3.3）；打包 `.mmdax`（`mmda pack`） | **发布链路**（CI/DevOps 对接、部署形态）尚无专篇 |
-| 10 | **变更轨迹与版本控制** | 每次修改自动记录变更轨迹，结合源码管理实现版本控制 → **可回滚设计**；因此设计必须**用文件存储** | 已有：一对象一文件、`changelog/`、Git 集成（§4.7、[`../project.md`](../project.md)） | **✔ 已裁：宿主=独立桌面壳，文件存储（随想录的"VS Code/IDEA 插件"列为后续可选宿主）**——见 §4.9 |
+| 10 | **变更轨迹与版本控制** | 每次修改自动记录变更轨迹，结合源码管理实现版本控制 → **可回滚设计**；因此设计必须**用文件存储** | 已有：一对象一文件、`changelog/`、Git 集成（§4.7、[`../project.md`](../lang/project.md） | **✔ 已裁：宿主=独立桌面壳，文件存储（随想录的"VS Code/IDEA 插件"列为后续可选宿主）**——见 §4.9 |
 | 11 | **绘图工具** | ER、数据、流程、表单、BI、脚本、代码生成 | E-R、STM、DFD/BPMN、模块树（[`diagrams.md`](diagrams.md) §1） | **表单设计器**（可视化表单布局）、**BI 看图器**、**脚本编辑器**（`mmda` 脚本） |
-| 12 | **测试与验收建模**（**2026-09-25 新增，作者共识**） | 「测试用例也进 m 语言，跟需求一样，存数据库，**分类、分集合、分状态跟踪管理**；IDE = SDLC 完整生命周期管理工具（需求 / 设计 / 开发 / 部署 / 测试 / 交付）」；「**UAT 在需求完成后及早出、可验证、AI 可通过 hooks**」 | `.mt` 进语言族（[`../project.md`](../project.md) §1.2）+ 管理面（[`../testing.md`](../testing.md) §8.1 / §9.1） | **集合与状态的形态待裁**（[`../testing.md`](../testing.md) §11-12 / §11-13）；**UAT 与需求的追溯必须可视**（`REQ-x` ↔ 用例）；UAT 执行通道待裁（§11-14） |
+| 12 | **测试与验收建模**（**2026-09-25 新增，作者共识**） | 「测试用例也进 m 语言，跟需求一样，存数据库，**分类、分集合、分状态跟踪管理**；IDE = SDLC 完整生命周期管理工具（需求 / 设计 / 开发 / 部署 / 测试 / 交付）」；「**UAT 在需求完成后及早出、可验证、AI 可通过 hooks**」 | `.mt` 进语言族（[`../project.md`](../lang/project.md §1.2）+ 管理面（[`../testing.md`](../testing.md) §8.1 / §9.1） | **集合与状态的形态待裁**（[`../testing.md`](../testing.md) §11-12 / §11-13）；**UAT 与需求的追溯必须可视**（`REQ-x` ↔ 用例）；UAT 执行通道待裁（§11-14） |
 
 ### 4.9 设计器宿主形态（✔ 已裁 2026-09-24：独立壳优先）
 
@@ -153,7 +153,7 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 **三条随之确定的口径**：
 
 1. **内核与图形接口按「宿主可替换」来设计**——`mmda-core`（Rust）+ **LSP 面** + 图形 Webview；`*.g` 已做到布局与语义分离，正是为了让同一份模型能在壳里、也能在编辑器里画。**但接口可替换 ≠ 现在就并行做两套宿主**。
-2. **谁是宿主不影响语言与契约**：真源是文件（[`../project.md`](../project.md)）、契约到 `MetaUi` 为止（[`../presentation.md`](../presentation.md) §5.1）——所以将来加插件宿主是**增量**，不是返工。
+2. **谁是宿主不影响语言与契约**：真源是文件（[`../project.md`](../lang/project.md）、契约到 `MetaUi` 为止（[`../presentation.md`](../lang/presentation.md §5.1）——所以将来加插件宿主是**增量**，不是返工。
 3. **设计器宿主**：**不承诺国产 OS（✔ 2026-09-24）**——国产化 L2 只承诺**运行时 + 内核 CLI** 跑在国产 OS/CPU 上，设计器仍在 Windows / macOS / Linux-x86 上运行；麒麟 / 统信**桌面版**的 WebKitGTK、字体、输入法适配与 deb / rpm 打包**不进首版**（理由与矩阵见 [`../vision.md`](../vision.md) §5.2.1 第 4 条）。
 
 ---
@@ -220,8 +220,8 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 
 ## 9. 相关文档
 
-- [meta-model.md](../meta-model.md)
+- [meta-model.md](../lang/meta-model.md
 - [diagrams.md](diagrams.md)
-- [project-format.md](../project.md)
+- [project-format.md](../lang/project.md
 - [../readme.md](../readme.md)
 - [../ai/tools.md](../ai/tools.md)

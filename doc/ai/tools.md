@@ -115,7 +115,7 @@ mmda generate --profile prototype-sqlite
 
 ## 5. 输入输出格式
 
-- **AST 交换**：JSON（符合 [meta-model.md](../meta-model.md)）
+- **AST 交换**：JSON（符合 [meta-model.md](../lang/meta-model.md）
 - **人类可读**：M语言 文本
 - **错误**：`{ code, path, message, severity }[]`
 

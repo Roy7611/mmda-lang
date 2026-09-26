@@ -2,7 +2,7 @@
 record DailyReport {
     /// 报告ID
     @Partitioned [10000,0x000F_FFFF]
-    reportId uint64 identity generated readonly,
+    reportId int64 identity generated readonly,
     /// 报告编号
     @Unique
     reportNo varchar(15),
@@ -10,7 +10,7 @@ record DailyReport {
     reportDate date default curdate(),
     /// 工程项目: HAS_ONE Project(projectID,projectNo,projectName)
     @One Project(projectId,projectNo,projectName)
-    projectId uint64? indexed,
+    projectId int64? indexed,
     /// 今日完成
     fullfillment varchar(255),
     /// 异常情况
@@ -26,15 +26,15 @@ record DailyReport {
     remark varchar(255)?,
     /// 创建部门: REF Department(deptID,deptName)
     @Ref base.Department(deptId,deptName)
-    deptId uint64? indexed readonly,
+    deptId int64? indexed readonly,
     /// 创建人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    creatorId uint64? indexed readonly,
+    creatorId int64? indexed readonly,
     /// 创建日期
     createDate timestamp? default now readonly,
     /// 修改人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    lastModifierId uint64? indexed readonly,
+    lastModifierId int64? indexed readonly,
     /// 最后修改
     lastModified timestamp? default now readonly,
     @Many

@@ -17,7 +17,7 @@
 
 定制视图放在 `ui/{子系统}/{Name}.mi`；未提供 `.mi` 时框架按 `data/models/*.mm` 的元数据生成标准 CRUD。
 
-**视图钩子**（前端 `UiLogic`，对应关系 ✔ 已裁 2026-09-24）：`index` → **`beforeIndex`**、`editor` → **`beforeEdit`**、`details` → **`beforeDetails`**、`search` → **`beforeSearch`**（本轮按作者要求补上）；**`report` 暂不设钩子**（未提，待有实现再裁）。参考实现见 [legacy/runtime-java.md](legacy/runtime-java.md)。
+**视图钩子**（前端 `UiLogic`，对应关系 ✔ 已裁 2026-09-24）：`index` → **`beforeIndex`**、`editor` → **`beforeEdit`**、`details` → **`beforeDetails`**、`search` → **`beforeSearch`**（本轮按作者要求补上）；**`report` 暂不设钩子**（未提，待有实现再裁）。参考实现见 [legacy/runtime-java.md](../legacy/runtime-java.md)。
 
 ```sql
 /// BOM 列表
@@ -51,7 +51,7 @@ ui BomEditor for Bom {
 | `nullDisplayText` / `tooltip` | 空值显示、提示 |
 | `dataBinding` | 绑定字段 |
 
-Field 侧管列表与分组的属性：`groupLabel`、`listed`、`filterable`、`hidden`（见 [meta-model.md](meta-model.md)）。
+Field 侧管列表与分组的属性：`groupLabel`、`listed`、`filterable`、`hidden`（见 [meta-model.md](/meta-model.md）。
 
 ---
 
@@ -80,12 +80,12 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 
 ## 4.1 枚举的呈现：颜色与图标（✔ 已裁 2026-09-25）
 
-**开发指引见 [`guide/enums.md`](guide/enums.md)**；**语法在 [`records.md`](records.md) §6.1**（`@Colorized(role, shade?)` / `@Iconized(default | "prefix")` 开关 + 默认值、成员 `@Color(role, shade?)` / `@Icon("alias")` 取值），本节只说**渲染口径**。
+**开发指引见 [`guide/enums.md`](../guide/enums.md)**；**语法在 [`records.md`](/records.md §6.1**（`@Colorized(role, shade?)` / `@Iconized(default | "prefix")` 开关 + 默认值、成员 `@Color(role, shade?)` / `@Icon("alias")` 取值），本节只说**渲染口径**。
 
 | 项 | 口径 |
 | --- | --- |
 | 渲染方 | **前端（TS）唯一渲染方**（§5.1 UI 契约）：后端只出 `MetaEnum` / `MetaEnumMember` 的 `colorized` / `color` / `iconized` / `icon` |
-| 颜色 = 角色 + shade，不是色值 | `@Color(role, shade)` 只给**语义角色**（**封闭 7 值**：`primary` / `secondary` / `info` / `success` / `warning` / `danger` / **`gray`**，语言层校验、拼错即解析期 error）与**色板 shade（色阶）**（**封闭 10 档** `50`–`900`；`200` = 浅档、`500` = 基准；**省略 shade = `500`**）；**具体色值来自主题令牌**（Material Design + Theme Builder，见 [`ide/specification.md`](ide/specification.md) §4.8 域 7）—— 深浅色与皮肤切换由主题层负责，**模型层不写 `#RRGGBB`** |
+| 颜色 = 角色 + shade，不是色值 | `@Color(role, shade)` 只给**语义角色**（**封闭 7 值**：`primary` / `secondary` / `info` / `success` / `warning` / `danger` / **`gray`**，语言层校验、拼错即解析期 error）与**色板 shade（色阶）**（**封闭 10 档** `50`–`900`；`200` = 浅档、`500` = 基准；**省略 shade = `500`**）；**具体色值来自主题令牌**（Material Design + Theme Builder，见 [`ide/specification.md`](../ide/specification.md) §4.8 域 7）—— 深浅色与皮肤切换由主题层负责，**模型层不写 `#RRGGBB`** |
 | 图标 = 别名，不是库绑定 | `@Icon("cancel")` 是**逻辑别名**（**开放**：开发人员自行定义语义词，语言层不内置清单、不校验存在性）：TS / Syncfusion（`e-icons`）、C# / FontAwesome、Flutter / Material Icons 各自映射成具体图标；**模型层不写 `fas fa-x`** |
 | 别名没映射上 | **充其量不显示**（不报错、不阻塞）；UI 层 / IDE **可给 warning / lint** 作为提醒（**可选**） |
 | 开关与取值 | 开关在**枚举声明**、取值在**成员**；**没开开关不渲染**；**开了开关但成员缺值 → 先取声明的默认值**（默认色 / 默认别名），**没有默认值才不渲染**（不报错） |
@@ -96,7 +96,7 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 | i18n | 颜色 / 图标**不是翻译对象**（§5 的 i18n 只管标签 / `placeholder` / `tooltip`） |
 | 与业务色区分 | 业务数据里的「每行一个色」（`taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义；两者不互相替代 |
 
-> ✔ 细节 6 条**已裁**（2026-09-25）：颜色角色**封闭 6 值**（拼错 = 解析期 error）、主题不新增角色；**图标别名开放**（开发人员定义语义词、UI 层映射、没映射上顶多不显示、warning 可选）；`@Icon` 只收别名；字段级不覆盖（视图级归 `ui/**/*.mi`）；缺开关写取值 = warning。见 [`records.md`](records.md) §6.1。
+> ✔ 细节 6 条**已裁**（2026-09-25）：颜色角色**封闭 6 值**（拼错 = 解析期 error）、主题不新增角色；**图标别名开放**（开发人员定义语义词、UI 层映射、没映射上顶多不显示、warning 可选）；`@Icon` 只收别名；字段级不覆盖（视图级归 `ui/**/*.mi`）；缺开关写取值 = warning。见 [`records.md`](/records.md §6.1。
 
 ## 5. 国际化（i18n）
 
@@ -104,10 +104,20 @@ Codegen 读取 Field 的 `listed` + UiField 的 `formatter` / `editor` 生成列
 
 | 层 | 归属 | 内容 |
 | --- | --- | --- |
-| Shell i18n | IDE 自身（Vue） | 界面文案；见 [ide/i18n.md](ide/i18n.md) |
+| Shell i18n | IDE 自身（Vue） | 界面文案；见 [ide/i18n.md](../ide/i18n.md) |
 | Model i18n | 项目 SSOT | 模型元素的显示名与翻译：`label`、UiField 的 `placeholder`/`tooltip`、枚举成员标签 |
 
 模型侧翻译在元数据里的承载（旧实现）：`MetaUi18n`（词 → 翻译）、`MetaUiFieldI18n` / `MetaUiFieldI18nt`（字段级，按 locale 与 tenant 覆盖）。
+
+**✔ 三通道分工（2026-09-26 作者定案；⤴ 同日三次修订）** —— 呈现信息按「**要不要翻译**」分流（`label` 要、`color` / `icon` 不要、`description` 连 JSON 都不进），记住这张表，网络里就永远不会重复传文本：
+
+| 内容 | 走哪条通道 | 口径 |
+| --- | --- | --- |
+| **显示文本 `label`** | **设计期词条**（本节 Model i18n） | **按 locale 分片（partition by locale）**：**一次只出请求的那一个 locale**（不把多语言塞进同一份元数据），**但接口支持任意 locale、客户端按 locale 分别缓存** —— 「**一个用户习惯用一种语言**」只是**"不必一次发多语言"的依据**；⤴ 2026-09-26 作者修订：「**这个太武断，我在 indexedDb 里是分 locale 的，前端支持语言切换**」（⇒ **缺哪个 locale 就按需再拉一份**）；**产物 = 带 `locale` 的元数据 JSON**（**一份一个 locale**，⤴ 作者：「**加一个locale属性，这才是输出的json最终形式**」，见 [meta-model.md](/meta-model.md §6.2） |
+| **呈现 `color` / `icon`** | **元数据**（**不是词条**） | **⤴ 2026-09-26 作者：「color, icon 走不了词条」** —— 颜色 / 图标**语言无关**（角色 + shade / 逻辑别名，见 [guide/records.md](/records.md §6.1）：随 `MetaEnum` 元数据（串 + `members[]`）**一次性下发**，**不翻译、不按 locale 分片** |
+| **文档注释 `description`** | **comments 层（另行存储）** | **⤴ 2026-09-26 作者：「json 中不要 description 了吧」「我想用 comments 类似 SQL 数据库中的注释，另外存储的」** —— **不进任何 JSON**、不进业务载荷：`/// <label> : <description>` 的**描述段由内核抽到 comments 层**（**✔ A = 定案** = 生成 DDL 时落数据库 `COMMENT ON`；B 不采用），只供 `mmda doc` / IDE 与数据库注释（见 [meta-model.md](/meta-model.md §6.3；⤴ 第一百一十八轮作者：「**1A**」） |
+| **服务端组装**（把标签写进数据对象） | ~~`assembleEnumProperties`（作者口语 `assembleEnums`）~~ | **作废（⤴ 2026-09-26）** —— 实测旧实现 [`D:\2026\java` `EntityRepository.java:411`](../legacy/runtime-java.md) 会把枚举显示文本**写进实体影子属性**（`setRefProperty`）并打 `ASSEMBLE_ENUM` 标记（`DomainService.java:330 assembleSingle` / `:343 assemble`），**这正是 `customProperties` 的来源**；**新设计不再组装** |
+| **引用数据的显示值**（`@Ref` / `@One`，如「采购部」「经济师」「Region 行政区划」） | **数据层（业务数据本身）** | 作者：「**如果需要国际化，通常数据库层面就是那种 locale 的**；公共数据我会在数据库存储，例如 Region 行政区划，我有**专门的 locale 字段**区分」⇒ **多语言是数据层的事**：引用表按 locale **分行存储**，查询按用户 locale 取那一行；**载荷里只有 FK / 嵌套对象**，不组装标签、不新增机制 |
 
 项目清单里声明语言集合：
 
@@ -151,7 +161,7 @@ m 声明（ui/**/*.mi + Field/UiField）→ IR → 后端适配成 MetaUi（Java
 | `ui/{schema}/*.ui.yaml` | （规划）字段级呈现配置 |
 | 旧实现 | 元数据库里维护 `MetaUiField`，或在前端 `UiLogic` 里以代码扩展 |
 
-> ⚠️ `.mi` 的完整语法（布局、绑定、事件）尚未定稿；`presentation.md` 原为空壳，本轮只并入 UiField / i18n 的既有定义。界面布局见 [ide/ui-shell.md](ide/ui-shell.md) 与 [design-notes.md](design-notes.md) 的「交互设计」一节。
+> ⚠️ `.mi` 的完整语法（布局、绑定、事件）尚未定稿；`presentation.md` 原为空壳，本轮只并入 UiField / i18n 的既有定义。界面布局见 [ide/ui-shell.md](../ide/ui-shell.md) 与 [design-notes.md](../design-notes.md) 的「交互设计」一节。
 
 ---
 
@@ -163,7 +173,7 @@ m 声明（ui/**/*.mi + Field/UiField）→ IR → 后端适配成 MetaUi（Java
 
 ## 8. 相关
 
-- [meta-model.md](meta-model.md) — Field / UiField 元模型
-- [ide/ui-shell.md](ide/ui-shell.md) — 界面布局
-- [ide/i18n.md](ide/i18n.md) — 双层 i18n
-- [records.md](records.md) — 字段定义
+- [meta-model.md](/meta-model.md — Field / UiField 元模型
+- [ide/ui-shell.md](../ide/ui-shell.md) — 界面布局
+- [ide/i18n.md](../ide/i18n.md) — 双层 i18n
+- [records.md](/records.md — 字段定义

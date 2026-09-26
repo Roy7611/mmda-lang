@@ -64,7 +64,7 @@ erDiagram
 | TAF | 实体 + Action + FlowTrail/流程 |
 | VAF | 视图 + Action + Flow |
 
-**多租户（可选）**：`partitionKey` 指向带 `@PartitionID` 的主键列；完整 ID 高 16 位为 tenantId、低 48 位为 realId。`minID`/`maxID` 约束 realId 范围，与 M 语言范围语法互转（见 [records.md](../language/records.md)）。
+**多租户（可选）**：`partitionKey` 指向带 `@PartitionID` 的主键列；完整 ID 高 16 位为 tenantId、低 48 位为 realId。`minID`/`maxID` 约束 realId 范围，与 M 语言范围语法互转（见 [records.md](../../../lang/records.md）。
 
 ## 4. Field（元列 / MetaCol）
 
@@ -194,7 +194,7 @@ Runtime 序列化示例见 [legacy/runtime-java.md](../legacy/runtime-java.md#ap
 
 ## 7. View
 
-基于 Record 的投影，含 join 与 field 列表。见 [language/records.md](../language/records.md)。
+基于 Record 的投影，含 join 与 field 列表。见 [language/records.md](../../../lang/records.md。
 
 ## 8. Module（功能架构）
 

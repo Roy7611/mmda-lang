@@ -29,7 +29,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 目标 | 对 MMDA 的要求 | 落地机制 | 现状 |
 | --- | --- | --- | --- |
 | 开放源码 | 许可边界清晰、第三方能集成 | **open core**（§5.1）：规范 + 内核 + IDE 壳 + 三端薄适配开源；算法库 / 行业包 / SaaS 闭源 | ✔ 规范文本已公开（`github.com/Roy7611/mmda-lang`）；内核仓尚未建立 |
-| 协同 | 多角色在同一真源上协作且可评审 | 一对象一文件 + git/svn 细粒度版本控制（[`project.md`](project.md)）；五类职责写入边界与交接协议（[`workflows.md`](workflows.md)）；变更分级 L0–L3 | ✔ 已裁 |
+| 协同 | 多角色在同一真源上协作且可评审 | 一对象一文件 + git/svn 细粒度版本控制（[`project.md`](lang/project.md）；五类职责写入边界与交接协议（[`workflows.md`](workflows.md)）；变更分级 L0–L3 | ✔ 已裁 |
 | 共赢 | 第三方能扩展而不被平台锁定 | 生成源码、产物不依赖 MMDA 才能跑（[`readme.md`](readme.md) §7）；**插件市场**（[`ide/plugins.md`](ide/plugins.md) §9，**⏸ 2026-09-24 起暂缓：目前不考虑收费和市场**）——**插件 = 用户自研的业务功能模块**（主形态，真源 [`runtime.md`](runtime.md) §7：`jar`/`dll`/npm + 清单 + 冲突检测，**插件就是 module，语言层零新增**），市场同时是**闭源行业包 / 算法库的合法分发渠道**与伙伴体系载体；**设计阶段原生支持插件式开发**（[`ide/plugins.md`](ide/plugins.md) §8 五条可检判据）；**IDE 插件为次**（支持更好，不做首版承诺）；插件不改语言（[`api.md`](api.md) §1.1） | ✔ 已裁（2026-09-24：**做市场**；主形态已纠正为业务功能模块插件） |
 | 降成本 | 可测量，不停在口号 | 四个可测指标见 §6，落 [`quality.md`](quality.md) §3.1 | 🟡 指标已定，待采集 |
 
@@ -83,7 +83,7 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 
 **作者口径（原话，2026-09-24）**：「国产化，我会实现一个，例如 naive + 别的表格插件，syncfusion 只是一个选项」。
 
-→ 落法：UI kit 是前端自己的事（[`presentation.md`](presentation.md) §5.1），**换皮肤不构成第二套 UI 契约**（契约边界只到 `MetaUi`）；Syncfusion 从「唯一皮肤」降为**可选皮肤之一**，与 `vui` / `rui` / `vui-agnaive` 等并列。
+→ 落法：UI kit 是前端自己的事（[`presentation.md`](lang/presentation.md §5.1），**换皮肤不构成第二套 UI 契约**（契约边界只到 `MetaUi`）；Syncfusion 从「唯一皮肤」降为**可选皮肤之一**，与 `vui` / `rui` / `vui-agnaive` 等并列。
 
 ### 5.2.1 L2 目标矩阵（✔ 已裁 2026-09-24，作者取 `1A 2A 3A 4A 5A`）
 
@@ -124,13 +124,13 @@ MMDA 的主张是：把「设计与实现之间的契约」变成**机器可读�
 | 目标 | 现状 | 落点 |
 | --- | --- | --- |
 | 分层 | ✔ 已裁 | [`runtime.md`](runtime.md)：Controller = API 开放 / Service = 商业逻辑 / Repository = 数据读写 / 缓存 = 横切面 |
-| 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](meta-model.md)（`partitionKey` / `@Partitioned`）、[`project.md`](project.md) §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
+| 多租户 | ✔ 已裁且三端有实现 | [`meta-model.md`](lang/meta-model.md（`partitionKey` / `@Partitioned`）、[`project.md`](lang/project.md §2.1（分文件 include）、[`api.md`](api.md) §3.2（Server Variable）、[`runtime.md`](runtime.md)（缓存键含租户）、[`targets.md`](targets.md) §4（三端 Tenancy ≈） |
 | 热插拔模块化 | ✔ 见 §5.3（module 粒度） | module 边界四合一（[`api.md`](api.md) §1.1） |
 | 高性能 | ✔ 机制已定 | 生成原生代码、表达式下推到存储、`@Computed` / `@trigger` 生成库侧 `trigger` / `procedure`（[`readme.md`](readme.md) §5）；性能效率信号见 [`quality.md`](quality.md) §1.2 |
 | 安全、防黑客 | ✔ 基准已裁 | [`quality.md`](quality.md) §1.6（安全性）与 **§3.2（OWASP ASVS 门禁口径）**、[`api.md`](api.md) §3.6（scope）、ARCH-111（[`architecture-review.md`](architecture-review.md)）；**ASVS L1 自动化子集进硬门禁、Top 10 作报告项** |
 | 可靠性 | ✔ 机制已定 | [`quality.md`](quality.md) §1.5 + 事务边界与 `after*` 幂等（[`runtime.md`](runtime.md)） |
 | 跨平台 | 🟡 L2 覆盖国产 OS / CPU；桌面为独立壳（Tauri） | [`ide/specification.md`](ide/specification.md) §4.9；§5.2 L2 |
-| 多端、多语言 | 🟡 三端与三语言已裁；**移动端宿主已裁方向 = Flutter** | [`targets.md`](targets.md)（2 后端 + 1 前端）、`locales: [zh, zh-Hant, en]`（[`project.md`](project.md)）；移动端宿主 = **Flutter**（Dart 端，排 P8 之后），**首版不做**；`MetaUi` 第二渲染方的口径见 §8-6 |
+| 多端、多语言 | 🟡 三端与三语言已裁；**移动端宿主已裁方向 = Flutter** | [`targets.md`](targets.md)（2 后端 + 1 前端）、`locales: [zh, zh-Hant, en]`（[`project.md`](lang/project.md）；移动端宿主 = **Flutter**（Dart 端，排 P8 之后），**首版不做**；`MetaUi` 第二渲染方的口径见 §8-6 |
 
 ---
 

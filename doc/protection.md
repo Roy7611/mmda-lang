@@ -49,7 +49,7 @@
 
 1. **纯函数**：无副作用、不写库、不发消息；
 2. **无 IO**：不碰网络/文件/时钟/随机（要时钟或随机必须由宿主传入种子与时间）；
-3. **确定性**：同输入同输出（可重放、可对账，这条与 `doc/events.md:97-102` 的事件重放要求一致）；
+3. **确定性**：同输入同输出（可重放、可对账，这条与 `doc/lang/events.md:97-102` 的事件重放要求一致）；
 4. **输入输出可序列化**：能过 FlatBuffers。
 
 | 该下沉 native | 该留在 Java / C# |
@@ -234,6 +234,6 @@ rg -n "启发式|heuristic|cost_model|weights" -g '!*.dll' -g '!*.so' D:/2026/ja
 
 - [`targets.md`](targets.md) — 三端契约与 capability 机制（§3.1 算法宿主）
 - [`contracts-inventory.md`](contracts-inventory.md) — 三端现有能力盘点
-- [`statements.md`](statements.md) — `@Action` 与状态机（native 节点的落点）
+- [`statements.md`](lang/statements.md — `@Action` 与状态机（native 节点的落点）
 - [`errata.md`](errata.md) — 语法待裁项 11（native 节点声明）
 - [`..\PLAN.md`](..\PLAN.md) — A2（Rust + C ABI/WASM）、B5（FlatBuffers）是本文的前提

@@ -1,7 +1,26 @@
 # 对象：Record、Field、Enum、View
 
-> ✔ **语法形态已统一（2026-09-25，取语料形态）**：**以 `@` 注解制为基线** —— `@Ref Country(countryCode,fullName)`、`@One` / `@Many`、`@Computed`、`@Index`、`@Id`、`@State`；行为住**独立 `.ms`**（不内联进 record）。早期文档的 `ref X as y` / `indexed` / `unique` / `computed` / `@Action` 内联写法**标为历史、不进解析器**（见 [`errata.md`](errata.md) 冲突 1 与冲突 4，实测：381 文件里 `ref ` 与 `computed` **零命中**、`@Ref` 90 / `@Index` 117 / `@Id` 82）。
+> ✔ **语法形态已统一（2026-09-25，取语料形态）**：**以 `@` 注解制为基线** —— `@Ref Country(countryCode,fullName)`、`@One` / `@Many`、`@Computed`、`@Index`、`@Id`、`@State`；行为住**独立 `.ms`**（不内联进 record）。早期文档的 `ref X as y` / `indexed` / `unique` / `computed` / `@Action` 内联写法**标为历史、不进解析器**（见 [`errata.md`](../errata.md) 冲突 1 与冲突 4，实测：381 文件里 `ref ` 与 `computed` **零命中**、`@Ref` 90 / `@Index` 117 / `@Id` 82）。
 > 本文以「对象是什么、有哪些元素、各自什么语义」为主，示例优先给**实际语料形态**（381 个文件在用），早期文档形态在对照处标注。
+
+---
+
+## 0. Record 数据建模：三条原则（✔ 2026-09-26 作者立场）
+
+> 作者原话：「**我用 record 来进行数据建模**」＋「**① 能直接在数据库、json、实体类（c#/java/rust...），flatbuffer 落地并无缝转，orm 实现；② 字段-属性-json key/value 映射，数据类型都是语言无关的，通用性，无二义性；③ 一切都是数据的本质，底层都是 byte 的存在，想想 PLC 存储、数据库存储**」。
+
+| # | 原则 | 判定点（可验收） | 落点 / 现状 |
+| --- | --- | --- | --- |
+| 1 | **一份 record 多端同形落地**：数据库（DDL）· JSON（载荷）· 实体类（C# / Java；**Rust / 其他 = 预留宿主**，语言层不写死宿主清单）· FlatBuffers —— **正向生成无缝、ORM 零映射** | 同一个 record 的字段名在**表 / 列名、JSON key、属性名、FlatBuffers 字段名**之间全链路对应；改一处模型 ⇒ 多端同步改 | 已裁：**B7**（DDL 与方言生成放在 Rust 内做）、**B5**（跨语言 IR 先做 FlatBuffers）、[`naming.md`](../naming.md) §1 / §3.3（**表 = 类名、列 = 属性名 ⇒ JPA 不用 `@Column`、EF 不用 `HasColumnName`**）；⚠️ **缺口 = 下方 FlatBuffers 细则 ⏳** |
+| 2 | **字段（Field）＝ 属性 ＝ JSON key ＝ 列名**；**类型语言无关、通用、无二义** | 「一个字段只有一个名字」，三端逐字一致（契约测试抓）；元模型只存**逻辑类型名 / 编码 + 8 轴**，不存宿主类型 | 已裁：[`naming.md`](../naming.md) §1 / §2（契约名零端差异、**JSON 字段 = 字段名原样**、元数据属性名 / JSON 键 camelCase）、[`datatypes.md`](/datatypes.md §11（逻辑类型 + 各方言投影器）、[`api.md`](../api.md) §3.5（逐类型的 JSON 表示） |
+| 3 | **一切皆 byte**：每个逻辑类型都有**确定的字节表示**（存储大小可推导），**PLC 存储口径与数据库存储口径同源** | 任何类型都能回答「占几字节、怎么摆位、怎么序列化」；位域与 `1`/`0` 口径统一 | 已裁：**B2**（类型必须能推出存储大小：`string` ≡ `nvarchar(255)`）、[`datatypes.md`](/datatypes.md §11.4（**8 轴**，含 `STORAGE_BITS` 存储位宽 —— **轴值按位计**，`fixedBytes(8)` ≡ `fixedBits(64)`）、§2（`bool` / `bit` 存 `1`/`0`）、§6 / §7（`BitStr(n)` / `BitVector(n)` = PLC / IoT 位域对接点） |
+
+> **「无缝」的方向边界（✔ 沿用 [`datatypes.md`](/datatypes.md §11.3 单向原则）**：**正向（record → DDL / JSON / 实体类 / FlatBuffers）无缝、无损**；**反向（DB → record）有损**，只做 **best-effort + 警告**（逻辑类型是唯一真源、目标类型是投影；有损或有歧义的不反查）。若要让反向也「无缝」，等于再养第二套映射表 —— 与已裁的单向原则冲突，先不动。
+
+**✔ 本轮派生的两条已收口（2026-09-26）**：
+
+- ✔ **Rust = 预留宿主，不是第 4 个实现目标**（作者原话：「**rust目前不实现，未来可能，你作为架构师不会这么想？**」）—— **`PLAN.md` §0 B6 仍是「Java / C# / TS」三个目标端**（事实面不虚报）；但 **语言层 / 类型层 / 映射层不写死宿主清单**：宿主 = **Profile 声明的投影器**，加 Rust（或其他语言）**只增一行数据，不改语言**。落点：[`..\PLAN.md`](../../PLAN.md) §3.4、[`targets.md`](../targets.md) §1。
+- ✔ **FlatBuffers 的方向 = 性能 / 效率优先**（作者原话：「**flatbuffers的映射细则我没想，性能和效率优先，你觉得呢**」）—— **细则表见 [`datatypes.md`](/datatypes.md §11.5**（枚举 → 原生 `enum`、可空 → `table` vtable 存位、子表 → `vector of tables`、`decimal` → scaled `int64` / `DateTime` → epoch `int64`、`BitVector` → `uint64` 或 `vector<uint64>`、`BitStr` → `string`）；**方向与细则均 ✔ 定案**（§11.5 逐类型表）。
 
 ---
 
@@ -15,13 +34,13 @@
 ```
 
 - **注解行**（可选）：字段名上方一行或多行 `@Xxx`，见 [§3](#3-字段注解)。
-- **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](naming.md) §1**）。
-- **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`）。
+- **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](../naming.md) §1**）。
+- **数据类型**：见 [datatypes.md](/datatypes.md；后缀 `?` 表示可空（未写 `default` 时默认 `null`；**显式 `default null` 也认** —— ✔ 2026-09-26）。**空值只有一个 = `null`**（TS 的 `undefined` 不进语言，见 [`datatypes.md`](/datatypes.md §1）；**`NONE = 0` 不是空值**（§12）。**非空字段不写 `default` = 用户必须输入**（✔ 2026-09-26 作者：「**非空字段为什么一定要写？没写说明用户必须输入阿**」）—— 只有可空字段（`T?`）才默认 `null`；**字段类型没有「嵌套 record」**（不做值对象 / 组合 —— 组合一律子表或引用，见 [`datatypes.md`](/datatypes.md §10）。
 - **限制关键字**：零个或多个，空格分隔；行末逗号 `,`。
-- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
+- **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**：`label` 进 JSON 并**另走词条**；**描述 = 文档注释，不进 JSON，另存 comments 层**（⤴ 2026-09-26 作者：「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」，见 [`meta-model.md`](/meta-model.md §6.3）；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
 
 ```sql
-userId   uint64 identity generated readonly,
+userId   int64 identity generated readonly,
 userName varchar(30) charset ascii,
 createdAt timestamp? default now,
 mobile   char(11) indexed,
@@ -31,15 +50,15 @@ quantity decimal(18,3) positive,
 
 ### 1.2 限制关键字
 
-> ✔ **约束关键字一律大小写不敏感**（`indexed` = `INDEXED`、`unique` = `UNIQUE`、`identity` = `IDENTITY`）——**与 SQL 一致**（✔ 2026-09-25 作者裁，见 [`datatypes.md`](datatypes.md) §2.1）。
+> ✔ **约束关键字一律大小写不敏感**（`indexed` = `INDEXED`、`unique` = `UNIQUE`、`identity` = `IDENTITY`）——**与 SQL 一致**（✔ 2026-09-25 作者裁，见 [`datatypes.md`](/datatypes.md §1）。
 
 | 关键字 | 含义 |
 | --- | --- |
 | `indexed` | 建索引 |
 | `unique` | 唯一索引（隐含 `indexed`） |
-| `identity` | 唯一标识；等价 `indexed` + `unique`；默认配 `readonly` |
-| `partitioned` | **分区主键**（✔ 2026-09-25 新增，字段级）：与 `@Partitioned` 注解**同一件事**的两种形态 —— 行尾简写不带范围（用元对象的默认段）；`BIGID` = `uint64 identity partitioned` 就展开成它。**一个对象只能有一个 `partitioned` 字段** |
-| `generated` | 生成列（DB 自增、或由 `@Computed` 公式映射） |
+| `identity` | 唯一标识；等价 `indexed` + `unique`；默认配 `readonly`；**可带起点 / 步长 = `identity(start, step)`**（✔ 2026-09-26 作者：「**同意**」，写法 = 助手提案）—— 缺省 `identity` = 数据库默认；DB 侧：**SQL Server `IDENTITY(start, step)` 原生**、MySQL `AUTO_INCREMENT` 起点、Oracle / PG 走 `SEQUENCE START WITH … INCREMENT BY …`（由 `identity` 列投影，细节随 Profile） |
+| `partitioned` | **分区主键**（✔ 2026-09-25 新增，字段级）：与 `@Partitioned` 注解**同一件事**的两种形态 —— 行尾简写不带范围（用元对象的默认段）；`BIGID` = `int64 identity partitioned` 就展开成它（**⤴ 2026-09-26：展开式更正为 `int64`，见 [`errata.md`](../errata.md) §五-90**）。**一个对象只能有一个 `partitioned` 字段** |
+| `generated` | **DB 计算列 / 存储层生成**（✔ 2026-09-26 作者：「**这个对的**」）—— 与 `@Computed` 分工：**`generated` = 存储层生成（DB 计算列 / 自增列），`@Computed` = 语言层表达式（值由内核 / 框架算，按 Profile 决定是否落 DB）** |
 | `default` *value* | 默认值；`now` = 当前时间；位串可写 `b'0` |
 | `charset` *name* | 字符编码：`ascii`、`utf` 等 |
 | `unsigned` | 无符号数值 |
@@ -53,7 +72,7 @@ quantity decimal(18,3) positive,
 >
 > | 层级 | 形态 | 例子 |
 > | --- | --- | --- |
-> | **字段级** | **跟在字段行尾的裸关键字**（简洁、不占行） | `mobile char(11) indexed,`、`orderDate date default now indexed future,`、`addressId uint64 identity generated readonly,` |
+> | **字段级** | **跟在字段行尾的裸关键字**（简洁、不占行） | `mobile char(11) indexed,`、`orderDate date default now indexed future,`、`addressId int64 identity generated readonly,` |
 > | **对象级 / 组合** | **写在 record 体末尾、单独具名声明**——**两个及以上字段建一个索引必须走这条** | `@Index IDX_changelog_key(refName,refKey)`、`@Index IDX_flowtrails(objName,objId,actTime)`、`@ForeignKey FK_…(…) ref …` |
 >
 > **实测（语料 378 个语言文件）**：行尾字段级约束 **`readonly` 1040 处 / `indexed` 491 处**；具名声明 **342 处**，其中 **2 列及以上 45 处**（2 列 32、3 列 12、4 列 1 —— 最长 `IDX_tool_asequip(asEquip,maintenancePlanId,planToMaintain,lastMaintained)`）。
@@ -97,6 +116,7 @@ items OrderItem[+] readonly,
 | `@Unique` | 分区内业务唯一编码（**非** DB unique index） | 列级 `uniqueKey` |
 | `@Name` | 默认显示名（可多个） | `nameCol` |
 | `@Thumbnail` | 列表缩略图 URL（唯一） | `thumbnailCol` |
+| `@Uom("kg")` | **计量单位标注**（✔ 2026-09-26 作者：「**元数据会有 suffix，没有抽象到 measurement 的层面，同意 `@Uom("kg")`**」）—— **只是标注、不进存储**；**不做 measurement 抽象**（不建量纲类型、不做单位换算）；与已有 **`suffix`**（`MetaUiField.java:122`，UI 显示后缀，如输入框右侧的「kg」）配合使用 | 字段属性 `uom`（+ UI `suffix`） |
 
 ### 2.1 加载策略（注解行尾）
 
@@ -129,7 +149,7 @@ MAX_REAL_ID   = 0xF_FFFF_FFFF // 低 36 位是实际 id
 parseTenantID(id) = id >>> 36
 ```
 
-**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`，即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](datatypes.md) §5。
+**租户位 = 27 位有效**（`MAX_TENANT_ID = 0x7FF_FFFF`，bit 63 保留恒 0；✔ 作者 2026-09-25 确认「27位没错」）。`minID` / `maxID` 约束的是**低位 realId 的范围**（与租户位无关）——而且**是按对象领的区间**：语料统一写 `@Partitioned [10000,0x000F_FFFF]` + `addressId uint64 identity generated readonly,`（**语料原文；A2 已裁：语言侧写 `int64 identity`，外部语料 102 处待迁**），即「每个对象在 realId 空间里的一段」。`NO_TENANT_ID = 0`（平台公共数据）、`MIN_TENANT_ID = 1`。真源：`D:\2026\java` 的 `Tenancy.java:15-19 / 42-44 / 85-103`（`buildEntityID` / `getRealID` / `getMinID` / `getMaxID` / `isSameTenant`）；**组合主键的第一段是 partitionId**（`"partitionId.xxx"`，`parseTenantID(String)` 按 `.` 切分）。明细见 [`datatypes.md`](/datatypes.md §5。
 
 **为什么分段：标识共享（Identity Sharing，✔ 2026-09-25 作者说明）** —— 作者原话：「**有时候我需要多个表 UNION 成视图，不想 id 冲突，所以分段**」。
 
@@ -155,14 +175,14 @@ parseTenantID(id) = id >>> 36
 - **✔ 注解改名（2026-09-25 作者）**：**`@PartitionID` → `@Partitioned`**（作者原话：「**`@PartitionID` 改为 `@Partitioned`，字段级支持 `partitioned` 跟在后面**」）。
 
 - **为什么改**：元对象上的属性**本来就叫 `partitioned`**（`MetaObject.partitioned`，DB 列也是 `partitioned`），注解跟属性同名 —— 一个概念只留一个名字；
-- **两种形态**（同一件事）：**① 字段级行尾裸关键字 `partitioned`**（不带范围，简洁，与 `readonly` / `indexed` 同一风格）：`addressId uint64 identity generated readonly partitioned,`；**② 注解 `@Partitioned [min, max]`**（**带段范围**时用这个，独占一行在字段上方）；
+- **两种形态**（同一件事）：**① 字段级行尾裸关键字 `partitioned`**（不带范围，简洁，与 `readonly` / `indexed` 同一风格）：`addressId int64 identity generated readonly partitioned,`；**② 注解 `@Partitioned [min, max]`**（**带段范围**时用这个，独占一行在字段上方）；
 - **旧名 `@PartitionID` 已废**：语料里 **186 处仍是旧写法**，属**待迁移**；m 语言解析器只认 `@Partitioned`（旧名 = 未知名 ✅ 按 §1.2 的封闭关键字表直接报错，提示改名）；
-- **✔ 一次性迁移（2026-09-25 作者同意）**：**`mmda migrate --rename @PartitionID=@Partitioned`** —— 默认 **`--dry-run`**（只出「文件:行:列 + 改动」清单），**`--write`** 才落盘；**只动语言文件**（`.mm` / `.me` / `.ms` / `.mi` / `.mmda` …），不碰生成区与 KEEP 区；与 [`naming.md`](naming.md) §5 的命名迁移脚本**同一条线**，一并归 **P9**；
+- **✔ 一次性迁移（2026-09-25 作者同意）**：**`mmda migrate --rename @PartitionID=@Partitioned`** —— 默认 **`--dry-run`**（只出「文件:行:列 + 改动」清单），**`--write`** 才落盘；**只动语言文件**（`.mm` / `.me` / `.ms` / `.mi` / `.mmda` …），不碰生成区与 KEEP 区；与 [`naming.md`](../naming.md) §5 的命名迁移脚本**同一条线**，一并归 **P9**；
 - **唯一性校验**：**一个对象只能有一个 `partitioned` 字段**（分区主键唯一）→ `mmda check` **error**。
 
-**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`uint64 identity partitioned`**（见 [`datatypes.md`](datatypes.md) §5）。
+**分段配置的归属（✔ 2026-09-25 作者）**：**分段在 `MetaObject` 上配置**（`minId` / `maxId`），**值是「真实 id」（realId）的范围——去掉租户标识之后的那部分**；字段上一行写的 `@Partitioned [min,max]` 是它在语言侧的声明形态，最终落到元对象的 `partitionKey` + `minID` / `maxID`（**范围写法**：闭区间 `[min,max]`、开区间 `(min,max)`、半开半闭、`..` 省略一侧如 `(0..]` / `[..max]` —— 完整表见 [`design-notes.md`](../design-notes.md) §实体语义字段）。**类型侧**：`BIGID` = **`int64 identity partitioned`**（**⤴ 2026-09-26 更正，原写 `uint64`**）（见 [`datatypes.md`](/datatypes.md §5）。
 
-**✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](workflows.md) §1）。
+**✔ 已裁（2026-09-25 作者）**：**段是架构师 / 设计师分配**（作者原话：「**段是架构师、设计师分配阿**」）—— **由人分配，工具不自动分配**；跨表 / 视图族的段规划属架构师，单表在既定段内落地属设计师（[`workflows.md`](../workflows.md) §1）。
 
 **✔ 已裁（2026-09-25 作者）**：**标识共享组放在视图声明处 —— 视图即组**（「**标识共享组在视图那里可否**」→ 可以，且语料已如此：`view person` / `view organizationunit` / `view materialnsku` / `view Maintainable`）—— 详见 §7。
 
@@ -200,7 +220,7 @@ record WarehouseLoc {
 }
 
 record Pallet {
-    palletId uint64 identity,
+    palletId int64 identity,
     whId? long,
     locCode varchar?(6),
     @ForeignKey FK_Pallet_WarehouseLoc(whId, locCode) ref WarehouseLoc(whId, locCode)
@@ -217,7 +237,7 @@ record Pallet {
 ```sql
 /// 订单
 record Order : IAuthorizable {
-    orderId uint64 identity generated,
+    orderId int64 identity generated,
 
     orderDate date default now indexed future,
 
@@ -225,7 +245,7 @@ record Order : IAuthorizable {
 
     /// 客户：下单的客户
     @One Partner(partnerId, partnerCode, partnerName) as customer
-    customerId uint64 indexed,
+    customerId int64 indexed,
 
     /// 订单状态
     @State OrderStatusChanged
@@ -245,7 +265,7 @@ record Order : IAuthorizable {
 
     /// 创建人
     @Ref User(userId,userName)
-    creatorId uint64 readonly,
+    creatorId int64 readonly,
 
     createdAt timestamp default now readonly,
 }
@@ -261,12 +281,12 @@ record Order : IAuthorizable {
 /// 订单行
 record OrderItem {
     @One Order
-    orderId uint64 hidden,
+    orderId int64 hidden,
 
     itemId uint32,
 
     @One Material(materialId,materialCode,materialName) as material
-    materialId uint64 indexed,
+    materialId int64 indexed,
 
     gift bool default false,
     quantity decimal(18,3) positive,
@@ -287,7 +307,7 @@ record OrderItem {
 
 ## 6. Enum
 
-> **枚举开发指南见 [`guide/enums.md`](guide/enums.md)**（模板 / 命名 / 注释 / 外观 / 自检 / 迁移 / 三端落地）。
+> **枚举开发指南见 [`guide/enums.md`](../guide/enums.md)**（模板 / 命名 / 注释 / 外观 / 自检 / 迁移 / 三端落地）。
 
 ```sql
 /// 订单状态
@@ -305,7 +325,7 @@ enum OrderStatus : int {
 
 ```sql
 /// 伙伴角色
-enum PartnerRole : BitSet {
+enum PartnerRole : BitVector {
     /// 未知
     UNKNOWN  = b0000,
     /// 客户
@@ -319,13 +339,13 @@ enum PartnerRole : BitSet {
 
 - 文本存储格式：`0;NEW;新|1;PAYED;已付款`（`@State` 的初始状态取第一个/`default` 指定项）。
 - 枚举成员值可负（语料 `ABANDONED = -1`）。
-- **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](meta-model.md) §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
+- **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](/meta-model.md §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
 
-> ⚠️ **待裁决**：`b0000` 位字面量与 BitSet 底层宽度（定宽？加成员是否变更存储宽度），见 `errata.md` 二-5。
+> ⚠️ **待裁决**：`b0000` 位字面量与 BitVector 底层宽度（定宽？加成员是否变更存储宽度），见 `errata.md` 二-5。
 
 ### 6.1 呈现注解：颜色与图标（✔ 2026-09-25 作者）
 
-> **开发指引（怎么一步步写）见 [`guide/enums.md`](guide/enums.md)**；本节是规范条文。
+> **开发指引（怎么一步步写）见 [`guide/enums.md`](../guide/enums.md)**；本节是规范条文。
 
 **枚举声明上**（开关 + 默认值）：
 
@@ -371,16 +391,16 @@ enum BomStatus : int {
 }
 ```
 
-**作者手写样例**（[`examples/enums/BomUsage.me`](examples/enums/BomUsage.me)，2026-09-25）：`@Iconized("bom")` 开图标并给前缀 —— 成员**不写** `@Icon` 时默认得到 `bom-design`；成员**写了** `@Icon("design")` 则**就是 `design`**（`@Icon` 写的是**完整别名**，前缀只作用于默认）。⚠️ 因此该文件里 `DESIGN` 那行 `@Icon("design")` 会让图标变成 `design` 而不是 `bom-design` —— 想要 `bom-design` 就删掉那行。
+**作者手写样例**（[`examples/enums/BomUsage.me`](../examples/enums/BomUsage.me)，2026-09-25）：`@Iconized("bom")` 开图标并给前缀 —— 成员**不写** `@Icon` 时默认得到 `bom-design`；成员**写了** `@Icon("design")` 则**就是 `design`**（`@Icon` 写的是**完整别名**，前缀只作用于默认）。⚠️ 因此该文件里 `DESIGN` 那行 `@Icon("design")` 会让图标变成 `design` 而不是 `bom-design` —— 想要 `bom-design` 就删掉那行。
 
 - **开关在声明、取值在成员**：`@Colorized` / `@Iconized` 决定「这个枚举的成员**参不参与**颜色 / 图标渲染」，`@ColorRole` / `@Icon` 给成员**具体角色 / 别名**。
 - **没开开关**：成员上的取值**不生效**（写了 → `mmda check` warning，不是 error）。
 - **开了开关但成员缺值**：**先取声明上的默认值**（`@Colorized(role, shade)` 的默认色 / `@Iconized(default)` 或 `@Iconized("prefix")` 的默认别名）；**没有默认值又不写** → 该成员**该项不渲染**（不是错误；允许「只上色、不上图标」或个别成员留空）。
 - **颜色是角色 + shade，不是色值**：`@Color(role, shade)` 只声明**语义角色**与**色板 shade（色阶）**（`200` = Material 色板第 3 档、`500` = 基准档），**具体色值来自主题**（Material Design + Theme Builder）——**模型层不写 `#RRGGBB`**。业务数据里「每行一个色」（如 `taskColor varchar(7)`、`bankColor`）是**数据**，不是呈现语义，两者不互相替代。
 - **图标是别名不是库绑定**：`@Icon("cancel")` 的 `cancel` 是**逻辑别名**，三端各自映射（TS / Syncfusion、C# / FontAwesome、Flutter / Material Icons）——**模型层不写 `fas fa-x`**。
-- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`label` / `description`）；注解 = **呈现**（颜色 / 图标）。i18n 只管 `///` 那一边。
-- **渲染口径**见 [`presentation.md`](presentation.md) §4.1；**元数据承载**见 [`meta-model.md`](meta-model.md) §6。
-- **字符串表示与元数据 JSON** 见 [`meta-model.md`](meta-model.md) §6.1 / §6.2：`MetaEnum` 是内存模型（`toString()`/`fromString()` + `toJson()`/`fromJson()`）；串 = `value;name;text;color;icon`（老 3 段永远合法）；**`color` 一律写 `<role>-<shade>`**（`info-500`）。
+- **与 `///` 注释的分工**（一概念一主人）：`///` = **显示标签与描述**（`label` / `description`）；注解 = **呈现**（颜色 / 图标）。**i18n 只管 `label`**（⤴ 2026-09-26：颜色 / 图标**走不了词条** —— 语言无关、随元数据一次下发）；**`description` 不进 JSON、也不进 i18n**，另存 **comments 层**（只进 `mmda doc` / IDE，见 [`meta-model.md`](/meta-model.md §6.3）。
+- **渲染口径**见 [`presentation.md`](/presentation.md §4.1；**元数据承载**见 [`meta-model.md`](/meta-model.md §6。
+- **字符串表示与元数据 JSON** 见 [`meta-model.md`](/meta-model.md §6.1 / §6.2：`MetaEnum` 是内存模型（`toString()`/`fromString()` + `toJson()`/`fromJson()`）；串 = `value;name;label;color;icon`（**段名 = `label`**，⤴ 2026-09-26 作者：「**text => label**」；老 3 段永远合法）；**`color` 一律写 `<role>-<shade>`**（`info-500`）；**JSON 顶层带 `locale`** —— **一份一个 locale、这才是最终输出形态**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」；缺译文回落项目 `defaultLocale`）。
 
 **✔ 细节 6 条已裁（2026-09-25，作者「其他都按你建议，除了图标别名是开放的」）**：
 
@@ -444,7 +464,7 @@ union all Contactor as c
   —— `data/models/base/{Person,OrganizationUnit,MaterialNSku}.mm:2`、`data/models/mes/Maintainable.mm:2`。
 - **语料形态**：`/// VIEW` + `view <名> { 列定义 }` —— **列直接写在视图里**（= 各基础表的**公共列**），语料 `union` / `from` **0 命中**；
   即**语料的 `view` 已经是 UNION 视图的结果形态，只是没写 `union` 子句**。
-- **`Maintainable` 视图自带段**：`@Partitioned [10000,0x000F_FFFF]` + `equipId uint64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
+- **`Maintainable` 视图自带段**：`@Partitioned [10000,0x000F_FFFF]` + `equipId int64 default 0 identity generated` → **视图本身是有主键、有段的第一公民**；而 `Person` 视图没有（现状不一致 → 待裁 ③）。
 - ⚠️ **实现侧只有 join、还没有 UNION**：`MetaView.java:20-28` = 主表 `t` + `relatives`（join 关系）+ 列别名 + `whereCondition` / `orderBy`（`D:\2026\java\mmda-core\mmda-core-metadata\...\MetaView.java`）。
 - **校验（✔ 2026-09-25 作者「同意进」）**：① 同组基础表的 `[min,max]` **两两不重叠**（重叠 = UNION 后主键必撞）→ **`mmda check` 硬门禁（error，生成期就拦，非 warning）**；② **一张表最多属于一个组**（它只有一段）；③ 基础表段落在 realId 空间内 —— ②③ 与 ① 是**同一批校验**，一起在 `mmda check` 里实现。
 **✔ 三条已裁（2026-09-25 作者）**：
@@ -478,13 +498,13 @@ union all Contactor as c
 | `view` | View | `MetaView`（`whereCondition`、`orderBy`、`relatives`） |
 | 对象级 `@Id/@Index/@ForeignKey/@Check` | 约束 | `MetaIndex`/`MetaForeignKey`/`MetaCheck` |
 
-完整元模型见 [meta-model.md](meta-model.md)；旧库表名映射见 [legacy/java-factory.md](legacy/java-factory.md)。
+完整元模型见 [meta-model.md](/meta-model.md；旧库表名映射见 [legacy/java-factory.md](../legacy/java-factory.md)。
 
 ---
 
 ## 10. 相关
 
-- [datatypes.md](datatypes.md) — 类型
-- [statements.md](statements.md) — 表达式、行为与状态机
-- [meta-model.md](meta-model.md) — 元模型
-- [errata.md](errata.md) — 待裁决
+- [datatypes.md](/datatypes.md — 类型
+- [statements.md](/statements.md — 表达式、行为与状态机
+- [meta-model.md](/meta-model.md — 元模型
+- [errata.md](../errata.md) — 待裁决

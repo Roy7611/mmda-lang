@@ -1,7 +1,7 @@
 # 枚举（Enum）开发指南
 
 > **面向**：建模的架构师 / 设计师 + 写业务代码的程序员。
-> **真源**：语法在 [`../records.md`](../records.md) §6 / §6.1，渲染口径在 [`../presentation.md`](../presentation.md) §4.1，元数据承载在 [`../meta-model.md`](../meta-model.md) §6，裁决过程在 [`../errata.md`](../errata.md) §五-62～65。
+> **真源**：语法在 [`../records.md`](../lang/records.md §6 / §6.1，渲染口径在 [`../presentation.md`](../lang/presentation.md §4.1，元数据承载在 [`../meta-model.md`](../lang/meta-model.md §6，裁决过程在 [`../errata.md`](../errata.md) §五-62～65。
 > **实例**：[`../examples/enums/`](../examples/enums/)（`BomStatus` / `BomUsage` / `MaterialType` / `RoutingType`…）。
 
 ---
@@ -47,7 +47,7 @@ enum BomStatus : int {
 | 文件 | `data/enums/{模块}/{Name}.me`（一对象一文件；扩展名 `.me`） |
 | 枚举名 | **PascalCase**（`BomStatus`、`RoutingType`） |
 | 成员名 | **UPPER_SNAKE**（`RAW_MATERIAL`、`ABANDONED`）—— 三端一致（见 [`../naming.md`](../naming.md)） |
-| 成员值 | 冒号后是底层类型：`enum X : int { … }`；位枚举写 `enum X : int flags { … }`（也见 `BitSet`） |
+| 成员值 | 冒号后是底层类型：`enum X : int { … }`；位枚举写 `enum X : int flags { … }`（也见 `BitVector`） |
 | 值可负 | `ABANDONED = -1` 合法（语料在用） |
 | 存量不擅改 | 值一旦上线就是**历史数据的含义**，改名/改值要当作数据迁移处理 |
 
@@ -247,7 +247,7 @@ stm BomApproval on Bom.status {
 ## 13. 字符串表示与元数据 JSON
 
 > 两者都是**产物**（语言文件才是真源）。`MetaEnum` 是**内存模型**，只有两条通道：**字符串**（`toString()` / `fromString()`）与 **JSON**（`toJson()` / `fromJson()`）。
-> **`color` 只有一个形态**：`<role>` 或 `<role>-<shade>` —— `info` / `info-500`；注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段。规范条文见 [`../meta-model.md`](../meta-model.md) §6.1 / §6.2。
+> **`color` 只有一个形态**：`<role>` 或 `<role>-<shade>` —— `info` / `info-500`；注解里写两个参数（`@Color(info, 500)`），串与 JSON 里写一段。规范条文见 [`../meta-model.md`](../lang/meta-model.md §6.1 / §6.2。
 
 ### 13.1 字符串表示（`toString()` / `fromString()`）
 
@@ -263,7 +263,7 @@ stm BomApproval on Bom.status {
 | --- | --- | --- |
 | 1 | `value` | 整数（位枚举为位值） |
 | 2 | `name` | 成员名 |
-| 3 | `text` | 显示标签（`///`）——**段名是历史名，语义 = 该成员的 `label`**（JSON 里就叫 `label`） |
+| 3 | `label` | 显示标签（`///`）——**段名 = `label`**（与 JSON 键同名；旧实现里叫 `text`，段位不变 —— ⤴ 2026-09-26 作者：「**text => label**」） |
 | 4 | `color` | **`<role>` 或 `<role>-<shade>`**（`info` / `info-500`） |
 | 5 | `icon` | 图标别名（**完整别名**） |
 
@@ -276,8 +276,9 @@ stm BomApproval on Bom.status {
 
 - **颜色段** `info-500` = 角色 + shade（`-` 连接）；只写角色 `info` = 省略 shade（按 `500`）；只写 `-500`、角色拼错、shade 不在 10 档 → error。
 - **空段 = 未声明**，按枚举级默认回落；**段内禁止 `;` 与 `|`**（`mmda check` error）。
+- **第 3 段 `label` = 项目 `defaultLocale` 的标签**（串是 locale 无关形态，✔ 2026-09-26 作者：「**2 defaultLocale**」）—— 分 locale 的最终 `label` 只在元数据 JSON（顶层带 `locale`，§13.2）。
 - **不用外观注解的枚举，串一个字节都不变** —— 老项目零影响。
-- **没有描述段**：`description`（`/// <label> : <description>` 的后半段）**不进成员串** —— 5 段格式已冻结；描述只出现在**内存模型与 JSON**（§13.2）。
+- **没有描述段**：`description`（`/// <label> : <description>` 的后半段）**既不进成员串、也不进 JSON**（⤴ 2026-09-26 作者：「**json 中不要 description 了吧**」「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）—— 5 段格式已冻结；描述作为**文档注释（comments）单独存储**（同 SQL `COMMENT ON` 的语义；**✔ 载体 = A：生成 DDL 时落数据库 `COMMENT ON`** —— ⤴ 第一百一十八轮作者：「**1A**」），只供 `mmda doc` / IDE 与数据库注释。
 
 > ⚠️ **必须知道**：老运行时按 `split(';', 3)` 解析（`MetaEnumMember.parse()`，新库 `MetaEnumMember.java:69`），**第 3 段会吞掉后面所有内容** —— 老运行时读扩展串会把标签读成 `新;info-500;bom-new`（静默错标）。
 > 所以：扩展段**只在用了外观注解时**产出；**同一份元数据必须与同一代内核/运行时配套**（元数据是产物，随内核重生成）；要回退老格式用 `mmda migrate --drop-enum-style`。
@@ -286,9 +287,9 @@ stm BomApproval on Bom.status {
 
 ```json
 {
+  "locale": "zh-CN",
   "name": "BomStatus",
   "label": "BOM状态",
-  "description": "BOM 的审批状态",
   "baseType": "int",
   "bitwise": false,
   "colorized": true,
@@ -296,18 +297,23 @@ stm BomApproval on Bom.status {
   "iconized": true,
   "iconPrefix": "bom",
   "members": [
-    { "value": 0, "name": "NEW",       "label": "新",     "description": "新建、未提交",     "color": "info-500",    "icon": "bom-new" },
-    { "value": 1, "name": "DRAFTED",   "label": "已起草", "description": "保存但未提交审核", "color": "info-200",    "icon": "bom-drafted" },
-    { "value": 2, "name": "CERTIFIED", "label": "已审核", "description": null,                "color": "success-500", "icon": "bom-certified" },
-    { "value": 5, "name": "ABANDONED", "label": "已弃用", "description": "不可再启用",       "color": "gray-500",    "icon": "bom-abandoned" }
+    { "value": 0, "name": "NEW",       "label": "新",     "color": "info-500",    "icon": "bom-new" },
+    { "value": 1, "name": "DRAFTED",   "label": "已起草", "color": "info-200",    "icon": "bom-drafted" },
+    { "value": 2, "name": "CERTIFIED", "label": "已审核", "color": "success-500", "icon": "bom-certified" },
+    { "value": 5, "name": "ABANDONED", "label": "已弃用", "color": "gray-500",    "icon": "bom-abandoned" }
   ]
 }
 ```
 
-- **`description` 与 `label` 同源不同物**：`/// 已起草 : 保存但未提交审核` → `label: "已起草"`、`description: "保存但未提交审核"`；只写标签时 `description` = `null`（**JSON 存最终**，同 `color` / `icon`）。
+> **⤴ 本 JSON 没有 `description` 字段**（2026-09-26 作者：「**json 中不要 description 了吧**」「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」）：文档注释**另存 comments 层**（**✔ A = 定案**：生成 DDL 时落数据库 `COMMENT ON`；B 备选、不采用 —— ⤴ 第一百一十八轮作者：「**1A**」）—— 见 [`../meta-model.md`](../lang/meta-model.md §6.3。JSON 只留「机器要用的」：`label`（另经词条发）、`color` / `icon`、名字与值。
+
+- **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
+- **⤴ 运行时不下发（✔ 2026-09-26 作者）**：本节 JSON 是**设计期 / 元数据面**产物；**业务载荷里没有 `label` / `description`**，且 **`description` 连元数据一次下发都不做**（懒加载 / 只进 `mmda doc` 与 IDE）—— 作者原话：「**设计时属性 label, description 我不想在网络中传输，浪费**」「**特别是 description**」。⏳ 待裁：`label` 的运行时通道（词条包 / 元数据一次）。
+- **顶层 `locale` = 本份 JSON 的 locale（最终输出形式）**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）：**一份 JSON 只出一个 locale** —— `label` / 成员 `label` 都是**该 locale 的最终值**（缺译文回落项目 `defaultLocale`）；多 locale = **多份 JSON**，客户端**按 locale 分别缓存**（IndexedDB 分 locale 存）。**注意**：串里的第 3 段（`text`）是 **locale 无关的形态**，**✔ 存项目 `defaultLocale` 的标签**（⤴ 第一百一十八轮作者：「**2 defaultLocale**」）；locale 化的最终 `label` 只在元数据 JSON / 词条里。
+- **`description` 与 `label` 同源不同物**：`/// 已起草 : 保存但未提交审核` → `label: "已起草"`（进 JSON，且**另走词条**）+ **文档注释「保存但未提交审核」（不进 JSON，另存 comments 层）**；只写标签时没有文档注释（`null`）。
 - **JSON 里没有 `enumString` 字段** —— 旧实现的那个列就是 `toString()` 的结果；成员信息由 `members[]` 承载。
 - **`toString()` 存原始、JSON 存最终**：串里没声明就是空，`members[]` 一律回落后的完整值（色写全 `<role>-<shade>`）。
-- **外观随 `MetaEnum` 下发一次，不进业务数据**：记录里枚举字段照旧是成员名（`"status": "CERTIFIED"`）+ `customProperties.$status` 显示标签。
+- **呈现信息（`label` / `description` / `color` / `icon`）不进业务数据**（✔ 2026-09-26 作者）：记录里枚举字段**只有成员名**（`"status": "CERTIFIED"`）—— **`customProperties.$status` 标签形态取消**（⤴ 修订 2026-09-24 的「保留」）；**`label` 走词条**（按 locale 分片）、**`color` / `icon` 随元数据下发一次**（⤴ 2026-09-26：颜色 / 图标**不走词条**）；**`description` 连 JSON 都不进**（另存 comments 层，见上两条）。
 
 ## 14. 实例索引
 
@@ -325,10 +331,10 @@ stm BomApproval on Bom.status {
 
 ## 15. 相关
 
-- [`../records.md`](../records.md) §6 / §6.1 —— 枚举与呈现注解的**规范条文**
-- [`../presentation.md`](../presentation.md) §4.1 —— **渲染口径**（角色 → 主题令牌、别名 → 三端映射）
-- [`../meta-model.md`](../meta-model.md) §6 —— 元数据属性
-- [`../statements.md`](../statements.md) —— 行为与状态机
+- [`../records.md`](../lang/records.md §6 / §6.1 —— 枚举与呈现注解的**规范条文**
+- [`../presentation.md`](../lang/presentation.md §4.1 —— **渲染口径**（角色 → 主题令牌、别名 → 三端映射）
+- [`../meta-model.md`](../lang/meta-model.md §6 —— 元数据属性
+- [`../statements.md`](../lang/statements.md —— 行为与状态机
 - [`../naming.md`](../naming.md) —— 命名约定（Pascal / UPPER_SNAKE / kebab）
 - [`../errata.md`](../errata.md) §五-62～65 —— 这几条口径的裁决记录
 - [`quickstart.md`](quickstart.md) —— 整个体系的上手入口

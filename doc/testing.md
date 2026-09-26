@@ -1,7 +1,7 @@
 # 测试与验收（Testing & Acceptance）
 
 > **这份文档要解决什么**：测试不能等到编码完再补。元模型里已经声明了字段类型/长度/可空、主键与唯一、引用关系、状态迁移图、动作授权、流程网关、转↔能力——**这些声明本身就是可判定的契约**，所以用例能从架构与设计阶段**机械生成**；声明不出来的那部分（业务语义），由 AI 生成草稿、**人审用例**（而不是审代码），审过的用例冻结成**验收标准**。
-> 状态：草案（2026-09-24 立；**2026-09-25 作者补充三条共识**：**UAT 的地位与时点**（§0.1）、**测试类型 = UAT 的细化与展开**（§0.2）、**用例进库与 IDE 全生命周期管理**（§8.1 / §9.1））。与 [`workflows.md`](workflows.md)（职责 / 模式 / 签字）、[`targets.md`](targets.md)（capability）、[`events.md`](events.md)（幂等与重放）、[`requirements.md`](requirements.md)（`REQ-x` ↔ UAT 追溯）、[`workflows-phase.md`](workflows-phase.md)（0 站的验收准则）联动。
+> 状态：草案（2026-09-24 立；**2026-09-25 作者补充三条共识**：**UAT 的地位与时点**（§0.1）、**测试类型 = UAT 的细化与展开**（§0.2）、**用例进库与 IDE 全生命周期管理**（§8.1 / §9.1））。与 [`workflows.md`](workflows.md)（职责 / 模式 / 签字）、[`targets.md`](targets.md)（capability）、[`events.md`](lang/events.md（幂等与重放）、[`requirements.md`](requirements.md)（`REQ-x` ↔ UAT 追溯）、[`workflows-phase.md`](workflows-phase.md)（0 站的验收准则）联动。
 
 ---
 
@@ -86,9 +86,9 @@
 | `@Id` / 唯一约束 / `@Partitioned` | 唯一冲突、分区键必填 | 重复值、缺失分区键 |
 | `@Ref` / `@One` / `@Many` | 引用完整性 | 引用不存在、删除被引用（级联或拒绝）、自引用 |
 | `constraint` / `formula` | 约束表达式边界 | 纯函数 ⇒ 输入域可抽样穷举；非法表达式不许进真源 |
-| `@Computed` | 确定性用例 | 同输入必同输出、可重放（与 [`events.md`](events.md) 的重放要求一致） |
+| `@Computed` | 确定性用例 | 同输入必同输出、可重放（与 [`events.md`](lang/events.md 的重放要求一致） |
 | `@State` + STM（`data/stms/*.ms`） | **迁移矩阵**：每对合法迁移 1 正例，每类非法迁移 1 反例；可达性 | 从初始态到每个状态都存在路径；每个 action 有前置状态与授权 |
-| `ui/**/*.mi` + i18n 词条 | 呈现用例 | 可见/必填/只读与元数据一致；无空标签；五视图可渲染（[`presentation.md`](presentation.md) §5.1 渲染描述） |
+| `ui/**/*.mi` + i18n 词条 | 呈现用例 | 可见/必填/只读与元数据一致；无空标签；五视图可渲染（[`presentation.md`](lang/presentation.md §5.1 渲染描述） |
 
 **设计阶段的"完成"定义**：`validate` 零 error **且** 机械用例全绿。设计师交付的不是"模型文件"，是"模型文件 + 那批自动长出来的用例"。
 
@@ -272,7 +272,7 @@ MCP 面（[`ai/tools.md`](ai/tools.md) 需补）：`mmda_test_gen`、`mmda_test_
 
 ## 9. 用例文件形态
 
-**后缀已裁（2026-09-25 改判）**：**测试用例就是 `.m`**（语言文件统一后缀），住**阶段根 `tests/`**，与模型同粒度、**一对象一文件**（[`project.md`](project.md) §1.2 / §11；原 `.mt` 分片后缀已作废）。**语法形态待裁**（§11 待裁第 9 条，随语法专题）。
+**后缀已裁（2026-09-25 改判）**：**测试用例就是 `.m`**（语言文件统一后缀），住**阶段根 `tests/`**，与模型同粒度、**一对象一文件**（[`project.md`](lang/project.md §1.2 / §11；原 `.mt` 分片后缀已作废）。**语法形态待裁**（§11 待裁第 9 条，随语法专题）。
 
 一对象一文件，与模型同粒度：
 
@@ -323,11 +323,11 @@ test "审批必须从草稿发起" covers data/stms/order/OrderStatus.ms
 | [`workflows.md`](workflows.md) | 用例的**审签**走它的权限矩阵（§1.3）与模式（§1.1）；交接协议（§9）增加「用例与基线」一项 |
 | [`requirements.md`](requirements.md) | **需求 → UAT 的追溯**：`kind: uat` 的用例锚在 `REQ-x` 上（§9.1）；需求基线冻结 = 需求条目 + 可执行 UAT（§0.1） |
 | [`workflows-phase.md`](workflows-phase.md) | 0 站的产物含「验收准则」（§3）；测试面 = 验证腿里可机器判定的那部分 |
-| [`meta-model.md`](meta-model.md) / [`datatypes.md`](datatypes.md) | 提供机械用例的全部声明来源 |
+| [`meta-model.md`](lang/meta-model.md / [`datatypes.md`](lang/datatypes.md | 提供机械用例的全部声明来源 |
 | [`api.md`](api.md) | 提供 **API 契约用例**与**契约测试**（响应 vs OpenAPI schema，B 级）；**OAS 3.1.0 原生对齐**（§3.1–§3.8）与 **mock 数据两层造数**（§3.9）；外部工具（Postman/Apifox）collection 只作补充、不进真源 |
-| [`events.md`](events.md) | 幂等 / 重放 / Exactly Once 的用例由它的语义定义 |
+| [`events.md`](lang/events.md | 幂等 / 重放 / Exactly Once 的用例由它的语义定义 |
 | [`targets.md`](targets.md) | capability 门禁用例；三端一致性的判定口径 |
-| [`project.md`](project.md) | 用例进版本控制（一对象一文件）、`baseline/` 的存放 |
+| [`project.md`](lang/project.md | 用例进版本控制（一对象一文件）、`baseline/` 的存放 |
 | [`quality.md`](quality.md) | 质量模型（ISO/IEC 25010 九维）与自动评估——本文的用例、覆盖率、变异、用例质量分是它九维里的**信号来源**；验收物增补第 ④ 项「质量报告」（§5） |
 | `PLAN.md` | P5 起出 `test-gen`；P9 出跑用例/影响面/变异/验收单（见 §8） |
 
@@ -339,7 +339,7 @@ test "审批必须从草稿发起" covers data/stms/order/OrderStatus.ms
 
 | # | 议题 | 裁决 | 落点 |
 | --- | --- | --- | --- |
-| 1 | 用例文件后缀与形态 | ~~**进语言族 `.mt`**~~ → **⤴ 2026-09-25 改判：统一 `*.m`**（语言文件只剩一个后缀，住 `tests/`；「与模型共享同一套校验逻辑」这条不变） | 本文 §9；[`project.md`](project.md) §1.2 / §11 |
+| 1 | 用例文件后缀与形态 | ~~**进语言族 `.mt`**~~ → **⤴ 2026-09-25 改判：统一 `*.m`**（语言文件只剩一个后缀，住 `tests/`；「与模型共享同一套校验逻辑」这条不变） | 本文 §9；[`project.md`](lang/project.md §1.2 / §11 |
 | 2 | 覆盖率门禁阈值 | 字段 / 迁移 / 权限 / 能力 **100%**，需求 **≥ 90%**（例外必须写明理由） | 本文 §6 |
 | 3 | AI 用例进基线 | **业务 + 设计师双签**；单人模式 self-approve + AI 对抗复核 | 本文 §1 / §4；`workflows.md` §1.1 |
 | 4 | 变异测试跑频与阈值 | **里程碑 + 每日**；存活率 ≤ 10%（首个版本放宽） | 本文 §7 |

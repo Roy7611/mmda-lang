@@ -103,7 +103,7 @@ module Hr.Recruitment.Interview
 record Order : IAuthorizable {
     /// 订单ID
     /// 订单唯一标识
-    orderId uint64 identity generated, //identity默认indexed
+    orderId int64 identity generated, //identity默认indexed
 
     /// 订单日期: 指下单日期
     orderDate date default now indexed future,
@@ -187,7 +187,7 @@ Record 体末尾可声明**对象级**主键、索引与检查约束（会生成
 | 注解 | 含义 |
 |------|------|
 | `@Id (col1,col2,…)` | 组合主键；未命名时默认 `ID_{RecordName}`。单字段主键用字段 `identity` 即可 |
-| `@Index name(cols…)` | 命名索引（落库）；唯一索引加后缀 `unique`；**两个及以上字段建立的索引必须在此单独具名声明**（不能挤在字段行尾）——语料 342 处具名声明，其中 2 列及以上 45 处（2 列 32 / 3 列 12 / 4 列 1） |
+| `@Index name(cols…)` | 命名索引（落库）；**列可带 `asc` / `desc`**（不写 = `asc`；**空值位置 = 语言层写死「空值排最前」`NULLS FIRST`、不引入 `nulls first` / `nulls last` 关键字** —— ✔ 2026-09-26 作者：「asc / desc 肯定要，默认 nulls first，不引入」）；唯一索引加后缀 `unique`；**两个及以上字段建立的索引必须在此单独具名声明**（不能挤在字段行尾）——语料 342 处具名声明，其中 2 列及以上 45 处（2 列 32 / 3 列 12 / 4 列 1） |
 | `@ForeignKey FK_…(localCols) ref Entity(refCols)` | 外键；多列关联时在对象级声明，可选 `on update cascade` / `on delete set null` 等 |
 | `@Check CHK_name(expr)` | 检查约束；MMDA 布尔表达式 |
 
@@ -778,7 +778,7 @@ gateway NotifyContractSigned ExclusiveGateway {
 
 ## 文件目录
 
-> **正式规范**：[doc/project.md](project.md)（formatVersion 2.0）。以下为 SSOT 设计笔记摘要。
+> **正式规范**：[doc/lang/project.md](lang/project.md（formatVersion 2.0）。以下为 SSOT 设计笔记摘要。
 
 mmda 项目目录：
 

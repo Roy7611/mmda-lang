@@ -1,7 +1,7 @@
 # 事件驱动架构
 
 > 早期 `events.md` 全文保留（本文主体），并并入上一轮 `events/language.md` 的事件声明语法与 `events/architecture.md` 的要点（原文留档 `archive/2026-06/events/`）。
-> **分工（2026-09-24）**：本文 = **语言面真源**（事件的声明、订阅语义、重放与幂等的**需求**）；**运行时与集成面真源 = [`event_bus.md`](event_bus.md)**（总线怎么装、端点怎么配、数据流怎么编、一致性怎么保、怎么监控、多租户怎么隔离）。本文 §「事件总线 / 事件流 / 事件过滤器 / 日志 / 可靠计算」讲的是**机制需求**，其**实现口径以 `event_bus.md` 为准**。
+> **分工（2026-09-24）**：本文 = **语言面真源**（事件的声明、订阅语义、重放与幂等的**需求**）；**运行时与集成面真源 = [`event_bus.md`](/event_bus.md**（总线怎么装、端点怎么配、数据流怎么编、一致性怎么保、怎么监控、多租户怎么隔离）。本文 §「事件总线 / 事件流 / 事件过滤器 / 日志 / 可靠计算」讲的是**机制需求**，其**实现口径以 `event_bus.md` 为准**。
 
 IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态改变或者设备动作完成时触发一个事件，然后执行动作。
 动作可以封装为一个事件处理函数（Event Handler），执行相应的业务逻辑。
@@ -37,7 +37,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 消息（Message）有发送者（Sender）和接收者（Receiver），生产者（Producer）和消费者（Consumer），而事件（Event）有发布者（Publisher）和订阅者（Subscriber），两者类同。
 消息更偏向于技术层面，而事件理解为发生一件什么事，更能在业务层面沟通和建模，因此我们基于事件架构驱动建模，基于消息实现。
 
-消息和事件都可使用生产者（Producer）和消费者（Consumer）模式，按数据流的角度理解（**术语统一见 [`glossary.md`](glossary.md) §3.1 与 [`event_bus.md`](event_bus.md) §1.1**：MMDA 文档**统一用 Publisher / Subscriber**，Producer / Consumer 只在描述外部系统与中间件时使用）：
+消息和事件都可使用生产者（Producer）和消费者（Consumer）模式，按数据流的角度理解（**术语统一见 [`glossary.md`](../glossary.md) §3.1 与 [`event_bus.md`](/event_bus.md §1.1**：MMDA 文档**统一用 Publisher / Subscriber**，Producer / Consumer 只在描述外部系统与中间件时使用）：
 
 - 发生一个事件（Event）或者定时事件
 - 触发（Trigger）一次消息（Message）传递，触发方是消息生产者（Producer）
@@ -45,7 +45,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 - 消费者（Consumer）订阅了某个频道（Channel），收到消息转交 Handler（例如某个 Service）进行业务处理
 - 消费者本身是一个**端点（Endpoint）**
 
-消息有如下概念（✔ 2026-09-24 术语统一，见 [`glossary.md`](glossary.md) §3.1）：
+消息有如下概念（✔ 2026-09-24 术语统一，见 [`glossary.md`](../glossary.md) §3.1）：
 
 - **EventSource（事件源）**——流的入口；原本这里写的「触发器 Trigger 是一个事件源」已改为：**Trigger 降为 EventSource 的配置项 `on`**（`@trigger` 那个记录级数据库触发器是另一回事，别混）
 - **EventSink（数据汇）**——流的出口，三种投递方式：**写入 Write · 推送 Push · 调用 Call**（原来写成「端点（Sink / Endpoint）」把两个概念叠在一起了，已拆开：**Endpoint 是配置单元，EventSource / EventSink 是它在图上的两个方向**）
@@ -80,7 +80,7 @@ IOT 和 MES 项目中需要监听设备状态和作业任务状态，当状态�
 
 ## 事件总线（Event Bus）
 
-> ⚙️ **实现口径见 [`event_bus.md`](event_bus.md)**：本节及以下各节是**机制需求**（要什么），`event_bus.md` 给**架构与选型**（怎么做：概念模型 Event → Message → Data、三类集成、端点、数据流编排三张图、状态与时间语义、Outbox、多租户、监控 UI、**引擎可替换**）。**引擎裁决见其 §5**，结论：**借 Flink 的语义，不绑 Flink 的运行时**（作者原话「我更偏向 Flink 的概念」）。
+> ⚙️ **实现口径见 [`event_bus.md`](/event_bus.md**：本节及以下各节是**机制需求**（要什么），`event_bus.md` 给**架构与选型**（怎么做：概念模型 Event → Message → Data、三类集成、端点、数据流编排三张图、状态与时间语义、Outbox、多租户、监控 UI、**引擎可替换**）。**引擎裁决见其 §5**，结论：**借 Flink 的语义，不绑 Flink 的运行时**（作者原话「我更偏向 Flink 的概念」）。
 
 组件发布事件和订阅事件都是与事件总线打交道，事件总线负责事件路由（Event Routing），将事件从发布者传递给订阅者，因此它是一个 Event Router。
 事件订阅者是一个事件监听器（Event Listener）和事件处理器（Event Handler）的代码实现。在我们的术语中：
@@ -143,7 +143,7 @@ Action 是架构设计层概念，出现什么事件执行什么动作，而 Com
 
 > 来源：上一轮 `events/language.md`。
 > **边界（已定，`..\PLAN.md` 决策 B3）**：语言只做**声明与接口抽象**；事件总线、重放、Exactly Once 由 Java / C# 各自实现的底座承担。
-> **补充（2026-09-24）**：`delivery` / `lifecycle` / `retry` 的**运行时语义**、`channel` 的 **transport 选型**、端点（内部 module 端点 / 外部端点）的**配置形态**、以及数据流的**图形化编排**（节点图 / 数据流图 / 数据映射图）见 [`event_bus.md`](event_bus.md) §6–§9；语言层**不新增**编排概念（判据：能从 module / 数据模型推导的不再声明，编排落图不落语法）。
+> **补充（2026-09-24）**：`delivery` / `lifecycle` / `retry` 的**运行时语义**、`channel` 的 **transport 选型**、端点（内部 module 端点 / 外部端点）的**配置形态**、以及数据流的**图形化编排**（节点图 / 数据流图 / 数据映射图）见 [`event_bus.md`](/event_bus.md §6–§9；语言层**不新增**编排概念（判据：能从 module / 数据模型推导的不再声明，编排落图不落语法）。
 
 ### 1. 事件定义
 
@@ -226,7 +226,7 @@ Action (STM 边)
 
 ## 相关
 
-- [event_bus.md](event_bus.md) — **事件总线与集成编排（底座 ESB 能力）**：概念模型 Event → Message → Data、三类集成、端点、DataFlow 三张图、DataMapper、时间与状态语义、Outbox、多租户、监控 UI、引擎选型
-- [statements.md](statements.md) — 行为与状态机（`@State` / `@Action` / STM / ModuleFlow）
-- [meta-model.md](meta-model.md) — Event / Channel / Subscription 元模型
-- [ide/diagrams.md](ide/diagrams.md) — DFD 图形投影
+- [event_bus.md](/event_bus.md — **事件总线与集成编排（底座 ESB 能力）**：概念模型 Event → Message → Data、三类集成、端点、DataFlow 三张图、DataMapper、时间与状态语义、Outbox、多租户、监控 UI、引擎选型
+- [statements.md](/statements.md — 行为与状态机（`@State` / `@Action` / STM / ModuleFlow）
+- [meta-model.md](/meta-model.md — Event / Channel / Subscription 元模型
+- [ide/diagrams.md](../ide/diagrams.md) — DFD 图形投影

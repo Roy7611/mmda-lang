@@ -181,6 +181,6 @@ M  项目制造运营          [Subsystem, type=0]
 ## 11. 相关文档
 
 - [graph-files.md](graph-files.md) — `*.g` 格式与 syncRef
-- [meta-model.md](../meta-model.md)
-- [language/behaviors.md](../statements.md)
-- [events/architecture.md](../events.md)
+- [meta-model.md](../lang/meta-model.md
+- [language/behaviors.md](../lang/statements.md
+- [events/architecture.md](../lang/events.md

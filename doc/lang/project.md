@@ -39,7 +39,7 @@ erp/
 ├── intents/                    # S1 意图：why / what（人类参与最多）
 │   ├── M.01.001-007.m          #   requirement（@Layer / @Priority / @Status / @Feature）
 │   ├── roles/SalesMan.m        #   role + 权限声明（原 `flow/roles/*.mr`）
-│   └── uat/M.01.001.uat.m      #   验收准则（可执行 UAT，随需求基线冻结，[`testing.md`](testing.md) §0.1）
+│   └── uat/M.01.001.uat.m      #   验收准则（可执行 UAT，随需求基线冻结，[`testing.md`](../testing.md) §0.1）
 │
 ├── models/                     # S2 建模：how（模块分解 / 动作 / 数据 / 状态 / 流程 / UI，全是 .m）
 │   ├── modules/erp.m           #   模块树（原 `biz/*.ma`）
@@ -55,9 +55,9 @@ erp/
 │
 ├── tests/                      # S3 验收：用例 + 冻结基线
 │   ├── order/Order.m           #   用例（covers / req / source / kind / suite / reviewedBy）
-│   └── baseline/               #   冻结基线（按版本，作为验收标准，[`testing.md`](testing.md) §5）
+│   └── baseline/               #   冻结基线（按版本，作为验收标准，[`testing.md`](../testing.md) §5）
 │
-├── delivery/                   # S4 交付：交付物与部署（**运维在四阶段之外**，[`workflows-phase.md`](workflows-phase.md) §3.2）
+├── delivery/                   # S4 交付：交付物与部署（**运维在四阶段之外**，[`workflows-phase.md`](../workflows-phase.md) §3.2）
 │   ├── profiles/prototype-sqlite.m   # Codegen Profile（原 `codegen/profiles/*.yaml`）
 │   └── deploy/                       # 部署配置与交付清单（镜像 / 发布参数 / 版本）
 │
@@ -93,9 +93,9 @@ erp/
 | 测试与验收 | **S3 验收** | `tests/`（`tests/baseline/` = 冻结基线） | `test` |
 | 交付（Profile / 部署配置） | **S4 交付** | `delivery/` | `profile` / `deploy` |
 
-> **运维不在四阶段内**（✔ 2026-09-25 作者）：IDE 不提供运维能力，运维由底座集成监控平台；运维日志与报告发起下一轮迭代（[`workflows-phase.md`](workflows-phase.md) §3.2 / §3.5）。
+> **运维不在四阶段内**（✔ 2026-09-25 作者）：IDE 不提供运维能力，运维由底座集成监控平台；运维日志与报告发起下一轮迭代（[`workflows-phase.md`](../workflows-phase.md) §3.2 / §3.5）。
 
-> 四个阶段与阶段根目录的口径见 [`workflows-phase.md`](workflows-phase.md) §3。
+> 四个阶段与阶段根目录的口径见 [`workflows-phase.md`](../workflows-phase.md) §3。
 
 ### 1.2 文件类型总表（**目标态**）
 
@@ -111,11 +111,11 @@ erp/
 
 **旧分片后缀（✔ 2026-09-25 作废，仅迁移期需读）**：`.ma`（模块树）、`.mm`（对象）、`.me`（枚举）、`.ms`（STM）、`.mr`（角色）、`.mc`（转换器）、`.mf`（数据流）、`.mb`（BPMN）、`.mi`（UI）、`.mt`（用例）、`*.{ma,mm,ms,mf,mb}.g`（图形）。迁移见 §11。
 
-> ✔ **被本条推翻的三条旧裁决**：~~冲突 3「`.mmda` 只表示项目清单、语言分片保族」（2026-09-24）~~、~~冲突 2「`.ma` = JSON、其余为文本」（2026-09-25 上午）~~、~~「`.mt` 进语言族」（2026-09-24，[`errata.md`](errata.md) §五-6）~~ —— 三条均被「统一 `*.m`」作废；**保留的只有原口径的一半**：**partType 由内容首关键字判定**。
+> ✔ **被本条推翻的三条旧裁决**：~~冲突 3「`.mmda` 只表示项目清单、语言分片保族」（2026-09-24）~~、~~冲突 2「`.ma` = JSON、其余为文本」（2026-09-25 上午）~~、~~「`.mt` 进语言族」（2026-09-24，[`errata.md`](../errata.md) §五-6）~~ —— 三条均被「统一 `*.m`」作废；**保留的只有原口径的一半**：**partType 由内容首关键字判定**。
 
-> ✔ 冲突 3 **已裁**（2026-09-24）：`.mmda` 只表示项目清单，语言分片**保族**，`.mt` 同族（见 [`errata.md`](errata.md) §五-1、§五-6）。
-> ✔ 冲突 2 **已裁（2026-09-25，取语料形态）**：**`.ma` 正文 = JSON**（模块树，设计器产出，`$schema = …/ma-module/v1`）；**`.mm` / `.me` / `.ms` / `.mi` = M 语言文本**。实测（`E:\Dev\mmda-architect\examples\mmda-mes`，378 个语言文件）：`.mm` 215 / `.me` 113 / `.ms` 41 / `.mi` 1 **全部文本**，`.ma` 2 **全部 JSON**，`*.g`（图布局）与 `.mmda`（清单）同属 JSON。**判据：人写与评审的走 M 语言文本（可 diff、可图形编辑）；设计器产出的结构性文件走 JSON**（见 [`errata.md`](errata.md) 冲突 2）。
-> ✔ **2026-09-24 扩裁（作者原话：「我想把 `.mf` 给数据流图用，跨模块流程 `.mb`」）**：**`.mf` = 数据流（DataFlow，含节点图 / 数据流图 / 数据映射图）**；**`.mb` = 跨模块流程（BPMN）**——两者职责对调/新立，`.g` 族随之扩为 `{ma, mm, ms, mf, mb}`（见 [`errata.md`](errata.md) §五-34）。
+> ✔ 冲突 3 **已裁**（2026-09-24）：`.mmda` 只表示项目清单，语言分片**保族**，`.mt` 同族（见 [`errata.md`](../errata.md) §五-1、§五-6）。
+> ✔ 冲突 2 **已裁（2026-09-25，取语料形态）**：**`.ma` 正文 = JSON**（模块树，设计器产出，`$schema = …/ma-module/v1`）；**`.mm` / `.me` / `.ms` / `.mi` = M 语言文本**。实测（`E:\Dev\mmda-architect\examples\mmda-mes`，378 个语言文件）：`.mm` 215 / `.me` 113 / `.ms` 41 / `.mi` 1 **全部文本**，`.ma` 2 **全部 JSON**，`*.g`（图布局）与 `.mmda`（清单）同属 JSON。**判据：人写与评审的走 M 语言文本（可 diff、可图形编辑）；设计器产出的结构性文件走 JSON**（见 [`errata.md`](../errata.md) 冲突 2）。
+> ✔ **2026-09-24 扩裁（作者原话：「我想把 `.mf` 给数据流图用，跨模块流程 `.mb`」）**：**`.mf` = 数据流（DataFlow，含节点图 / 数据流图 / 数据映射图）**；**`.mb` = 跨模块流程（BPMN）**——两者职责对调/新立，`.g` 族随之扩为 `{ma, mm, ms, mf, mb}`（见 [`errata.md`](../errata.md) §五-34）。
 
 ### 1.3 跨目录引用规则
 
@@ -169,6 +169,8 @@ erp/
   "storage": { "kind": "directory" }
 }
 ```
+
+> **清单是设计源（单份）**：这里的 `projectLabel` / `modules[].label` / `description` 都写在**清单自身**里（`label` 取项目 `defaultLocale`；`description` 同 `comments` 层，不进元数据 JSON，见 [`meta-model.md`](/meta-model.md §6.3）；**按 locale 切片的是元数据 JSON（每份顶层带 `locale`，一份一个 locale）** —— ⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」（[`presentation.md`](/presentation.md §5、[`meta-model.md`](/meta-model.md §6.2）。
 
 | 字段 | 说明 |
 | --- | --- |
@@ -224,7 +226,7 @@ Record 内不嵌完整 STM：`@State OrderFlow` 指向 `models/stms/OrderFlow.m`
 
 | 路径 | 文件 | 说明 |
 | --- | --- | --- |
-| `intents/roles/` | `SalesMan.m` | `role` + `auth module` / `actions` / `scope`（**Role 来自 S1 识别的关键用户**，[`meta-model.md`](meta-model.md) §8.1） |
+| `intents/roles/` | `SalesMan.m` | `role` + `auth module` / `actions` / `scope`（**Role 来自 S1 识别的关键用户**，[`meta-model.md`](/meta-model.md §8.1） |
 | `models/converters/` | `AsnToReceipt.m` | `converter S->T { field->field, … }` |
 | `models/flows/` | `crm.m` | 数据流（DataFlow）：节点图 / DFD / 数据映射图 |
 | `models/bpml/` | `crm.m` | 跨模块流程（BPMN）活动 / 网关 / 消息流（目录名待裁） |
@@ -246,7 +248,7 @@ ui InterviewEditor for Interview {
 }
 ```
 
-未提供定制视图文件时，按对象声明（`models/objects/*.m`）生成标准 CRUD。详见 [presentation.md](presentation.md)。
+未提供定制视图文件时，按对象声明（`models/objects/*.m`）生成标准 CRUD。详见 [presentation.md](/presentation.md。
 
 ---
 
@@ -297,7 +299,7 @@ mmda open dist/erp.mmdax
 | 文件名 = 主符号名 | 与语言文件内 `record Order` / `enum OrderStatus` 一致（**目录自由时这是唯一的"人找得到"约定**） |
 | 子系统前缀（可选） | 大项目可 `models/objects/mes/Bom.m`；`syncRef` 仍为 `mes.Bom` |
 | **同名冲突（新增待裁）** | 统一后缀后，「对象 `Order.m`」与「同目录的脚本」不再能靠 `.mm` / `.m` 区分——**脚本命名规则待裁**（建议 `Order.{用途}.m`，如 `Order.hook.m` / `Order.rules.m`，见 §11-⑤） |
-| 大小写 | 类型名 PascalCase；模块树文件用小写（`erp.m`）；**标识符与生成代码的命名总口径见 [`naming.md`](naming.md)** |
+| 大小写 | 类型名 PascalCase；模块树文件用小写（`erp.m`）；**标识符与生成代码的命名总口径见 [`naming.md`](../naming.md)** |
 
 这粒度是为**细粒度版本控制**（决策 B2）服务的：对象级改动只产生对象级 diff，git/svn 合并冲突面最小。
 
@@ -305,7 +307,7 @@ mmda open dist/erp.mmdax
 
 ## 7. Codegen Profile
 
-路径 `codegen/profiles/*.yaml`，声明目标栈、输出目录、模板集。示例见 [ide/specification.md](ide/specification.md)（`prototype-sqlite`、`prototype-api-rust`、`prototype-api-ts`、`prototype-ui-vue`）。
+路径 `codegen/profiles/*.yaml`，声明目标栈、输出目录、模板集。示例见 [ide/specification.md](../ide/specification.md)（`prototype-sqlite`、`prototype-api-rust`、`prototype-api-ts`、`prototype-ui-vue`）。
 
 **生成区与手写区**：沿用 `~GENERATED PARTS BEGIN/END` 与 `~KEEP PARTS BEGIN/END` 标记，再生成只替换生成区、保留手写区（现有实现见 `D:\2026\java\mmda-foundation\mmda-factory`，`CodeBuilder.java:44-47`）。
 
@@ -353,7 +355,7 @@ actions/**/*.yaml
 events/**/*.mmda
 ```
 
-识别特征：存在 `manifest.json` 且**无**根 `{projectCode}.mmda`，或 `formatVersion` 为 `"1.0"`/`"1.1"`。迁移工具规划：`mmda migrate --to 2.0 ./legacy-project`。**另有语法级改名迁移**：`mmda migrate --rename @PartitionID=@Partitioned`（✔ 2026-09-25 作者同意；默认 dry-run 出待改清单、`--write` 才落盘；**只动语言文件**，不碰生成区 / KEEP 区）—— 解析器**只认新名**，旧项目升级必经这一步（同一条线见 [`naming.md`](naming.md) §5）。
+识别特征：存在 `manifest.json` 且**无**根 `{projectCode}.mmda`，或 `formatVersion` 为 `"1.0"`/`"1.1"`。迁移工具规划：`mmda migrate --to 2.0 ./legacy-project`。**另有语法级改名迁移**：`mmda migrate --rename @PartitionID=@Partitioned`（✔ 2026-09-25 作者同意；默认 dry-run 出待改清单、`--write` 才落盘；**只动语言文件**，不碰生成区 / KEEP 区）—— 解析器**只认新名**，旧项目升级必经这一步（同一条线见 [`naming.md`](../naming.md) §5）。
 
 | 能力 | 规范 | 上一轮实现（mmda-core / Architect） |
 | --- | --- | --- |
@@ -380,8 +382,8 @@ events/**/*.mmda
 
 **步骤（建议，待裁）**：
 
-1. **P2 解析器先支持双形态**（旧分片后缀 + `.m`）——没有回归保护之前**不动语料**（[`../PLAN.md`](../PLAN.md) §4 P2）；
-2. `mmda migrate --suffix`（与既有 `--rename` 同一条命令线，[`naming.md`](naming.md) §5）：默认 dry-run 出清单、`--write` 落盘，**只动语言文件**，不碰生成区 / KEEP 区；
+1. **P2 解析器先支持双形态**（旧分片后缀 + `.m`）——没有回归保护之前**不动语料**（[`../PLAN.md`](../../PLAN.md) §4 P2）；
+2. `mmda migrate --suffix`（与既有 `--rename` 同一条命令线，[`naming.md`](../naming.md) §5）：默认 dry-run 出清单、`--write` 落盘，**只动语言文件**，不碰生成区 / KEEP 区；
 3. **文档侧**：本文档已改为新口径；其余文档里的旧后缀按头部的「**一律读作 `.m`**」换算规则读，**随迁移专题批量改写**（不在本轮逐处改，避免出现「文档说 `.m`、语料还是 `.mm`」的更大偏差）；
 4. **图形与清单**的目标格式落定后再动 `.g` 与 `.mmda`（它们是机器产出 / 结构性文件，改格式要同时改设计器与内核）。
 
@@ -400,8 +402,8 @@ events/**/*.mmda
 
 ## 12. 相关
 
-- [workflows-phase.md](workflows-phase.md) — 四阶段模型（意图 / 建模 / 验收 / 交付）与目录的阶段归属
-- [meta-model.md](meta-model.md) — 逻辑元素
-- [ide/graph-files.md](ide/graph-files.md) — `*.g` 格式
-- [ide/workflow.md](ide/workflow.md) — 六步工作流与导航
-- [errata.md](errata.md) — 口径冲突
+- [workflows-phase.md](../workflows-phase.md) — 四阶段模型（意图 / 建模 / 验收 / 交付）与目录的阶段归属
+- [meta-model.md](/meta-model.md — 逻辑元素
+- [ide/graph-files.md](../ide/graph-files.md) — `*.g` 格式
+- [ide/workflow.md](../ide/workflow.md) — 六步工作流与导航
+- [errata.md](../errata.md) — 口径冲突

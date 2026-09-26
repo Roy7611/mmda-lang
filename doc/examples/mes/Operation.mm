@@ -2,7 +2,7 @@
 record Operation {
     /// 工序ID
     @Partitioned [10000,0x000F_FFFF]
-    opId uint64 identity generated,
+    opId int64 identity generated,
     /// 工序编码
     @Unique
     opCode varchar(15),
@@ -18,7 +18,7 @@ record Operation {
     /// 工序类型: 0;MAKE;生产|1;TEST;测试|2;SPECIAL;特殊|4;STORAGE;缓存
     opType OpType default 0,
     /// 工艺路线ID
-    routingId uint64,
+    routingId int64,
     /// 启动数
     startQty int32 unsigned default 1,
     /// 准备时间(秒): 换型时间(秒)
@@ -29,13 +29,13 @@ record Operation {
     cycleTime int32 unsigned,
     /// 工艺文档: HAS_ONE Doc(docID,docNo,docName) AS opDoc
     @One Doc(docId,docNo,docName) as opDoc
-    opDocId uint64? indexed,
+    opDocId int64? indexed,
     /// 工艺参数: 定义默认的参数名称和值，例如冷却时间
     opParams varchar(255)?,
     /// 产出比率: 。0~1，指一件产品完成此道工序后的产值比，用于计算产值进度。
     outputRate decimal(18, 4) unsigned,
     /// (半)制品报工
-    outputProduct bool default b'0,
+    outputProduct bool default false,
     /// 计量单位
     outputUnit varchar(10)?,
     /// 转移批量: 用于生产作业分批，提高排程并行度
@@ -44,10 +44,10 @@ record Operation {
     qcInProcessTypes QcInProcessType default 0,
     /// 品控标准: HAS_ONE QualityControlStandard(qcsID,qcsNo) AS qcStandard
     @One QualityControlStandard(qcsId,qcsNo) as qcStandard
-    qcsId uint64? indexed,
+    qcsId int64? indexed,
     /// 子工艺路线: HAS_ONE Routing(routingID,routingCode,routingName) AS subRouting
     @One Routing(routingId,routingCode,routingName) as subRouting
-    subRoutingId uint64? indexed,
+    subRoutingId int64? indexed,
     /// 描述
     description varchar(255)?,
     /// X

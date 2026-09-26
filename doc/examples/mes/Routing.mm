@@ -2,7 +2,7 @@
 record Routing {
     /// 工艺路线ID
     @Partitioned [10000,0x000F_FFFF]
-    routingId uint64 identity generated,
+    routingId int64 identity generated,
     /// 工艺路线编码
     @Unique
     routingCode varchar(4),
@@ -11,10 +11,10 @@ record Routing {
     /// 工艺路线类型: 0;PROCESS;流程|1;DISCRETE;离散|2;HYBRID;混合
     routingType RoutingType default 0,
     /// 终结工序
-    endOpId uint64?,
+    endOpId int64?,
     /// 制品类别: HAS_ONE base.MaterialCat(categoryID,categoryName) AS productCategory
     @One base.MaterialCat(categoryId,categoryName) as productCategory
-    productCategoryId uint64 indexed,
+    productCategoryId int64 indexed,
     /// 生产周期: (min)，所有工序的Cycle Time总和
     leadTime decimal(18, 2)? unsigned,
     /// 生产节拍(min): 瓶颈工序的Cycle Time/60
@@ -32,15 +32,15 @@ record Routing {
     customJson varchar(2000)?,
     /// 创建人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    creatorId uint64? indexed readonly,
+    creatorId int64? indexed readonly,
     /// 创建部门: REF Department(deptID,deptName)
     @Ref base.Department(deptId,deptName)
-    deptId uint64? indexed readonly,
+    deptId int64? indexed readonly,
     /// 创建日期
     createDate timestamp? default now readonly,
     /// 修改人: REF User(userID,userName)
     @Ref base.User(userId,userName)
-    lastModifierId uint64? indexed readonly,
+    lastModifierId int64? indexed readonly,
     /// 最后修改
     lastModified timestamp? default now readonly,
     @Many
