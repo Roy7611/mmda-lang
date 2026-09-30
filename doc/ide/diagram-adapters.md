@@ -96,8 +96,11 @@ ctx.registerContributions({
 | `mmda.designer.mf-dfd` | `.mf` | `mf-dfd` |
 | `mmda.designer.mf-map` | `.mf` | `mf-map` |
 | `mmda.designer.mb-bpmn` | `.mb` | `mb-bpmn` |
+| `mmda.designer.muc-uml` | `.m`（`usecase`） | `muc-uml` |
 
 `.mi` 使用内置 `MiUiDesigner`，无 `.g`。
+
+`muc-uml` 的 SSOT 是 m 语言的 `usecase <UC-…> : INT-…` 声明（[`../lang/intent.md`](../lang/intent.md) §4.1 · [`../examples/alm/UC-000045.m`](../examples/alm/UC-000045.m)）：**UML 用例图**（actor ↔ 用例 ↔ 边界）与**活动图**（`main` / `alt` 场景）两种视图，布局住 `{UC}.g`（如 `UC-000045.g`）；图形是**投影**，改图即生成 AST Patch 回写声明，不产生第二份真源。
 
 ## 8. 相关文档
 

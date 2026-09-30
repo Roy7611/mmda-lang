@@ -96,7 +96,7 @@ target ts     capability algorithm(logistics-scheduler: wasm, scope: check-only)
 | 插件 | `?` | `IPlugin`/`IPluginManager`/`Plugins`(226 行) | `vuix-*`/`vui-*` 皮肤包 | **概念不同**：后端插件 vs 前端皮肤 |
 | 代码生成 | `mmda-foundation/mmda-factory` 54 文件 / **11,713 行**（出 Java、C#、Dart、JS、TS、SQL） | `Mmda.Alm.Coding` **1 文件 2 行（空）** | - | **✗ 生成器单侧** |
 | **算法 / 重计算载体** | 与业务代码同程序集（JVM 字节码，可反编译） | 同（IL，可反编译） | 前端包内（JS，可读） | **✗ 三端都无 native 边界** → 见 [`protection.md`](protection.md) |
-| 元数据存储 | MySQL `mmda_metadata` 库（18 张 `meta_*` 表，`SqlMetadataProvider` 读取） | 同一库（`DbMetadataProvider`），README 明示需 `NormalizeNameSpace` 兜 `cloud.mmda.base.models` 之类小写脏值 | - | **✗ 同一真源两套约定，已在运行时打补丁** |
+| 元数据存储 | MySQL `mmda_metadata` 库（18 张 `Meta*` 表，`SqlMetadataProvider` 读取） | 同一库（`DbMetadataProvider`），README 明示需 `NormalizeNameSpace` 兜 `cloud.mmda.base.models` 之类小写脏值 | - | **✗ 同一真源两套约定，已在运行时打补丁** |
 
 **最关键的一条证据**：C# `Mmda.Alm\Models/Models/Bug.cs` 头部写着
 

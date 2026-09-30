@@ -62,7 +62,7 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 | 模块分组 | 树形导航 | `Module(type=1)` |
 | 功能特征 | 功能列表，绑定实体 | `Module(type=2)` + `objRef` |
 | 用例（可选） | Use Case 图 | `UseCase`（Phase 2，见 [`../requirements.md`](../requirements.md) §4） |
-| 需求条目（可选） | 与用例/功能关联 | `Requirement`（**✔ 2026-09-25 已裁进语言**——一等声明 + 进库 + IDE 表格化管理，形态见 [`../requirements.md`](../requirements.md) §2.2；后缀与编号待裁 → 同文 §7-7 / §7-8） |
+| 意图条目（可选） | 与用例/功能关联 | **`intent`**（**✔ 2026-09-25 已裁进语言、2026-09-28 定形**——一等声明 + 进库 + IDE 表格化管理；`layer` 两档、`subject` 必填、编号 `INT-<NNN>`；语言面规范见 [`../lang/intent.md`](../lang/intent.md)，工程侧见 [`../requirements.md`](../requirements.md) §2） |
 
 ### 4.3 数据架构（L2）
 
@@ -139,7 +139,7 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 | 9 | **生成 → 编译 → 打包发布** | 上面几步走完即可生成源码、自动编译、打包发布（结合 DevOps） | 生成器（[`../targets.md`](../targets.md) §3、[`../PLAN.md`](../../PLAN.md) §3.3）；打包 `.mmdax`（`mmda pack`） | **发布链路**（CI/DevOps 对接、部署形态）尚无专篇 |
 | 10 | **变更轨迹与版本控制** | 每次修改自动记录变更轨迹，结合源码管理实现版本控制 → **可回滚设计**；因此设计必须**用文件存储** | 已有：一对象一文件、`changelog/`、Git 集成（§4.7、[`../project.md`](../lang/project.md)） | **✔ 已裁：宿主=独立桌面壳，文件存储（随想录的"VS Code/IDEA 插件"列为后续可选宿主）**——见 §4.9 |
 | 11 | **绘图工具** | ER、数据、流程、表单、BI、脚本、代码生成 | E-R、STM、DFD/BPMN、模块树（[`diagrams.md`](diagrams.md) §1） | **表单设计器**（可视化表单布局）、**BI 看图器**、**脚本编辑器**（`mmda` 脚本） |
-| 12 | **测试与验收建模**（**2026-09-25 新增，作者共识**） | 「测试用例也进 m 语言，跟需求一样，存数据库，**分类、分集合、分状态跟踪管理**；IDE = SDLC 完整生命周期管理工具（需求 / 设计 / 开发 / 部署 / 测试 / 交付）」；「**UAT 在需求完成后及早出、可验证、AI 可通过 hooks**」 | `.mt` 进语言族（[`../project.md`](../lang/project.md) §1.2）+ 管理面（[`../testing.md`](../testing.md) §8.1 / §9.1） | **集合与状态的形态待裁**（[`../testing.md`](../testing.md) §11-12 / §11-13）；**UAT 与需求的追溯必须可视**（`REQ-x` ↔ 用例）；UAT 执行通道待裁（§11-14） |
+| 12 | **测试与验收建模**（**2026-09-25 新增，作者共识**） | 「测试用例也进 m 语言，跟需求一样，存数据库，**分类、分集合、分状态跟踪管理**；IDE = SDLC 完整生命周期管理工具（需求 / 设计 / 开发 / 部署 / 测试 / 交付）」；「**UAT 在需求完成后及早出、可验证、AI 可通过 hooks**」 | `test` partType 进语言族（`*.m`，[`../lang/project.md`](../lang/project.md) §1.2）+ 管理面（[`../testing.md`](../testing.md) §8.1 / §9.1） | **集合与状态的形态待裁**（[`../testing.md`](../testing.md) §11-12 / §11-13）；**UAT 与意图的追溯必须可视**（`INT-…` ↔ 用例，[`../lang/intent.md`](../lang/intent.md) §6）；UAT 执行通道待裁（§11-14） —— **⤴ 2026-09-30 已起草（v5）**：[`../lang/test.md`](../lang/test.md) v5（§2 `phase` × **`face`** × `kinds` / §4 集合 / §6 **单元测试退出语言**）· [`../lang/test-store.md`](../lang/test-store.md) v5 |
 
 ### 4.9 设计器宿主形态（✔ 已裁 2026-09-24：独立壳优先）
 

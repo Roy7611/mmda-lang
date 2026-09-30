@@ -345,6 +345,7 @@ var a = [0..20];    // range
 | `ByteStream` / `CharStream` / `NCharStream` | ● | — | — | ● | — | — | ● | — | `VARBINARY` = `BYTE_STREAM` + 处理器 ⇒ 位宽由方言 |
 | `BIGID` | — | — | — | — | ○ | ● | ● | — | ≡ `int64 identity partitioned`：`AUTO_INCR`（identity）+ `STORAGE_BITS` = **64 位**；`VALUE_RANGE`（段）在**元对象**上，不在字段上 |
 | `T[]`（数组） | — | — | — | — | — | — | — | — | **数组没有类型轴**：基数是**声明层**的（§10）；**元素只允许 record ⇒ 子表**（枚举 / 标量数组字段 = 解析期 error，✔ 2026-09-26 作者；**⤴ 修订**早先「三类都允许」） |
+
 | # | 轴 | 含义 | 例子 |
 | --- | --- | --- | --- |
 | 0 | `MAX_LENGTH` | 容量 / 长度 —— **单位随类型**（`char` / `nchar` / `varchar` / `nvarchar` / `BitStr` = **字符数**；`binary` / `blob` / `ByteStream` = **字节数**）—— **校验托底** | `varchar(100)`、`BitStr(12)` |

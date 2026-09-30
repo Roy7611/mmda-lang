@@ -17,7 +17,7 @@
 
 ## 2. 模块编号
 
-- 编号形态 `M.01` / `M.03.032`；**编号是 S1 → S2 的锚**：`requirement` 的 `@Feature M.01.001` 按编号找模块节点（[`project.md`](project.md) §1.3）。
+- 编号形态 `M.01` / `M.03.032`。⚠️ **模块编号不再是意图编号的一部分**（✔ 2026-09-28）：`intent` 先于模块树存在，编号是纯序号 `INT-<NNN>`；**模块归属由 S2 侧 `satisfies INT-…` / `satisfies UC-…` 回指算出**（[`intent.md`](intent.md) §0 / §5、[`project.md`](project.md) §1.3）。
 - **编号不是路径**：移动 / 重命名目录**不改编号**，引用一律按**符号名 / 编号**解析（[`project.md`](project.md) §1.3）。
 - 命名与权限码沿用既有（[`naming.md`](../naming.md)：模块编号 `M.01` · 权限码 `B` · 端点 id）。
 
@@ -31,6 +31,7 @@
 
 - 解引用走**符号名**（[`project.md`](project.md) §1.3）⇒ **目录自由**、移动 / 重组不改语义。
 - 模块**不是 record**：模块槽不参与落库；需要多值的字段一律走**子表**（[`records.md`](records.md) §1.3 / [`datatypes.md`](datatypes.md) §10）。
+- **测试也挂 module**（✔ 作者 2026-09-29 二轮口径）：用例声明 `module M.03`（+ `feature M.03.002` + `unit "<函数>"`）——**测试主要挂二级 Module**，逐级分解为「Module 集成 → Feature 功能 → 函数单元」；**intent 经其 module 反查全部用例**（`mmda trace INT-…`）。故模块树不只是结构，也是**验收与回归的归属轴**；真源 = [`test.md`](test.md) §2.1 / §5。
 
 ## 4. Role 与权限
 

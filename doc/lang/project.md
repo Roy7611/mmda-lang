@@ -11,7 +11,7 @@
 | 术语 | 含义 |
 | --- | --- |
 | **MMDA 项目** | 工作区目录 + 根清单 `{projectCode}.mmda` + 四个阶段根目录（§1） |
-| **M 语言源文件** | **`*.m`（唯一后缀）**——里面写什么由**首关键字**决定（`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `requirement` / `usecase` / `test` / `profile`）；**不再按类型分片**（✔ 2026-09-25 作者） |
+| **M 语言源文件** | **`*.m`（唯一后缀）**——里面写什么由**首关键字**决定（`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile`）；**不再按类型分片**（✔ 2026-09-25 作者；**`requirement` 关键字 ✔ 2026-09-28 更名为 `intent`**，见 [`intent.md`](intent.md)） |
 | ~~**纯脚本文件（`.m`）**~~ | **不再单列**：脚本与模型同属 `.m`（`import` 复用规则不变）；本条原为「脚本用 `.m`」的特例，因全局统一而消失——但**派生一条新问题**（同名冲突，见 §6 / §11-⑤） |
 | **项目清单** | 根目录 `{projectCode}.mmda` —— **整个项目的描述文件**；**目标态 = M 语言格式**（✔ 2026-09-25 作者：「原来有写文件是 json 格式，我觉得要统一为 m 语言格式，后面定具体描述格式」→ §11） |
 | **工作区（directory）** | 展开目录，Git/SVN 与 AI 友好，**日常 SSOT** |
@@ -37,9 +37,9 @@ erp/
 ├── README.md
 │
 ├── intents/                    # S1 意图：why / what（人类参与最多）
-│   ├── M.01.001-007.m          #   requirement（@Layer / @Priority / @Status / @Feature）
+│   ├── planner.m               #   intent（layer / role / subject / why / what）—— 一文件可放多条，见 §6
 │   ├── roles/SalesMan.m        #   role + 权限声明（原 `flow/roles/*.mr`）
-│   └── uat/M.01.001.uat.m      #   验收准则（可执行 UAT，随需求基线冻结，[`testing.md`](../testing.md) §0.1）
+│   └── UC-000045.m             #   usecase（细化 USER 意图：`usecase UC-… : INT-…`）
 │
 ├── models/                     # S2 建模：how（模块分解 / 动作 / 数据 / 状态 / 流程 / UI，全是 .m）
 │   ├── modules/erp.m           #   模块树（原 `biz/*.ma`）
@@ -80,7 +80,7 @@ erp/
 
 | 导航分区（IDE 侧不变） | 落到哪一阶段 | 推荐目录（最佳实践） | partType（正文首关键字） |
 | --- | --- | --- | --- |
-| 需求 / 用例 | **S1 意图** | `intents/` | `requirement` / `usecase` |
+| 意图 / 用例 | **S1 意图** | `intents/` | `intent` / `usecase` |
 | 角色与权限 | **S1 意图** | `intents/roles/` | `role` |
 | 业务架构 · 模块树 | **S2 建模** | `models/modules/` | `subsystem` / `module` |
 | 数据架构 · 对象 | **S2 建模** | `models/objects/` | `record` / `view` |
@@ -90,7 +90,7 @@ erp/
 | 流程架构 · 数据流 | **S2 建模** | `models/flows/` | `flow` |
 | 流程架构 · 跨模块流程 | **S2 建模** | `models/bpml/`（目录名待裁） | `bpmn` |
 | 交互设计 | **S2 建模** | `models/ui/` | `ui` |
-| 测试与验收 | **S3 验收** | `tests/`（`tests/baseline/` = 冻结基线） | `test` |
+| 测试与验收 | **S3 验收** | `tests/`（`tests/baseline/` = 冻结基线；集合推荐 `tests/suites/`） | `test` / `suite` |
 | 交付（Profile / 部署配置） | **S4 交付** | `delivery/` | `profile` / `deploy` |
 
 > **运维不在四阶段内**（✔ 2026-09-25 作者）：IDE 不提供运维能力，运维由底座集成监控平台；运维日志与报告发起下一轮迭代（[`workflows-phase.md`](../workflows-phase.md) §3.2 / §3.5）。
@@ -101,7 +101,7 @@ erp/
 
 | 文件 | 后缀 | partType | 说明 |
 | --- | --- | --- | --- |
-| **M 语言源文件** | **`.m`（唯一）** | **由正文首关键字判定**：`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `requirement` / `usecase` / `test` / `profile` | 全部**声明与脚本**（含需求、用例、角色、图形语义）——**一种文件承载所有 partType**（✔ 2026-09-25 作者：「既然通过 partType 可以识别元素类型，没必要那么多扩展名」） |
+| **M 语言源文件** | **`.m`（唯一）** | **由正文首关键字判定**：`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile` | 全部**声明与脚本**（含意图、用例、角色、图形语义）——**一种文件承载所有 partType**（✔ 2026-09-25 作者：「既然通过 partType 可以识别元素类型，没必要那么多扩展名」） |
 | **图形投影** | `{SSOT}.g` | `graph` | 布局 / 颜色 / 路由；**目标态 = M 语言格式**（具体描述格式待裁 → §11-①） |
 | **项目清单** | `{projectCode}.mmda` | `project` | 根目录有且仅有一个；**目标态 = M 语言格式**（格式待裁 → §11-②） |
 | **变更日志** | `changelog/*` | `changelog` | 目标态 = M 语言格式（格式待裁 → §11-②） |
@@ -126,8 +126,8 @@ erp/
 | 模块树里的 `model:` / `ui:` / `flow:` | 按**符号名**找同名 part（`Order` / `BomEditor` / `mes-operate`），**不写路径** |
 | Feature 行为 | 按 `@State OrderFlow` 找同名 `stm` part |
 | 枚举 | `Order.status : OrderStatus` → 找同名 `enum` part |
-| `requirement` 的 `@Feature M.01.001` | 按模块编号找模块节点（**S1 → S2 的锚**） |
-| `test` 的 `covers:` / `req:` | 指向**声明点标识 / 需求编号**（不是文件路径） |
+| 建模声明点的 `satisfies INT-…` / `satisfies UC-…` | 回指到意图 / 用例（**S2 → S1 的锚，单向**）。⚠️ 旧写法 `requirement` 的 `@Feature M.01.001` **已作废**——intent 先于模块树存在，不能反向指模块（[`intent.md`](intent.md) §0） |
+| `test` 的 `module` / `feature` / `unit`（v2 锚，取代 `covers:` / `req:`） | 指向**模块树节点编号 / 实现侧符号名**（不是文件路径） |
 
 > 待裁：同名 part 的冲突规则（同名声明在同一项目内出 error，还是允许按模块命名空间区分）——见 §11。
 
@@ -281,7 +281,7 @@ mmda open dist/erp.mmdax
 | partType | 判定方式 | contentType |
 | --- | --- | --- |
 | `project` | 文件名 `{projectCode}.mmda` | `application/vnd.mmda.project+json`（目标态随 §11-② 改） |
-| `biz` `model` `enum` `stm` `role` `converter` `flow` `bpmn` `ui` `requirement` `usecase` `test` `profile` | **任一 `*.m` 的正文首关键字**——**路径与后缀都不参与判定**（推荐目录见 §1.1） | `text/x-mmda+m` |
+| `intent` `usecase` `subsystem` `module` `record` `view` `enum` `stm` `role` `converter` `flow` `bpmn` `ui` `test` `suite` `profile` | **任一 `*.m` 的正文首关键字**——**路径与后缀都不参与判定**（推荐目录见 §1.1） | `text/x-mmda+m` |
 | `graph` | `{SSOT}.g` | `application/vnd.mmda.graph+json`（目标态待裁 → §11-①） |
 | `codegen-profile` | `delivery/profiles/*.m` | 目标态随语言格式统一 |
 | `changelog` | `changelog/*` | 目标态随语言格式统一 |
@@ -296,6 +296,7 @@ mmda open dist/erp.mmdax
 | 规则 | 说明 |
 | --- | --- |
 | **一对象一文件** | `Order.m`、`OrderStatus.m`、`OrderFlow.m` 各一文件 → 细粒度 diff、减法冲突 |
+| **一文件可多声明（非硬规则）** | 「一文件一对象」是**推荐**不是硬约束：一文件可放多个 `record` / `view` / `enum` / `stm` / **`intent`**；**同文件内相互引用不写 `import`**，跨文件引用用 `import`（[`../runtime.md`](../runtime.md) §4.7）。✔ 意图于 2026-09-28 明确沿用本条（[`intent.md`](intent.md) §1） |
 | 文件名 = 主符号名 | 与语言文件内 `record Order` / `enum OrderStatus` 一致（**目录自由时这是唯一的"人找得到"约定**） |
 | 子系统前缀（可选） | 大项目可 `models/objects/mes/Bom.m`；`syncRef` 仍为 `mes.Bom` |
 | **同名冲突（新增待裁）** | 统一后缀后，「对象 `Order.m`」与「同目录的脚本」不再能靠 `.mm` / `.m` 区分——**脚本命名规则待裁**（建议 `Order.{用途}.m`，如 `Order.hook.m` / `Order.rules.m`，见 §11-⑤） |

@@ -266,7 +266,7 @@ record Pallet {
 
 | 注解 | 语义 | MetaCol 映射 | 约束 |
 |------|------|--------------|------|
-| `@Partitioned range` | `MetaObject.partitionKey` + `minID` / `maxID` | 分区主键 realId 范围（见下） |
+| `@Partitioned range` | 分区主键 realId 范围 | `MetaObject.partitionKey` + `minID` / `maxID` | 见下 |
 | `@Unique` | 分区内业务唯一编码/单号（校验，非 DB `unique index`） | `uniqueKey` | 通常一条/实体 |
 | `@Name` | 默认显示名；列表超链接等 | `nameCol` | 可多个 |
 | `@Thumbnail` | 缩略图 URL；列表中显示在名称前 | `thumbnailCol` | 仅一个 |

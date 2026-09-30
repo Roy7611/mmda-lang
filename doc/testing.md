@@ -1,14 +1,14 @@
 # 测试与验收（Testing & Acceptance）
 
 > **这份文档要解决什么**：测试不能等到编码完再补。元模型里已经声明了字段类型/长度/可空、主键与唯一、引用关系、状态迁移图、动作授权、流程网关、转↔能力——**这些声明本身就是可判定的契约**，所以用例能从架构与设计阶段**机械生成**；声明不出来的那部分（业务语义），由 AI 生成草稿、**人审用例**（而不是审代码），审过的用例冻结成**验收标准**。
-> 状态：草案（2026-09-24 立；**2026-09-25 作者补充三条共识**：**UAT 的地位与时点**（§0.1）、**测试类型 = UAT 的细化与展开**（§0.2）、**用例进库与 IDE 全生命周期管理**（§8.1 / §9.1））。与 [`workflows.md`](workflows.md)（职责 / 模式 / 签字）、[`targets.md`](targets.md)（capability）、[`events.md`](lang/events.md)（幂等与重放）、[`requirements.md`](requirements.md)（`REQ-x` ↔ UAT 追溯）、[`workflows-phase.md`](workflows-phase.md)（0 站的验收准则）联动。
+> 状态：草案（2026-09-24 立；**2026-09-28 作者裁定：UAT 用 `req: INT-…` 锚在 `intent` 上**（不锚在 usecase 上），用例编号 `UC-<NNN>`；**2026-09-25 作者补充三条共识**：**UAT 的地位与时点**（§0.1）、**测试类型 = UAT 的细化与展开**（§0.2）、**用例进库与 IDE 全生命周期管理**（§8.1 / §9.1））。**⤴ 2026-09-29 二 / 三轮与 2026-09-30 五轮：`req: INT-…` 已作废（改为挂 `module`）；用例语言面见 [`lang/test.md`](lang/test.md) v5**（`phase` × `face` × `kinds`、三段 `given` / `when` / `then`；**单元测试退出 m 语言**）。与 [`workflows.md`](workflows.md)（职责 / 模式 / 签字）、[`targets.md`](targets.md)（capability）、[`events.md`](lang/events.md)（幂等与重放）、[`lang/intent.md`](lang/intent.md)（意图语言面 · 门禁）、[`requirements.md`](requirements.md)（`INT-…` ↔ UAT 追溯）、[`workflows-phase.md`](workflows-phase.md)（0 站的验收准则）联动。
 
 ---
 
 ## 0. 三条原则
 
 1. **用例是派生物**：与元模型同版本、同粒度（一对象一文件），模型改了用例**自动重算**；手写只用于声明不出来语义（少数例外，要标明原因）。
-2. **每条用例必须可追溯**：`covers:` 指向声明（`data/models/{schema}/{Name}.m#字段`）或 `req: REQ-xxx`。**无法追溯的用例标为 orphan，不计覆盖率，CI 报警**——这是防止「用例很多但什么都没验」的唯一机械办法。
+2. **每条用例必须可追溯**：**v2（2026-09-29 二轮）判据 = 用例必须挂 `module`**（`test` 里的 `module M.03` + `feature`，**`phase FEATURE` 必写 `feature`**；**v5 起用例还必须声明 `face`**），**intent 由「意图 → `satisfies` → module → 用例」反查**；~~v1 的 `covers:` / `req:` 回指~~ **已作废**（v1 文本见本行历史）。**无法追溯的用例标为 orphan，不计覆盖率，CI 报警**——这是防止「用例很多但什么都没验」的唯一机械办法。真源 = [`lang/test.md`](lang/test.md) §0.3 / §2.1。
 3. **AI 不许当裁判**：AI 可以生成用例、可以跑、可以诊断失败原因；**判定标准只能来自声明与冻结基线**，不能来自 AI 的叙述。「AI 说没问题」永远不是验收依据。
 
 ### 0.1 UAT 的地位与时点（✔ 2026-09-25 作者共识）
@@ -25,6 +25,8 @@
 | **AI 的边界** | AI 可以**跑**、可以**驱动**、可以诊断失败；**判定只能来自声明与冻结基线**（§0-3 不变） | 本文 §0-3、§4.2 六条护栏 |
 
 **一条推论**：UAT 进需求基线后，**需求的「完成」定义 = 有可执行的 UAT**——没有可执行 UAT 的需求条目等于还没说完（`mmda check` 出 error，见 [`requirements.md`](requirements.md) §2.2）。
+
+> ⤴ **2026-09-29 二轮修订（待裁）**：本节的「**必须可执行**」按**两个时点**落地——**S1（意图）出「验收准则」**（文字 + `intent.what`，随需求基线冻结），**S2（模块树与数据模型成形后）出「可执行 UAT」**（挂 `module`，正文三段 `given` / `when` / `then`）。**S1 没有数据模型，写不出输入与输出，可执行的 test 在 S1 不可能成立**。故「需求的完成定义」= **有验收准则 +（模块成形后）有可执行 UAT**。真源 = [`lang/test.md`](lang/test.md) §0.3；条目 = 差异 **T25**。
 
 ### 0.2 测试类型 = UAT 的细化与展开（✔ 2026-09-25 作者共识）
 
@@ -192,7 +194,7 @@
 | 迁移覆盖 | 每对合法迁移有正例；每类非法迁移有反例；状态可达性 100% | 100% |
 | 权限覆盖 | role × action × scope 全覆盖（**含拒绝路径**） | 100% |
 | 能力覆盖 | 每个 capability 至少一条跨端一致用例 | 100% |
-| 需求覆盖 | 每条 `REQ-x` 至少 1 条用例 | ≥ 90% |
+| 需求覆盖 | 每条 **USER 意图（`INT-…`）** 至少 1 条 UAT——**v2：经其归属 module 反查**（该 module 下 ≥1 条 `phase UAT` 用例），不再写 `req:` | 100%（[`lang/intent.md`](lang/intent.md) §6 / [`lang/test.md`](lang/test.md) §0.3 / §10-12） |
 | 有效性 | 变异存活率（§7） | ≤ 阈值（待定，§11） |
 
 覆盖率全部**由声明算出**，所以是"能指着说缺哪条"，而不是一个百分比数字。
@@ -211,8 +213,8 @@
 
 | # | 维度 | 判据 | 弱用例的典型表现 |
 | --- | --- | --- | --- |
-| 1 | 可追溯 | 有 `covers`/`req` 且指向存在的声明 | 孤儿用例（0 分） |
-| 2 | **断言强度** | 断言具体结果（值 / 错误码 / 状态），而非"不报错" | 只 `expect { ok }` |
+| 1 | 可追溯 | **v2：有 `module` 且指向存在的模块节点**（intent 经 module 反查；~~`covers`/`req`~~ 已作废） | 孤儿用例（0 分） |
+| 2 | **断言强度** | `then` 段断言具体结果（值 / 错误码 / 状态），而非"不报错" | `then { ok }`（弱断言） |
 | 3 | 独立可重放 | 不依赖执行顺序、真实时间、随机 | 依赖 `now()`、依赖上一条用例的副作用 |
 | 4 | 边界与否定路径 | 含边界值与拒绝路径 | 只测 happy path |
 | 5 | **判别力** | 能否杀死对应变异（最硬指标） | 变异存活 |
@@ -264,7 +266,7 @@ MCP 面（[`ai/tools.md`](ai/tools.md) 需补）：`mmda_test_gen`、`mmda_test_
 | **用例库** | 表格 + 树（按模块 / 对象 / 需求分组），与文件双向同步（**文件仍是真源**） | §9.1 |
 | **集合（suite）管理** | 按集合建视图与「一键跑」：`uat` / `smoke` / `regression` / `daily` / `milestone` / `perf` / `security` | §0.2 测试类型表 |
 | **状态跟踪** | 两轴看板：**生命周期**（草稿 → 已审 → 已冻结 → 已废弃）+ **执行**（未跑 / 通过 / 失败 / 阻塞 / 过期） | §9.1 |
-| **追溯矩阵** | `REQ-x ↔ 用例 ↔ 声明点 ↔ 缺陷` 四向可查；**UAT 用例必须挂在需求上** | §2 / §6；[`quality.md`](quality.md) §5 追溯链 |
+| **追溯矩阵** | `INT-… ↔ usecase ↔ 声明点 ↔ module ↔ 用例 ↔ 缺陷` 可查；**v2：UAT 用例挂二级 module**，intent 经 module 反查（不再写 `req:`） | §2 / §6；[`lang/intent.md`](lang/intent.md) §4；[`quality.md`](quality.md) §5 追溯链 |
 | **执行与诊断** | 单条 / 集合执行、失败明细、`--impact` 影响面、AI 诊断报告（AI 出报告，改动归人） | §4.1-4、§8 命令面 |
 | **验收面** | 由 UAT 集合生成中文验收单、签字与冻结、基线对比 | §5 |
 
@@ -272,26 +274,30 @@ MCP 面（[`ai/tools.md`](ai/tools.md) 需补）：`mmda_test_gen`、`mmda_test_
 
 ## 9. 用例文件形态
 
-**后缀已裁（2026-09-25 改判）**：**测试用例就是 `.m`**（语言文件统一后缀），住**阶段根 `tests/`**，与模型同粒度、**一对象一文件**（[`project.md`](lang/project.md) §1.2 / §11；原 `.mt` 分片后缀已作废）。**语法形态待裁**（§11 待裁第 9 条，随语法专题）。
+**后缀已裁（2026-09-25 改判）**：**测试用例就是 `.m`**（语言文件统一后缀），住**阶段根 `tests/`**，与模型同粒度、**一对象一文件**（[`project.md`](lang/project.md) §1.2 / §11；原 `.mt` 分片后缀已作废）。
 
-一对象一文件，与模型同粒度：
+**语法形态：已起草 → ⤴ 真源移到 [`lang/test.md`](lang/test.md)（**草案 v5**，2026-09-30 五轮，取代本节原草案）**——两种 partType：**`test`**（`TC-<NNN>` 编号、**`module`（+ `feature`）锚**、**`phase` × `face` × `kinds`**、**`given` / `when` / `then` 三段可执行 DSL**、`source` / `level` / `driver` / `env` / `reviewedBy`）与 **`suite`**（**集合成为一等实体**：选择器 + 白黑名单 + `subset`）；编号口径、门禁 19 条与议题台账。**本节只保留「落点」口径**（后缀 / 目录 / 粒度）；**落库真源 = [`lang/test-store.md`](lang/test-store.md)**（`MetaTest` 族）。**v5：单元测试退出 m 语言**（~~`phase UNIT`~~ / ~~`unit`~~ / ~~`harness`~~ / ~~`attach`~~ 全废，用 JUnit / xUnit / vitest 原生写）。
 
+形态示意（完整示例见 [`examples/alm/TC-000045.m`](examples/alm/TC-000045.m) · 集合见 [`examples/alm/SUITE-UAT-CORE.m`](examples/alm/SUITE-UAT-CORE.m)）：
+
+```sql
+/// 生产订单查询接口 : 功能用例（face API）
+test TC-000046 {
+    module M.03                // 挂二级 Module（必填；测试主要挂 module）
+    feature M.03.002           // 功能验证：锚在 feature
+    phase FEATURE              // 四档：FEATURE / INTEGRATION / SYSTEM / UAT
+    face  API                  // 前后端分离：UI = 前端交互 / API = 后端接口
+    kinds { FUNCTIONAL, BLACK_BOX }
+    source MECHANICAL
+    driver HTTP                // face API：HTTP / HOOKS / MANUAL
+
+    given { data o : record ProductionOrder { status : RELEASED | count 1 } }   // 上下文与输入：造数
+    when  { call api POST /api/mes/ProductionOrders/search({ status: RELEASED }) as resp }  // 你干了什么：动作
+    then  { size resp.rows == 1 }                                              // 就会有……：断言
+}
 ```
-# tests/order/Order.m（语言文件后缀统一为 .m）
-test "长度上限 30" covers data/models/order/Order.m#code
-  source: mechanical
-  given  { code: "A"*31 }
-  expect { reject(reason: "长度超出 30") }
 
-test "审批必须从草稿发起" covers data/stms/order/OrderStatus.m
-  source: ai
-  reviewedBy: { business: 张三, designer: 李四 }
-  given  { order.status: APPROVED }
-  when   { action submit(order) }
-  expect { reject(reason: "前置状态不满足") }
-```
-
-必需字段：`covers` / 来源 `source` / `reviewedBy`（AI 用例必须非空）/ `baseline`。
+必需字段：**`module`**（归属锚，取代 v1 的 `req:` / `covers:`）/ `source` / `phase` / **`face`** / `kinds`（≥1）/ `driver` / **三段各 ≥1 条指令**；`phase FEATURE` 另需 `feature` 非空；**`face` 与 `driver` 必须配对**；`phase UAT` 另需 `reviewedBy` 非空（§9.1 可机检 1）；`source AI` 另需双签。
 
 ### 9.1 用例进库与三个管理维度（分类 / 集合 / 状态）
 
@@ -308,11 +314,12 @@ test "审批必须从草稿发起" covers data/stms/order/OrderStatus.m
 | **执行状态**（新） | `not-run` / `pass` / `fail` / `blocked` / `stale` | `stale` = 声明或需求已变、期望值未重算（`--impact` 的输出，§5） |
 
 **可机检的三条**：
-1. `kind: uat` 的用例**必须**有 `req: REQ-xxx` 且 `reviewedBy` 非空——否则 `mmda check` 出 **error**（UAT 没有需求锚点 = 无法验收）；
+1. `kind: uat` 的用例**必须**有 `req: INT-…`（锚在意图上；可选 `covers: UC-…` 覆盖到用例场景）且 `reviewedBy` 非空——否则 `mmda check` 出 **error**（UAT 没有意图锚点 = 无法验收）；
 2. `smoke` 集合**必须是 `uat` 集合的子集**（主干路径不能自成一派）——出 warning；
 3. 集合**不许有孤儿**：空集合、或指向已废弃用例的集合——出 warning（防「集合还在跑，内容早已死」）。
+> ⤴ **2026-09-29 二轮改版（待裁，取代上一条提议）**：① `kind`（**单值**平铺枚举）**改为 `kinds`（多维标签）**——`uat` / `integration` 归 **`phase`** 轴、`functional` 归 `kinds` 的**目标维度**、新增 `CONFORMANCE`；② **`suite` 从「用例上的标签」升级为一等实体**（`select` 选择器 + `include` / `exclude` + `subset`）——**冒烟 = `SUITE-UAT-CORE` 的子集**；③ 用例的**归属锚由 `req: INT-…` 改为 `module`**（intent 经 module 反查全部用例；S1 无数据模型，写不出可执行用例）；④ 正文取 **`given` / `when` / `then`（BDD 关键字 + 可执行 DSL：`given` 上下文与输入 / `when` 你干了什么 / `then` 就会有……）**，封闭指令分别由底座造数 / 驱动 / 判定。理由与条目 = [`examples/alm/差异对照-测试与缺陷.md`](examples/alm/差异对照-测试与缺陷.md) **T16 / T20–T25**；真源 = [`lang/test.md`](lang/test.md) §2 / §3 / §4。
 
-**库表形态待裁**（§11-15）：拟 `meta_test` + `meta_test_suite`（用例 ↔ 集合多对多）+ `meta_test_run`（执行历史：时间 / 目标端 / 结果 / 耗时 / 失败原因）。
+**库表形态：已起草 → ⤴ 真源移到 [`lang/test-store.md`](lang/test-store.md)（**草案 v5**，2026-09-30 五轮）**：`MetaTest`（主表：**`moduleCode` / `featureCode` 两锚** + `phase` / **`face`** / `source` / `level` / `driver` / `env` + **正文三列 `given` / `when` / `then`**（`when` / `then` 是 SQL 保留字 ⇒ DDL 加引号）+ `lifecycle`）+ **`MetaTestKind`（`kinds` 多维标签，取代 v1 的 `kind` 单列）** + **`MetaTestAddr`（三段引用反转索引，`--impact` 的精细面）** + `MetaTestAlt` + **`MetaTestSuite` / `MetaTestSuiteSelector` / `MetaTestSuiteInclude` / `MetaTestSuiteExclude` / `MetaTestSuiteSubset` / `MetaTestSuiteMember`（集合实体 + 选择器 + 物化成员）** + `MetaTestDependency` / `MetaTestTag` / `MetaTestReview` + **`MetaTestRun`（执行历史：时间 / 目标端 / 通道 / 结果 / 耗时 / 造数指纹 / 失败原因）**；~~`MetaTestReq` / `MetaTestCover`~~ **v2 作废**（追溯改走 `module`）；**~~`unitRef`~~ 与 ~~`harness` 四列~~ v5 作废**（单元测试退出 m 语言）。**执行面只落 `MetaTestRun`**（库侧 `testcase.actualResult` / `status` 应迁出——见 [`examples/alm/差异对照-测试与缺陷.md`](examples/alm/差异对照-测试与缺陷.md) T15）。**写入口 §11-15 仍待裁**（建议：只允许改文件）。
 
 ---
 
@@ -321,7 +328,10 @@ test "审批必须从草稿发起" covers data/stms/order/OrderStatus.m
 | 文档 | 关系 |
 | --- | --- |
 | [`workflows.md`](workflows.md) | 用例的**审签**走它的权限矩阵（§1.3）与模式（§1.1）；交接协议（§9）增加「用例与基线」一项 |
-| [`requirements.md`](requirements.md) | **需求 → UAT 的追溯**：`kind: uat` 的用例锚在 `REQ-x` 上（§9.1）；需求基线冻结 = 需求条目 + 可执行 UAT（§0.1） |
+| [`lang/test.md`](lang/test.md) | **用例语言面唯一规范**（**草案 v5**，2026-09-30 五轮）：`test`（`TC-<NNN>` + **`module`（+ `feature`）锚** + **`phase` × `face` × `kinds`**）与 **`suite`**（集合一等实体）；**正文三段 `given` / `when` / `then`**（可执行 DSL：上下文与输入 / 你干了什么 / 就会有……）；追溯 = **intent → module → test**（`req` / `covers` 作废）；**前后端分离 = `face UI` / `face API`**，`driver` 值域 `E2E` / `HTTP` / `HOOKS` / `MANUAL` 且与 `face` 配对；**v5：单元测试退出 m 语言**（用 JUnit / xUnit / vitest 原生写）；门禁 19 条 / 议题台账 T-1–T-17——**本文 §9 的语法草案已移入该篇** |
+| [`lang/test-store.md`](lang/test-store.md) | **用例落库**（**草案 v5**）：`MetaTest` 族（两锚 + **`face`** + `MetaTestKind` / `MetaTestAddr` / 集合选择器）、**执行面唯一落点 `MetaTestRun`**——**唯一落库面**；~~与 `mmda_alm` 五表的逐列投影映射~~（**⤴ 四轮：该库仅参考、将废除，不再投影**）。**本文 §9.1 的库表口径已移入该篇** |
+| [`examples/alm/差异对照-测试与缺陷.md`](examples/alm/差异对照-测试与缺陷.md) | 库侧实测（**仅参考**——`mmda_alm` 将废除；`testcase` / `teststep` / `testcasedependency` / `testtype` / `bug`）vs 标准侧：T1–T25 / B0–B6 / L12–L20 + 勾选区（**§⑤ = 二轮新增 T20–T25**） |
+| [`requirements.md`](requirements.md) | **意图 → 用例的追溯**：**v2 = 意图经其 module 反查**用例（该 module 下 `phase UAT`）；意图基线冻结 = `intent` + 可执行 UAT（§0.1，两时点）· [`lang/intent.md`](lang/intent.md) §6 |
 | [`workflows-phase.md`](workflows-phase.md) | 0 站的产物含「验收准则」（§3）；测试面 = 验证腿里可机器判定的那部分 |
 | [`meta-model.md`](lang/meta-model.md) / [`datatypes.md`](lang/datatypes.md) | 提供机械用例的全部声明来源 |
 | [`api.md`](api.md) | 提供 **API 契约用例**与**契约测试**（响应 vs OpenAPI schema，B 级）；**OAS 3.1.0 原生对齐**（§3.1–§3.8）与 **mock 数据两层造数**（§3.9）；外部工具（Postman/Apifox）collection 只作补充、不进真源 |
@@ -356,14 +366,22 @@ test "审批必须从草稿发起" covers data/stms/order/OrderStatus.m
 
 **待裁**：
 
-| # | 议题 | 建议 |
-| --- | --- | --- |
-| 7 | AI 增强能力的实施顺序与首版门禁范围 | 建议：首版只上**纯机械四项**（孤儿检测、变更覆盖、弱断言检测、变异），AI 增强项作为第二阶段——因为它们需要前四者当裁判 |
-| 8 | AI 参与度与效果的度量口径（缺陷密度、回归逃逸率、每千行模型变更缺陷数） | 建议进覆盖率看板（§4.1-9）作为度量，**不作为验收依据** |
-| 9 | 用例语法的正式形态（`.m` 里写什么：`given/when/expect` 是否够、是否复用 M 语言语法） |  建议：随语法专题一起裁；先按 §9 草案喂 P2 解析器，别单开一套 |
-| 10 | 质量面的验收口径（质量目标值写哪里、首版质量门禁覆盖范围、AI Reviewer 采纳率阈值、质量报告是否作交付物、safety 声明是否独立语法） | 见 [`quality.md`](quality.md) §7（5 条待裁） |
-| 11 | **AI 造数与 mock 数据**：AI 数据进不进基线、种子与提示词是否进版本控制、mock server 归属（IDE 内置 vs 外部工具） | 见 [`api.md`](api.md) §8 第 16 条与第 6 条——**同一议题只在 `api.md` 记一条待裁**，本文只留指针，避免两处各写一遍 |
-| 12 | **集合（suite）的形态**：是声明（用例上一行标签 / 独立块）还是工具侧派生（按 `kind` + 目录推导）？成员规则要不要硬约束 | 建议**声明式标签**（`suite: uat, smoke`），**集合本身不进语言**（避免再长一个元素）；成员规则见 §9.1 可机检三条 |
-| 13 | **用例生命周期状态机**的取值与迁移：是否复用 STM 机制、`frozen` 与 `baseline/` 的关系、谁能标 `deprecated` | 建议取值按 §9.1 五态封闭；**不**用 STM 语法（用例状态是工具管的状态，不是业务状态），但迁移规则进 `mmda check` |
-| 14 | **UAT 执行通道的挂载点**：hooks 驱动（`beforeView` / `beforeXxx`）vs 独立 e2e 驱动（浏览器 / 客户端）vs 两者都要 | 建议**两层**：领域层用 hooks 驱动（三端一致、快）+ UI 层用 e2e（少而精，覆盖「用户真的点得动」）；归 `suite: uat` |
-| 15 | **用例进库的写入口与库表命名**（与 [`requirements.md`](requirements.md) §7-11 同一批） | 建议**只允许改文件**（真源唯一），库直改必须回写；表名 `meta_test` / `meta_test_suite` / `meta_test_run` 随「元数据落库」统一裁 |
+| # | 议题 | 建议 | ⤴ |
+| --- | --- | --- | --- |
+| 7 | AI 增强能力的实施顺序与首版门禁范围 | 建议：首版只上**纯机械四项**（孤儿检测、变更覆盖、弱断言检测、变异），AI 增强项作为第二阶段——因为它们需要前四者当裁判 | — |
+| 8 | AI 参与度与效果的度量口径（缺陷密度、回归逃逸率、每千行模型变更缺陷数） | 建议进覆盖率看板（§4.1-9）作为度量，**不作为验收依据** | — |
+| 9 | 用例语法的正式形态（`.m` 里写什么：`given/when/then` 是否够、是否复用 M 语言语法） |  建议：随语法专题一起裁；先按 §9 草案喂 P2 解析器，别单开一套 | ⤴ **2026-09-29 已起草**：[`lang/test.md`](lang/test.md)（§1–§7；**v3 三轮改 BDD 关键字 `given` / `when` / `then`**；**v5 五轮再改范围为 feature / module 功能验证 + `face`**），本文 §9 的原草案已作废。 |
+| 10 | 质量面的验收口径（质量目标值写哪里、首版质量门禁覆盖范围、AI Reviewer 采纳率阈值、质量报告是否作交付物、safety 声明是否独立语法） | 见 [`quality.md`](quality.md) §7（5 条待裁） | — |
+| 11 | **AI 造数与 mock 数据**：AI 数据进不进基线、种子与提示词是否进版本控制、mock server 归属（IDE 内置 vs 外部工具） | 见 [`api.md`](api.md) §8 第 16 条与第 6 条——**同一议题只在 `api.md` 记一条待裁**，本文只留指针，避免两处各写一遍 | — |
+| 12 | **集合（suite）的形态**：是声明（用例上一行标签 / 独立块）还是工具侧派生（按 `kind` + 目录推导）？成员规则要不要硬约束 | 建议**声明式标签**（`suite: uat, smoke`），**集合本身不进语言**（避免再长一个元素）；成员规则见 §9.1 可机检三条 | ⤴ **2026-09-29 已起草**：见 [`lang/test.md`](lang/test.md) §2.2 / §4 与 [`lang/test-store.md`](lang/test-store.md) §4。 |
+| 13 | **用例生命周期状态机**的取值与迁移：是否复用 STM 机制、`frozen` 与 `baseline/` 的关系、谁能标 `deprecated` | 建议取值按 §9.1 五态封闭；**不**用 STM 语法（用例状态是工具管的状态，不是业务状态），但迁移规则进 `mmda check` | ⤴ **2026-09-29 已起草**：见 [`lang/test.md`](lang/test.md) §4 与 [`lang/test-store.md`](lang/test-store.md) §5（`MetaTest.lifecycle` + `MetaTestRun.result` 两轴）。 |
+| 14 | **UAT 执行通道的挂载点**：hooks 驱动（`beforeView` / `beforeXxx`）vs 独立 e2e 驱动（浏览器 / 客户端）vs 两者都要 | 建议**两层**：领域层用 hooks 驱动（三端一致、快）+ UI 层用 e2e（少而精，覆盖「用户真的点得动」）；归 `suite: uat` | ⤴ **2026-09-29 已起草**：新增 `driver` 轴，**v5 改为 `E2E` / `HTTP` / `HOOKS` / `MANUAL`（取消 `AUTO`）并按 `face` 配对**，见 [`lang/test.md`](lang/test.md) §2.2 / §2.3。 |
+| 15 | **用例进库的写入口与库表命名**（与 [`requirements.md`](requirements.md) §7-11 同一批） | 建议**只允许改文件**（真源唯一），库直改必须回写；表名 `MetaTest` / `MetaTestSuite` / `MetaTestRun` 随「元数据落库」统一裁 | ⤴ **2026-09-29 已起草**：表族与写入口见 [`lang/test-store.md`](lang/test-store.md) §1 / §10-12。 |
+| 16 | **`kinds` 由单值改多维标签**（维度划分与基数规则：目标维度恰好 1、方法维度 ≤ 1） | 建议按 [`lang/test.md`](lang/test.md) §2.2（**v5：五维封闭词表，删「通道」维度**）；库侧 `testcase.testTypeID` 单外键改一对多 | ⤴ **2026-09-29 二轮已起草**：见 [`lang/test.md`](lang/test.md) §2.2 与 [`lang/test-store.md`](lang/test-store.md) §2 / §8.4；条目 = 差异 **T20**。 |
+| 17 | **用例归属锚由 `req: INT-…` 改为 `module`**（intent 经其 module 反查到全部用例；`req` / `covers` 作废） | 建议改锚——S1 无数据模型，写不出可执行的输入输出；追溯由内核索引（`mmda trace INT-…`）承担 | ⤴ **2026-09-29 二轮已起草**：见 [`lang/test.md`](lang/test.md) §0.3 / §2.1 / §8；条目 = 差异 **T21**。 |
+| 18 | **`given` / `when` / `then` 三段的封闭词表首版范围**（~~+ `harness` 对接框架清单~~，**v5 废除**：单元测试退出 m 语言，用 JUnit / xUnit / vitest 原生写） | 建议按 [`lang/test.md`](lang/test.md) §3（`given` 7 / `when` 7 / `then` 11）；少一条就等于留一个散文口子 | ⤴ **2026-09-29 二轮已起草**、**2026-09-30 五轮修订**：见 [`lang/test.md`](lang/test.md) §3 / §6；条目 = 差异 **T23 / T24**。 |
+
+> ⤴ **二轮说明**：上表第 **9 / 12 / 13 / 14 / 15** 条的 ⤴ 指针成文于 2026-09-29 上午（v1），**其「集合只留标签」「`req:` 必写」「正文散文三句」等口径已被 §9.1 的二轮改版与 [`lang/test.md`](lang/test.md) v2 修订**，勾选时以 v2 为准。
+>
+> ⤴ **三轮说明（2026-09-29）**：正文三段关键字再改 BDD **`given` / `when` / `then`**（取代 v2 的 `input` / `steps` / `output`；`when` 无序号、`then` 无 `expect`、被测对象构造归 `given` 的 `subject`），**勾选时以 [`lang/test.md`](lang/test.md) v3 为准**。
+> ⤴ **五轮说明（2026-09-30）**：**单元测试退出 m 语言**（~~`phase UNIT`~~ / ~~`unit` 锚~~ / ~~`harness`~~ / ~~`attach`~~ / ~~指令→代码映射表~~ 全废，用 JUnit / xUnit / vitest 原生写）；m 语言只管 **feature / module 级功能验证**，因**前后端分离**新增 **`face`**（`UI` / `API`）、`driver` 值域改 `E2E` / `HTTP` / `HOOKS` / `MANUAL` 并与 `face` 配对、`phase` 四档去 `UNIT`、`kinds` 删「通道」维度；**勾选时以 [`lang/test.md`](lang/test.md) v5 为准**。

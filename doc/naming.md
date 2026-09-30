@@ -144,6 +144,7 @@ C# 社区惯例是**属性 PascalCase**（`public string MaterialCode { get; set
 **收益**：**表名 = 类名、列名 = 属性名 → ORM 零映射**（JPA 不用 `@Table` / `@Column`，EF 不用 `HasColumnName`）、JSON 载荷名与列名同形、**DDL 与模型可以逐字对账**（L3 增一项，见 [`targets.md`](targets.md) §5）。
 
 **`mmda doctor` 增一项自检**：连目标库时读 MySQL 的 `lower_case_table_names`、并对各方言各跑一次「带引号 / 不带引号」的标识符探测，**行为不一致即 error**（与 [`operations.md`](operations.md) §10 的 doctor 清单合并登记）。
+**内核元库（`Meta*` 族）**：✔ **2026-09-28 裁 B**——内核元对象表沿用 **legacy 元库族名**（`MetaObject` / `MetaCol` / `MetaRelation` / `MetaEnum`：前缀 `Meta` 全大写 + 后面照抄模型名），如 `MetaIntent` / `MetaTest`；**与本节的「表 = 模型名 PascalCase、列 = 属性名 camelCase」同形**，不再另立 `meta_*` 小写前缀体系（见 [`lang/intent-store.md`](lang/intent-store.md) §1）。**代价照本节前置条件 1 / 2**：表名含大写 ⇒ DDL 必须加引号、MySQL 必须 `lower_case_table_names=0`。
 
 ---
 

@@ -52,7 +52,7 @@ Field ──(呈现层)── UiField
 | `parentIdCol` | string? | 树形父键 |
 | `superName` | string? | 继承基类 Record |
 | `extendType` | enum | `NONE` \| `EXTENDS` \| `INHERITS` |
-| `fixedFilter` | 子类型/视图固定过滤；**在列表视图上呈现为顶端页签**，习惯把状态字段（如「组建中 / 运作中 / 已关闭」）作为固定过滤器 |
+| `fixedFilter` | string? | 子类型/视图固定过滤；**在列表视图上呈现为顶端页签**，习惯把状态字段（如「组建中 / 运作中 / 已关闭」）作为固定过滤器 |
 | `description` | string? | 文档 |
 
 `objType` 语义：`T` 持久化实体；`V` 只读视图；`TA` 实体 + Action；`TAF` 实体 + Action + Flow/审计；`VAF` 视图 + Action + Flow。

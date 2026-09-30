@@ -41,6 +41,12 @@
 | 表达式层（Expression） | **纯函数**（字段默认值 / `@Computed` / `lockIf`·`hideIf`·`requiredIf` / Validator 条件）——无副作用、无 IO、可重复求值（✔ 已裁 1A） |
 | 脚本层（Script） | **拦截点与 `canDo` 里写的受限 m 脚本**——**可读可写 Entity、可跨模块**，由 Rust 内核求值、能力=内核函数（✔ 已裁 2026-09-24 A）；**仍禁任意 IO / 反射 / 随机与时间依赖**，见 [`runtime.md`](runtime.md) §4.5 / §4.6 |
 | 能力函数（capability function） | 脚本能用的一项能力 = **内核提供的一个函数**（`script.<域>.<动作>`）；项目用 `capability` 声明后才可用，未声明即生成期报错 |
+| test | **测试用例一等声明**（partType `test`，`TC-<NNN>`，住 `tests/`）：锚 `module`（+ `feature`），分类 **`phase` × `face` × `kinds`**，正文三段 **`given` / `when` / `then`**（v5 可执行 DSL，见 [`lang/test.md`](lang/test.md)）；**v5：函数级单元测试不在其中**（用 JUnit / xUnit / vitest 原生写） |
+| suite | **用例集合一等声明**（partType `suite`，`SUITE-<符号名>`，v2 2026-09-29）：`select` 选择器 + `include` / `exclude` + `subset`；**成员由集合侧算出**；**冒烟 = UAT 的子集** |
+| kinds | 用例的**多维标签**（v2 取代单值 `kind`）：**五维**（v5 删「通道」维度，通道改由 `face` + `driver` 表达）= 目标（`FUNCTIONAL` / `NON_FUNCTIONAL`，恰好 1）/ 方法（`WHITE_BOX` / `GRAY_BOX` / `BLACK_BOX`，≤1）/ 强度（`SMOKE` / `REGRESSION`）/ 非功能 / 一致性（`CONFORMANCE`） |
+| face | 用例的**面**（v5 新增，**必填**）：`UI`（前端交互，配 `driver E2E` / `MANUAL`）/ `API`（后端接口，配 `driver HTTP` / `HOOKS` / `MANUAL`）——**前后端分离在语言里的落点** |
+| driver | 用例**怎么跑**（v5 改值域）：`E2E` / `HTTP` / `HOOKS` / `MANUAL`，**必须与 `face` 配对**；`MANUAL` 不得为 `GOLD` |
+| given · when · then | 用例正文的**三段可执行 DSL**（v3 立、v5 沿用）：`given` = 上下文与输入（造数）、`when` = 你干了什么（动作）、`then` = 就会有……（断言）；由底座 `mmda test --gen-data` / `--run` / `--assert` 执行，**执行态不进文件** |
 
 ## 3. 行为与事件
 

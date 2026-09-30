@@ -99,7 +99,7 @@ enum OrderStatus : int {
 
 ```
 .mmda 项目（SSOT；**目录自由，四根为默认**）
-    ├── intents/               S1 意图：requirement / usecase / role / uat
+    ├── intents/               S1 意图：intent / usecase / role
     ├── models/modules/        业务架构（subsystem / module）
     ├── models/objects|enums|stms/    record / view、enum、stm
     ├── models/flows|bpml|ui|converters/   flow、bpmn、ui、converter
