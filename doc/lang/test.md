@@ -596,5 +596,5 @@ INT-000100 ─▶ INT-000123 ─▶ UC-000045 ─▶ 建模声明点（record / 
 - 落库：[`test-store.md`](test-store.md)（`MetaTest` 族——**唯一落库面**；~~与 `mmda_alm` 五表的投影映射~~ 已随该库废除，只留参考对照）
 - 库侧实测与差异：[`../examples/alm/差异对照-测试与缺陷.md`](../examples/alm/差异对照-测试与缺陷.md)（T1–T25 / B0–B6 / L12–L20）
 - 示例：[`../examples/alm/TC-000045.m`](../examples/alm/TC-000045.m)（UAT 面 + 功能面）· [`../examples/alm/SUITE-UAT-CORE.m`](../examples/alm/SUITE-UAT-CORE.m)（集合）
-- 上游语言面：[`intent.md`](intent.md)（§4 回指 · §6 与测试的关联 · §7 门禁）· [`modules.md`](modules.md)（§1 两种节点 · §2 模块编号 · §3 模块挂什么）· [`project.md`](project.md)（§1.2 首关键字清单含 `test` / `suite`）
+- 上游语言面：[`intent.md`](intent.md)（§4 回指 · §6 与测试的关联 · §7 门禁）· [`modules.md`](modules.md)（§1 三种节点（硬三级）· §2 模块编号 · §3 节点属性槽 · §3.1 `sops` 词表）· [`project.md`](project.md)（§1.2 首关键字清单含 `test` / `suite`）
 - 质量与追溯：[`../quality.md`](../quality.md) §5 追溯链 · [`../requirements.md`](../requirements.md) §2.1（模块三级）· §2.2 / §7-11（写入口）

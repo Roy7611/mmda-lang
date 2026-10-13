@@ -103,7 +103,7 @@ DFD 侧重**跨模块数据流**；STM 侧重**单实体生命周期**。
 ## 5. 模块树（L1）
 
 ```
-M  项目制造运营          [Subsystem, type=0]
+M  项目制造运营          [System, type=0]
 ├── M.01  工厂模型       [Module, type=1]
 │   ├── M.01.032  BOM表  [Feature, type=2] → Record Bom
 │   └── M.01.030  工艺路线

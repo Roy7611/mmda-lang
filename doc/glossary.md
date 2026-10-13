@@ -13,8 +13,8 @@
 | 显示标签 | `label` | 元数据里「给人看的标题」的**唯一属性名与 JSON 键**（✔ 2026-09-25 作者裁 B；**旧实现列名 `displayLabel`**）；枚举成员同叫 `label`，**字符串表示第 3 段的段名也是 `label`**（⤴ 2026-09-26 作者：「**text => label**」；旧实现里叫 `text`）；见 [meta-model.md](lang/meta-model.md) §6 |
 | 元数据切片 | `locale` | **元数据 JSON 顶层字段**：**一份 JSON = 一个 locale** —— `label` / 成员 `label` 都是该 locale 的**最终值**（缺译文回落项目 `defaultLocale`）；**词条（Model i18n）通道按它分片、客户端按它缓存**（⤴ 2026-09-26 作者：「**加一个locale属性，这才是输出的json最终形式**」）；串的第 3 段 `label` 则是 **locale 无关形态**、存项目 `defaultLocale` 标签（⤴ 作者：「**2 defaultLocale**」）；见 [meta-model.md](lang/meta-model.md) §6.2 |
 | 文档注释 | `description` / comments | 设计源的文档信息（`/// <label> : <description>` 的后半段）：**不进 JSON、不进业务载荷**，同 SQL `COMMENT ON` 的语义**另存 comments 层**（**✔ 载体 = A**：生成 DDL 时落数据库 `COMMENT ON`，B 不采用；⤴ 第一百一十八轮作者：「**1A**」）；见 [meta-model.md](lang/meta-model.md) §6.3 |
-| 子系统 | Subsystem | 业务域顶层划分，如 MES、WMS |
-| 模块 | Module | 子系统下的功能分组 |
+| 系统 | System | 业务域顶层划分，如 MES、WMS（**硬三级**：`system` → `module` → `feature`） |
+| 模块 | Module | 系统下的功能分组 |
 | 功能 | Feature | 可独立交付的功能单元，通常绑定一个 Record |
 | 模块操作 | ModuleAction / Action | 业务动作，常含状态转移 |
 | 模块流程 | ModuleFlow | Action 之间的编排（多步流程） |
@@ -165,9 +165,12 @@
 | 术语 | 说明 |
 | --- | --- |
 | objType | Record 种类：`T` 表/实体 · `V` 视图 · `TA` 带 Action · `TAF` 带 Action 与 Flow/审计 · `VAF` 带 Action 与 Flow 的视图 |
-| moduleType | Module 层级：`0` Subsystem（`M`）· `1` Module（`M.01`）· `2` Feature（`M.03.001`） |
+| moduleType | 模块层级：`0` System（`M`）· `1` Module（`M.01`）· `2` Feature（`M.03.001`）—— **由声明关键字（`system` / `module` / `feature`）推导**，不单独声明（✔ 2026-10-13，[`lang/modules.md`](lang/modules.md) §1） |
 | relationType | `1` HAS_ONE · `2` HAS_MANY |
 | FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitVector）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 —— **⤴ 2026-10-13：枚举两前缀归一为类型名**（`X` / `XSet`，见 [`records.md`](lang/records.md) §6） |
+| `sops` | **模块节点的标准操作位枚举**（`0` `NONE` · `1` `READ` · `2` `EDIT` · `4` `CREATE` · `8` `DELETE` · `15` `CRUD` · `16` `REPORT` · `32` `IMPORT` · `64` `EXPORT` · `127` `ALL`）——**逐节点显式写、不继承**；**旧名 `PRINT` 已由 `REPORT` 取代**（✔ 2026-10-13）；元数据列同名（旧列名 `allowOps` 仅作历史对照）；真源 [`lang/modules.md`](lang/modules.md) §3.1 |
+| `order` | 模块节点的**同级排序键**（整数、可选；省略 = 按编号；让「调顺序」不必动编号），真源 [`lang/modules.md`](lang/modules.md) §3 |
+| `route` | 模块节点的**前端路由局段**（全路径由父段拼接派生；推不出或需覆盖时才写），真源 [`lang/modules.md`](lang/modules.md) §3 |
 | **位向量** | **`BitVector(n)`**（**规范名**，✔ 2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）；**别名 = `BitSet` / `BitSet(n)` / `BitArray`**（输入兼容，`mmda fmt` 归一）、**后缀式 `BitVector8`…`BitVector64`** ≡ `BitVector(8)`…`BitVector(64)`。`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128）；真源 `DataType.BIT_VECTOR`(129)；见 [`datatypes.md`](lang/datatypes.md) §7 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |

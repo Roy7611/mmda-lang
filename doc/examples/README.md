@@ -24,12 +24,14 @@
 | [`enums/MaterialType.me`](enums/MaterialType.me) / `CirculationSpeed.me` / `MaterialTracingMode.me` | `data/enums/base/*.me` | 枚举（**位标志枚举**（`@EnumSet` + `: BitVector(n)`）与普通枚举两种） |
 | [`enums/BomStatus.me`](enums/BomStatus.me) / `BomUsage.me` / `DailyReportStatus.me` / `RoutingType.me` | `data/enums/mes/*.me` | 枚举（状态枚举值域与 STM 对齐） |
 | [`enums/QaStatus.me`](enums/QaStatus.me) | —（**规范样例**，2026-10-13 新增） | **位标志枚举**：`@EnumSet(QaStatusSet)` + `: BitVector(8)`，演示**单值 / 集合两读法** |
+| [`modules/mes.m`](modules/mes.m) | —（**规范样例**，2026-10-13 新增） | **模块树**：`system` / `module` / `feature` **硬三级** + 节点属性槽 `model:` / `sops` / `route` / `order` / `icon` / `version` / `releaseAt`（引用的 record / ui 是示意名） |
 | [`stms/MaterialLifecycle.ms`](stms/MaterialLifecycle.ms) / [`BomApproval.ms`](stms/BomApproval.ms) / [`DailyReportLifecycle.ms`](stms/DailyReportLifecycle.ms) / [`RoutingLifecycle.ms`](stms/RoutingLifecycle.ms) | `data/stms/{base,mes}/*.ms` | 状态机（`stm X on Record.status` + `action` + `transition`） |
 
 ## 2. 这批示例里能看到的语法（逐条给出处）
 
 | 语法 | 示例行 | 出处 |
 | --- | --- | --- |
+| **模块树（硬三级）**：`system` / `module` / `feature`；声明头**只写编号**、`///` = label + description；`sops` 逐节点写、`model:` 显式写 | `feature M.01.001 { model: WorkCenter, sops: ALL }` | `modules/mes.m` |
 | 记录体：`record X { … }` + `///` 文档注释（**注释即文档**，`0;CODE;标签` 是枚举值域说明） | `record Material {` | `base/Material.mm:2` |
 | **分区主键注解（带段范围）**：`@Partitioned [min,max]` 独占一行、写在字段上方 | `@Partitioned [32768,0x7fffff]` + `materialId int64 identity generated readonly hidden,` | `base/Material.mm:4-5` |
 | **字段级行尾关键字**：`identity generated readonly hidden` / `indexed` / `readonly` / `unsigned` / `default 0` / `default now` / `default false` | `status UsageStatus default 0 indexed readonly,` | `base/Material.mm:75` |

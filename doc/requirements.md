@@ -57,7 +57,7 @@
 
 **与既有口径的一致性**：SERU 的 `S`（Subject Area，按业务区划分解）现在是 **intent 的必填子句 `subject`**，S2 建模时由它细化为 System / Module。**需求编号不能再挂模块编码**（`REQ-<模块编码>-<NNN>` 作废，改纯序号 `INT-<NNN>`）——因为 intent 签发时模块树还不存在；模块归属改由 `satisfies` 回指得出，**不做「迁模块即换号」**。
 
-**命名现状（撞名，待裁）**：三级模块在同一份规范里有两个叫法——[`meta-model.md`](lang/meta-model.md) §8 与 [`glossary.md`](glossary.md) §4 用**一个元素 + `moduleType` 0/1/2**（`0` Subsystem / `1` Module / `2` Feature），[`ide/workflow.md`](ide/workflow.md) 第 1 步写「系统（App）→ 模块 → 功能特征」，[`readme.md`](readme.md) §3 写 `Subsystem / Module / Feature`；作者口径是 **System / Module / Feature** → 见 §7-10。
+**命名统一（✔ 2026-10-13 已裁）**：三级**各给一个语言关键字** = `system` / `module` / `feature`（**硬三级**，级别由关键字定）；元模型 `moduleType` `0` / `1` / `2` **由关键字推导**、不单独声明；**`subsystem` 作废**（读作 `system`），[`ide/specification.md`](ide/specification.md) §4.2 的「子系统划分」与 [`readme.md`](readme.md) §3 的 `Subsystem` 一并对齐 —— 语言形态见 [`lang/modules.md`](lang/modules.md) §1 / §3、[`lang/project.md`](lang/project.md) §3.1。
 
 ### 2.2 需求是元对象：进语言、进库、进 IDE
 
@@ -175,7 +175,7 @@ SERU 是需求方法论（S / E / R / U 四要素），**遗留系统项目同�
 | 7 | ~~需求文件的后缀与粒度~~ → **✔ 全部已裁**：后缀 **`.m`**（2026-09-25；`.mr` 连同整个分片族作废）；**粒度（2026-09-28）= 一文件可放多条 `intent`**，与 `record` 同（一文件一条是**推荐、非硬规则**；同文件内相互引用不写 `import`，跨文件用 `import`；文件名自由，编号写在声明里） | [`lang/intent.md`](lang/intent.md) §1、[`project.md`](lang/project.md) §6 |
 | 8 | ~~`REQ` 编号是否含模块编码段~~ | ✔ **已裁（2026-09-28）**：**不含**——改**纯序号 `INT-<NNN>`**（用例 `UC-<NNN>`）。intent 签发时模块树还不存在；模块归属由 S2 侧 `satisfies` 回指得出，**不做「迁模块即换号」**（[`lang/intent.md`](lang/intent.md) §5） |
 | 9 | ~~三层需求 ↔ System / Module / Feature 的对应形态~~ | ✔ **已裁（2026-09-28）**：需求侧**两档**（`BUSINESS` → System / Module；`USER` → Module / Feature）+ **功能层归建模**；归属由 `satisfies` 回指算出，进 `mmda check` 出 error；**不做 1:1 映射**（§2.1、[`lang/intent.md`](lang/intent.md) §7-12） |
-| 10 | 模块三级的命名统一：元模型现为一个 `Module` + `moduleType` 0/1/2（[`glossary.md`](glossary.md) §4、[`meta-model.md`](lang/meta-model.md) §8）／ 作者口径为 **System / Module / Feature** | 建议**三级各给一个名字**（System / Module / Feature），`moduleType` 保留为内部编码；`ide/workflow.md` 的「系统（App）」与 `readme.md` 的 `Subsystem` 一并对齐 |
+| 10 | ~~模块三级的命名统一~~ | ✔ **已裁（2026-10-13）**：三级**各给一个语言关键字** = `system` / `module` / `feature`（**硬三级**、级别由关键字定、不再嵌套更深）；`moduleType` `0` / `1` / `2` **由关键字推导**（不单独声明）；**`subsystem` 作废**（读作 `system`）、`Subsystem` 名一并对齐（[`glossary.md`](glossary.md)、[`readme.md`](readme.md) §3、[`ide/specification.md`](ide/specification.md) §4.2）；语言形态见 [`lang/modules.md`](lang/modules.md) §1 / §3、[`lang/project.md`](lang/project.md) §3.1 |
 | 11 | 需求进库的写入口：IDE 的 CRUD 是「改文件 + 回写库」还是允许直改库 | 建议**只允许改文件**（真源唯一）；库直改只作运维应急且必须回写（[`workflows.md`](workflows.md) §2、§12-4） |
 
 ---

@@ -12,7 +12,7 @@
 
 | 已有声明 | 推导出的 API 元素 | 实测依据 |
 | --- | --- | --- |
-| **Module 树**（`M.03.001` Subsystem / Module / Feature） | **路径前缀 + 文档分组（tag）**；模块边界 = API 边界 | 手写控制器用资源名做前缀（`mmda-mes` 里 `@RequestMapping("/AlternativeStrategies")`），**没有模块段** → 推导规则要补模块前缀 |
+| **Module 树**（`M.03.001` System / Module / Feature） | **路径前缀 + 文档分组（tag）**；模块边界 = API 边界 | 手写控制器用资源名做前缀（`mmda-mes` 里 `@RequestMapping("/AlternativeStrategies")`），**没有模块段** → 推导规则要补模块前缀 |
 | **Feature 绑定的 Record**（`recordRef`） | **资源（resource）+ schema**（字段 / 类型 / 约束 / 默认值） | `MetaUiField` 已含 dataType / nullable / maxLength / 分组 |
 | **五视图**（index / editor / details / search / report） | **CRUD 端点模板** | 实测模板在各模块**一模一样**：`POST /create`、`GET ""`（列表）、`GET /{id}`、`POST /save`、`POST /{id}/delete`、`POST /deleteAll`（`/AlternativeStrategies` 与 `/BackgroundTasks` 逐字相同） |
 | **Action**（`moduleCode` + `actionName` + `statusTransition` + 守卫） | **操作端点** `POST /{Resource}/{id}/{action}`（审批、作废…）；守卫 → 前置条件与错误码 | `statements.md` 的 Action 声明 |

@@ -72,9 +72,9 @@ examples/mmda-mes/
 
 | moduleType | 层级 | 示例 |
 |------------|------|------|
-| 0 | Subsystem | `M` 制造 |
+| 0 | System | `M` 制造 |
 | 1 | Module | `M.01` 工厂模型 |
-| 2 | Feature | `M.01.032` BOM → 绑定 `model: Bom` |
+| 2 | Feature | `M.01.001` 工作中心 → 绑定 `model: WorkCenter` |
 
 Feature 必须绑定 Record；Action 写在 `data/stms/*.m`，与 Module 的 `stm:` 引用一致。
 

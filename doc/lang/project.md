@@ -11,7 +11,7 @@
 | 术语 | 含义 |
 | --- | --- |
 | **MMDA 项目** | 工作区目录 + 根清单 `{projectCode}.mmda` + 四个阶段根目录（§1） |
-| **M 语言源文件** | **`*.m`（唯一后缀）**——里面写什么由**首关键字**决定（`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile`）；**不再按类型分片**（✔ 2026-09-25 作者；**`requirement` 关键字 ✔ 2026-09-28 更名为 `intent`**，见 [`intent.md`](intent.md)） |
+| **M 语言源文件** | **`*.m`（唯一后缀）**——里面写什么由**首关键字**决定（`system` / `module` / `feature` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile`）；**不再按类型分片**（✔ 2026-09-25 作者；**`requirement` 关键字 ✔ 2026-09-28 更名为 `intent`**，见 [`intent.md`](intent.md)） |
 | ~~**纯脚本文件（`.m`）**~~ | **不再单列**：脚本与模型同属 `.m`（`import` 复用规则不变）；本条原为「脚本用 `.m`」的特例，因全局统一而消失——但**派生一条新问题**（同名冲突，见 §6 / §11-⑤） |
 | **项目清单** | 根目录 `{projectCode}.mmda` —— **整个项目的描述文件**；**目标态 = M 语言格式**（✔ 2026-09-25 作者：「原来有写文件是 json 格式，我觉得要统一为 m 语言格式，后面定具体描述格式」→ §11） |
 | **工作区（directory）** | 展开目录，Git/SVN 与 AI 友好，**日常 SSOT** |
@@ -82,7 +82,7 @@ erp/
 | --- | --- | --- | --- |
 | 意图 / 用例 | **S1 意图** | `intents/` | `intent` / `usecase` |
 | 角色与权限 | **S1 意图** | `intents/roles/` | `role` |
-| 业务架构 · 模块树 | **S2 建模** | `models/modules/` | `subsystem` / `module` |
+| 业务架构 · 模块树 | **S2 建模** | `models/modules/` | `system` / `module` / `feature` |
 | 数据架构 · 对象 | **S2 建模** | `models/objects/` | `record` / `view` |
 | 数据架构 · 枚举 | **S2 建模** | `models/enums/` | `enum` |
 | 数据架构 · STM | **S2 建模** | `models/stms/` | `stm` |
@@ -101,7 +101,7 @@ erp/
 
 | 文件 | 后缀 | partType | 说明 |
 | --- | --- | --- | --- |
-| **M 语言源文件** | **`.m`（唯一）** | **由正文首关键字判定**：`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile` | 全部**声明与脚本**（含意图、用例、角色、图形语义）——**一种文件承载所有 partType**（✔ 2026-09-25 作者：「既然通过 partType 可以识别元素类型，没必要那么多扩展名」） |
+| **M 语言源文件** | **`.m`（唯一）** | **由正文首关键字判定**：`system` / `module` / `feature` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `suite` / `profile` | 全部**声明与脚本**（含意图、用例、角色、图形语义）——**一种文件承载所有 partType**（✔ 2026-09-25 作者：「既然通过 partType 可以识别元素类型，没必要那么多扩展名」） |
 | **图形投影** | `{SSOT}.g` | `graph` | 布局 / 颜色 / 路由；**目标态 = M 语言格式**（具体描述格式待裁 → §11-①） |
 | **项目清单** | `{projectCode}.mmda` | `project` | 根目录有且仅有一个；**目标态 = M 语言格式**（格式待裁 → §11-②） |
 | **变更日志** | `changelog/*` | `changelog` | 目标态 = M 语言格式（格式待裁 → §11-②） |
@@ -190,21 +190,30 @@ erp/
 
 ## 3. 各类型文件
 
-### 3.1 模块树（`models/modules/`，一文件一子系统）
+### 3.1 模块树（`models/modules/`，一文件一系统）
 
-一文件 = 一个**子系统**的 Module 树（文档系形态）：
+一文件 = 一个**系统**的模块树；**硬三级** `system` → `module` → `feature`（✔ 2026-10-13，语义见 [`modules.md`](modules.md) §1）。节点声明头**只写编号**（`moduleCode` 是数据库与 `test` 锚的被引用键），**显示名与描述由 `///` 给**（首段 = label、其余 = description；模块族进元数据、可 i18n，见 [`modules.md`](modules.md) §3）。
 
 ```ts
-/// 制造执行系统
-subsystem mes in Erp {
-  /// 生产管理
-  module M.03 Production {
-    module M.03.032 BomApproval {
-      model: Bom,
-      ui: { editor: BomEditor, index: BomList },
-      flow: mes-operate
+/// 制造执行系统: 管理生产计划、执行、质量控制、设备保养和成本分析
+system M {
+    route: 'mes',                    // 根段推不出（M → mes 非机械），写一次；子级拼接
+
+    /// 工厂模型: 工厂、车间、产线的组织结构
+    module M.01 {
+        /// 工作中心: 工厂、车间、产线
+        feature M.01.001 { model: WorkCenter, sops: ALL }
+        /// 工位
+        feature M.01.002 { model: Workstation, sops: CRUD }
     }
-  }
+
+    /// 生产计划: 排产与工单管理
+    module M.03 {
+        /// 生产订单
+        feature M.03.001 { model: ProductionOrder, sops: CRUD | REPORT | IMPORT | EXPORT }
+        /// 生产排程: 无关联实体，资源名推不出 → 才写 route
+        feature M.03.002 { route: 'schedule', sops: READ | REPORT }
+    }
 }
 ```
 
@@ -281,7 +290,7 @@ mmda open dist/erp.mmdax
 | partType | 判定方式 | contentType |
 | --- | --- | --- |
 | `project` | 文件名 `{projectCode}.mmda` | `application/vnd.mmda.project+json`（目标态随 §11-② 改） |
-| `intent` `usecase` `subsystem` `module` `record` `view` `enum` `stm` `role` `converter` `flow` `bpmn` `ui` `test` `suite` `profile` | **任一 `*.m` 的正文首关键字**——**路径与后缀都不参与判定**（推荐目录见 §1.1） | `text/x-mmda+m` |
+| `intent` `usecase` `system` `module` `feature` `record` `view` `enum` `stm` `role` `converter` `flow` `bpmn` `ui` `test` `suite` `profile` | **任一 `*.m` 的正文首关键字**——**路径与后缀都不参与判定**（推荐目录见 §1.1） | `text/x-mmda+m` |
 | `graph` | `{SSOT}.g` | `application/vnd.mmda.graph+json`（目标态待裁 → §11-①） |
 | `codegen-profile` | `delivery/profiles/*.m` | 目标态随语言格式统一 |
 | `changelog` | `changelog/*` | 目标态随语言格式统一 |
@@ -371,7 +380,7 @@ events/**/*.mmda
 
 ## 11. 迁移：旧后缀 / 旧目录 → 新形态（✔ 2026-09-25 方向已定，步骤待裁）
 
-**方向已定（作者 2026-09-25）**：① **语言文件统一 `*.m`**；② **目录自由**（守四阶段根）；③ **原来用 JSON 写的文件统一改为 M 语言格式**（**具体描述格式后定**）。
+**方向已定（作者 2026-09-25）**：① **语言文件统一 `*.m`**；② **目录自由**（守四阶段根）；③ **原来用 JSON 写的文件统一改为 M 语言格式**（**具体描述格式后定**）——**模块树的语言形态已定（✔ 2026-10-13）**：旧 JSON 模块树（`.ma`）归一为 **`system` / `module` / `feature` 硬三级**的 `.m` 声明（[modules.md](modules.md) §1 / §3），旧关键字 `subsystem` 读作 `system`。
 
 **现存引用面（实测，2026-09-25）**：
 

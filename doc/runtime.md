@@ -253,7 +253,7 @@
 
 **✔ 已裁**：**模型与脚本同用 `.m`，脚本与它服务的对象放在同一个目录**（例：`data/models/mes/Order.m` 的记录，其 `beforeXxx` / `afterXxx` 拦截器放同目录的脚本文件 —— 命名与配对形态 ⏳ 待点头，见下）；**`.m` 里的程序可以 `import` 到别的文件里使用**（脚本是可复用单元，不是只能内嵌在模型里）。
 
-- **判据**（与 [`project.md`](lang/project.md) §1 同口径）：**`.m` 正文首关键字能判出 partType**（`subsystem` / `module` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `requirement` / `usecase` / `test` / `profile`…）；**脚本正文是语句序列、没有 partType**（旧分片后缀 `.mm` / `.me` / `.ms` / … 已作废、读作 `.m`）—— 因此**扩展名不承担类型判据，内容承担**；
+- **判据**（与 [`project.md`](lang/project.md) §1 同口径）：**`.m` 正文首关键字能判出 partType**（`system` / `module` / `feature` / `record` / `view` / `enum` / `stm` / `role` / `converter` / `flow` / `bpmn` / `ui` / `intent` / `usecase` / `test` / `profile`…）；**脚本正文是语句序列、没有 partType**（旧分片后缀 `.mm` / `.me` / `.ms` / … 已作废、读作 `.m`）—— 因此**扩展名不承担类型判据，内容承担**；
 - **同目录 = 默认配对**：脚本文件与模型文件同目录、可通过命名与对象对应（**命名与配对的精确形态 ⏳ 待点头**：`<对象>.m` 同名配对（推荐，一眼配对）或脚本内显式声明挂到哪个对象 / 哪个事件）；
 - **`import` 语义（草案形态 ⏳ 待点头）**：文件头 `import "./common.m";`（相对路径、可多行）—— 被引文件的**顶层声明**（具名函数 / 常量）进入当前文件作用域；**只允许 import `.m` 文件**（模型不是可 import 的东西）；**重名冲突 = 报错**（不做别名机制）、**循环 import = 报错**；
 - **两种容器，一套语法**：内嵌脚本块（§4.5）与独立 `.m` 文件用的是**同一套表达式 / 语句语法**；独立文件用于**会被复用或较长的拦截器**，内嵌块用于**一次性的短逻辑**；

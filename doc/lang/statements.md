@@ -297,7 +297,7 @@ flows:
 | `executableExpression` | 是否可执行（守卫） |
 | `incomingTokensRequired` | 流程 token |
 | `ownerOnly` | 仅所有者 |
-| `allowOps` | 模块级 CRUD 位掩码 |
+| `sops`（旧列名 `allowOps`） | 模块级标准操作位枚举（词表见 [`modules.md`](modules.md) §3.1；逐节点、不继承） |
 
 ### 5.8 Codegen 约定
 

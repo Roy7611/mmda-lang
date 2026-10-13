@@ -58,9 +58,9 @@ Architect **不是**运行时框架，**不绑定** Java 或其他实现语言�
 
 | 功能 | 图形/编辑器 | 元模型 |
 |------|-------------|--------|
-| 子系统划分 | 树形导航 | `Subsystem` / `Module(type=0)` |
-| 模块分组 | 树形导航 | `Module(type=1)` |
-| 功能特征 | 功能列表，绑定实体 | `Module(type=2)` + `objRef` |
+| 系统划分 | 树形导航 | `System(type=0)`（关键字 `system`） |
+| 模块分组 | 树形导航 | `Module(type=1)`（关键字 `module`） |
+| 功能特征 | 功能列表，绑定实体 | `Feature(type=2)`（关键字 `feature`）+ `model:` |
 | 用例（可选） | Use Case 图 | `UseCase`（Phase 2，见 [`../requirements.md`](../requirements.md) §4） |
 | 意图条目（可选） | 与用例/功能关联 | **`intent`**（**✔ 2026-09-25 已裁进语言、2026-09-28 定形**——一等声明 + 进库 + IDE 表格化管理；`layer` 两档、`subject` 必填、编号 `INT-<NNN>`；语言面规范见 [`../lang/intent.md`](../lang/intent.md)，工程侧见 [`../requirements.md`](../requirements.md) §2） |
 

@@ -44,7 +44,7 @@ flowchart LR
 | 字段 | 说明 |
 |------|------|
 | `id` | 模块编码（原 moduleCode） |
-| `sops` | 标准操作位枚举：READ / CRUD / … |
+| `sops` | 标准操作位枚举（`NONE` / `READ` / `EDIT` / `CREATE` / `DELETE` / `CRUD` / `REPORT` / `IMPORT` / `EXPORT` / `ALL`）——**逐节点写、不继承**；词表见 [modules.md](../lang/modules.md) §3.1 |
 | `model` | 绑定的 Record；有 model 则打开其 STM |
 | `ui` | 可选定制：index / editor / details / search / report（在 **交互设计** 步骤配置） |
 

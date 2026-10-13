@@ -149,7 +149,7 @@ Equipment.mm.g ◄──布局编辑──  GraphDesigner（插件）
 |--------------|------|
 | `module` | Module `code` |
 | `feature` | Feature 节点 |
-| `subsystem` | 子系统根 |
+| `system` | 系统根（旧关键字 `subsystem`） |
 
 #### `ms-stm`（状态机）
 

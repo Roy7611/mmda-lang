@@ -296,6 +296,7 @@ value ; name ; label ; color ; icon
 - **消费方 = `mmda doc` / IDE + 数据库注释**；设计真源仍是 `.m` 里的 `///`。
 - **✔ 载体 = A（数据库注释）**（⤴ 第一百一十八轮作者：「**1A**」）；**B 不采用**。
 - **comments 不进 i18n**（与 SQL 注释同性质：数据库注释是单语言的；要翻译的只有 `label`）。
+- ⚠️ **适用范围**（✔ 2026-10-13）：本条只管**对象 / 字段**（要落库成表的那类）。**模块族（`system` / `module` / `feature`）不落数据库表**（在元数据里是一条 module 记录）⇒ 它们的 `///` **进 module 元数据、可 i18n**（首段 = `label`、其余 = `description`，给用户提示这个功能是干嘛的）—— 见 [`modules.md`](modules.md) §3。
 
 ---
 
@@ -313,13 +314,16 @@ value ; name ; label ; color ; icon
 | 属性 | 说明 |
 | --- | --- |
 | `moduleCode` | 层级编码，如 `M.03.001` |
-| `moduleLabel` | 显示名 |
-| `moduleType` | `0` Subsystem / `1` Module / `2` Feature |
+| `moduleLabel` | 显示名（语言侧由 `///` 首段给、走词条 i18n） |
+| `moduleType` | `0` System / `1` Module / `2` Feature —— **由声明关键字（`system` / `module` / `feature`）推导**，不单独声明（✔ 2026-10-13） |
 | `schemaCode` | 关联 Schema |
 | `recordRef` | Feature 绑定的 Record（type=2） |
-| `moduleUrl` | 路由/入口 —— **API 路径的前缀 / 入口段按它派生**（✔ 2026-09-24，见 [`api.md`](../api.md) §8.2-2c） |
-| `allowOps` | 操作权限位掩码 |
+| `moduleUrl` | 路由/入口 —— **API 路径的前缀 / 入口段按它派生**（✔ 2026-09-24，见 [`api.md`](../api.md) §8.2-2c）；语言侧写**局段** `route`（全路径由父段拼接派生） |
+| `order` | 同级排序键（语言侧 `order`；省略 = 按编号） |
+| `sops` | 标准操作位掩码（**旧列名 `allowOps` 仅作历史对照**）；词表见 [`modules.md`](modules.md) §3.1；**逐节点、不继承** |
 | `defaultFilter` / `defaultSort` | 列表默认 |
+
+> **硬三级**（✔ 2026-10-13）：`system` → `module` → `feature`，**级别由关键字定、不再嵌套更深**；语言形态与节点属性槽见 [`modules.md`](modules.md) §1 / §3。
 
 ### 8.1 Role（关键用户 · **与 Module 同级**）
 

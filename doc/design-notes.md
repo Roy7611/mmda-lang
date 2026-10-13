@@ -26,11 +26,11 @@
 
 上面的菜单也可以使用功能架构图表示，图中有6大模块方框图，每个模块方框内部有功能特征方框，例如组织人事框内有部门、岗位、职员、劳动合同等等。
 
-所以功能架构设计可以切换两种视图：菜单树 / 架构图，根据设计师偏好。点击功能模块，在右边的属性面板都可以查看、编辑其属性，下面是一个模块的定义：
+所以功能架构设计可以切换两种视图：菜单树 / 架构图，根据设计师偏好。点击功能模块，在右边的属性面板都可以查看、编辑其属性。下面是一个模块的定义（⚠️ **旧形态**：模块当时是 JSON 数据；语言形态已改为 `system` / `module` / `feature` **硬三级** —— 见 [`lang/modules.md`](lang/modules.md) §1 / §3 与 [`lang/project.md`](lang/project.md) §3.1）：
 
 ```ts
 /**
-     sops允许的标准操作，是一个位元枚举： 0;NONE;无|1;READ;读取|2;EDIT;编辑|4;CREATE;创建|8;DELETE;删除|15;CRUD;增删改查|16;REPORT;报告|32;IMPORT;批量导入|64;EXPORT;批量导出|127;ALL;所有
+     sops允许的标准操作，是一个位元枚举： 0;NONE;无|1;READ;读取|2;EDIT;编辑|4;CREATE;创建|8;DELETE;删除|15;CRUD;增删改查|16;REPORT;报告|32;IMPORT;批量导入|64;EXPORT;批量导出|127;ALL;所有（✔ 2026-10-13 口径：**旧名 `PRINT` 已由 `REPORT` 取代**、词表无 `PRINT` 位；真源与词表见 [`lang/modules.md`](lang/modules.md) §3.1）
 
     注释解析为 title: description
  */
@@ -77,7 +77,7 @@ module Hr.Recruitment.Interview
     id: 'H.01.001',         //编码，原来的moduleCode
     icon: 'fas fa-view',    //图标，由前端解析，使用字体图标，原来的moduleIcon
     label: "面试",          //显示文本
-    sops: CURD | PRINT,     //标准操作，allowOps => standard ops
+    sops: CRUD | REPORT,    //标准操作；元数据列同名 sops（旧列名 allowOps）
     model: Interview,       //数据模型，原来的objName，现在改为引用元对象record
     ui: {                   //自定义用户界面，默认框架自动根据元数据生成，你就无需提供
         index: InterviewList,       //定制的列表页，查询、删除、打印、导入和导出功能

@@ -35,7 +35,7 @@
 ## 3. 层次（L1 / L2 / L3）
 
 ```
-L1 业务架构   Subsystem / Module / Feature        `models/modules/`（需求与角色在 `intents/`）
+L1 业务架构   System / Module / Feature（关键字 system / module / feature，硬三级）        `models/modules/`（需求与角色在 `intents/`）
 L2 领域模型   Record / Field / Relation / Enum / View / STM   `models/objects|enums|stms/`
 L3 事件与集成 Event / Channel / Subscriber         `models/flows/`、事件声明（总线与编排见 [event_bus.md](lang/event_bus.md)）
 ```
@@ -100,7 +100,7 @@ enum OrderStatus : int {
 ```
 .mmda 项目（SSOT；**目录自由，四根为默认**）
     ├── intents/               S1 意图：intent / usecase / role
-    ├── models/modules/        业务架构（subsystem / module）
+    ├── models/modules/        业务架构（system / module / feature）
     ├── models/objects|enums|stms/    record / view、enum、stm
     ├── models/flows|bpml|ui|converters/   flow、bpmn、ui、converter
     ├── tests/                 S3 验收：test（+ baseline/）
