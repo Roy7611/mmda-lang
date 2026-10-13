@@ -36,7 +36,7 @@
 | 归档包 | `.mmdax` —— ZIP 容器，与工作区路径 1:1，便于分发 |
 | Part | 包内一个文件或逻辑单元；含 role 与 partType |
 | SSOT | Single Source of Truth：设计真相源（工作区为主，包为交换形态） |
-| enumSet | 字段上嵌入的关系/枚举 DSL（**旧实现的存储层表示**，语言里已升级为 `@One`/`@Ref`/`@State` 注解） |
+| enumSet | 字段上嵌入的关系/枚举 DSL（**旧实现的存储层表示**）：关系面已升级为 `@One`/`@Ref`/`@State` 注解；**枚举面已升级为「集合读法 = 类型名」**（`ENUM X` ⇒ `X`、`ENUMS X` ⇒ `@EnumSet(XSet)` + 类型 `XSet`，✔ 2026-10-13，见 [`records.md`](lang/records.md) §6） |
 | 字符串表示（旧列名 `enumString`） | `MetaEnum.toString()` / `fromString()` 的成员串（**不是 JSON 字段**）：老格式 `value;name;label`，✔ 2026-09-25 扩展为 `value;name;label;color;icon`（**第 3 段段名 = `label`**，⤴ 2026-09-26 作者：「**text => label**」）（后 2 段可省、空段 = 未声明；**颜色段 = `<role>-<shade>`**，如 `info-500`）——⚠️ 老运行时 `split(';',3)` 会把第 3 段吞成整串，故扩展段只在用外观注解时产出、需与同代内核配套 |
 | 表达式层（Expression） | **纯函数**（字段默认值 / `@Computed` / `lockIf`·`hideIf`·`requiredIf` / Validator 条件）——无副作用、无 IO、可重复求值（✔ 已裁 1A） |
 | 脚本层（Script） | **拦截点与 `canDo` 里写的受限 m 脚本**——**可读可写 Entity、可跨模块**，由 Rust 内核求值、能力=内核函数（✔ 已裁 2026-09-24 A）；**仍禁任意 IO / 反射 / 随机与时间依赖**，见 [`runtime.md`](runtime.md) §4.5 / §4.6 |
@@ -167,13 +167,14 @@
 | objType | Record 种类：`T` 表/实体 · `V` 视图 · `TA` 带 Action · `TAF` 带 Action 与 Flow/审计 · `VAF` 带 Action 与 Flow 的视图 |
 | moduleType | Module 层级：`0` Subsystem（`M`）· `1` Module（`M.01`）· `2` Feature（`M.03.001`） |
 | relationType | `1` HAS_ONE · `2` HAS_MANY |
-| FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitVector）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 |
+| FieldRef 前缀 | `ENUM` 枚举引用 · `ENUMS` 位标志枚举（BitVector）· `REF` 引用（值对象）· `HAS_ONE` 一对一导航 —— **⤴ 2026-10-13：枚举两前缀归一为类型名**（`X` / `XSet`，见 [`records.md`](lang/records.md) §6） |
 | **位向量** | **`BitVector(n)`**（**规范名**，✔ 2026-09-26 作者：「**用 BitVector，BitSet, BitArray 别名**」）；**别名 = `BitSet` / `BitSet(n)` / `BitArray`**（输入兼容，`mmda fmt` 归一）、**后缀式 `BitVector8`…`BitVector64`** ≡ `BitVector(8)`…`BitVector(64)`。`n` = **位数**（8 的倍数 = 整数字节、默认 8、上限 128）；真源 `DataType.BIT_VECTOR`(129)；见 [`datatypes.md`](lang/datatypes.md) §7 |
 | 分区键 PK | Partition Key：文档 COMMENT 的 PK；多租户 BIGINT 字段，常与主键同列 |
 | 唯一键 UK | Unique Key：租户内业务唯一，如工号 `empNo` |
 | `.m` | **M 语言文件**的扩展名（✔ 2026-09-25）：**模型与脚本同用 `.m`**（partType 由正文首关键字判定）；脚本 = 拦截器 / 钩子体 / 可复用函数，**与它服务的对象同目录**，可用 `import` 引到别的文件里复用 |
 | view（视图） | **定义式，不是查询式**：`view X : B { 列 }` 的 **`:` 是 C# 风格的继承 / 实现**，语义 = **对 `X` 进行定义**（`B` 是基，可以是 `record`，见语料 `view Product : Bom`）；`as` = 引用该基的别名，`join` / `union` = 再挂别的基（横向 / 纵向）；**列清单逐字段显式写出**（每个基的字段都要写、名字对得上，不一致用 `as` 对齐，对齐规矩照 SQL）；**基可以是 `record` 或另一个 `view`**；**段对视图可选 —— 只读视图（大多数）不写段** |
 | `@Colorized` / `@Iconized` | **枚举的呈现开关 + 默认值**（✔ 2026-09-25）：写在**枚举声明**上；`@Colorized(role, shade?)` 只负责给**默认色**（成员 `@Color` 缺省时回落）、`@Iconized`（**无参、不写括号**）默认别名 = **成员名 kebab**、`@Iconized("bom")` 默认别名 = **前缀 + 成员名 kebab**（`bom-design`）；成员不写就用默认，没默认才不渲染 |
+| `@EnumSet` / 集合读法 | **位标志枚举的第二种读法**（✔ 2026-10-13）：`@EnumSet(SetName)` 写在**枚举声明**上、必配 `: BitVector(n)` 承载 ⇒ 类型槽位写 **`X` = 单值**（恰好一个成员）、**`SetName`（约定 `XSet`）= 集合**（成员可组合）；`SetName` 是**派生类型**（进符号表与跨端契约），三端投影 Java 具名 `EnumSet` 类 / C# `[Flags]` / TS 辅助；见 [`records.md`](lang/records.md) §6 |
 | `@Color(role, shade?)` | **枚举成员的主题色**（✔ 2026-09-25；原 `@ColorRole(role)` 写法并入）：**封闭 7 值** `primary` / `secondary` / `info` / `success` / `warning` / `danger` / `gray`（含**默认支持的黑白灰**；语言层校验，拼错 = 解析期 error）+ **色板 shade（色阶）**（**封闭 10 档** `50`–`900`，**省略 = `500`**）；**只给角色与 shade、不给色值**（色值来自主题令牌，模型层不写 `#RRGGBB`） |
 | `@Icon("alias")` | **枚举成员的图标别名**（✔ 2026-09-25）：逻辑别名（如 `"cancel"`）—— **完整别名**（显式写的即最终别名，不叠前缀）；**开放**，语义词由**开发人员自定义**，语言层只校验是字符串；**不绑定图标库**，映射在 **UI 层**（主题 / 皮肤）；**没映射上顶多不显示**（可选 warning，不报错） |
 | `@Partitioned` / `partitioned` | **分区主键**（✔ 2026-09-25 由 `@PartitionID` 改名）：**字段级行尾 `partitioned`**（不带范围）／ **注解 `@Partitioned [min,max]`**（带段范围）—— 与元对象属性 `MetaObject.partitioned` 同名；一个对象只能有一个 |

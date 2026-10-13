@@ -57,7 +57,7 @@ record Order {
 
     /// 订单状态
     @State OrderStatusChanged
-    status OrderStatus default 0 indexed,
+    status OrderStatus default NEW indexed,
 
     /// 订单行
     @Many

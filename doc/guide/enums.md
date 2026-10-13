@@ -47,7 +47,7 @@ enum BomStatus : int {
 | 文件 | `data/enums/{模块}/{Name}.m`（一对象一文件；扩展名 `.m`） |
 | 枚举名 | **PascalCase**（`BomStatus`、`RoutingType`） |
 | 成员名 | **UPPER_SNAKE**（`RAW_MATERIAL`、`ABANDONED`）—— 三端一致（见 [`../naming.md`](../naming.md)） |
-| 成员值 | 冒号后是底层类型：`enum X : int { … }`；位枚举写 `enum X : int flags { … }`（也见 `BitVector`） |
+| 成员值 | 冒号后是**承载**：`enum X : int { … }`（普通枚举，成员值可负）；**位标志枚举**写 `@EnumSet(XSet)` + `enum X : BitVector(n) { … }`（`n` = 位数、默认 8、8 的倍数、上限 128）—— 旧 `: int flags` 属迁移输入（✔ 2026-10-13） |
 | 值可负 | `ABANDONED = -1` 合法（语料在用） |
 | 存量不擅改 | 值一旦上线就是**历史数据的含义**，改名/改值要当作数据迁移处理 |
 
@@ -79,11 +79,45 @@ enum BomStatus : int {
 ## 4. 值域与位枚举
 
 - **普通枚举**：值连续或留空档都行（`NEW = 0, DRAFTED = 1, CERTIFIED = 2, APPROVED = 4…`）。
-- **位枚举**（`flags`）：成员值取 2 的幂（`1 = 1`、`2 = 2`、`4 = 4`、`8 = 8`…），可组合，如 `MaterialType`（劳动技能 / 原材料 / 零配件 / 半成品 / 产成品 / 机具设备 / 耗材 / 办公用品 / 其他）。
+- **位标志枚举**（`@EnumSet` + `: BitVector(n)`）：成员值取 2 的幂（`1`、`2`、`4`、`8`…），可组合，如 `MaterialType`（劳动技能 / 原材料 / 零配件 / 半成品 / 产成品 / 机具设备 / 耗材 / 办公用品 / 其他）；**建议显式声明 `NONE = 0`**（空集合才写得出成员名）。
 - **文本存储**：`0;NEW;新|1;PAYED;已付款`（生成物与旧实现兼容的形态，语言文件是唯一真源）。
 - **值域说明**：字段上引用枚举时，旧写法会在字段注释里带一串 `0;CODE;标签|…`；新模型不必重复枚举的内容（枚举本身就是真源）。
 
 ---
+
+### 4.1 位标志枚举的两种用法（✔ 2026-10-13 裁）
+
+```sql
+/// 质检状态
+@EnumSet(QaStatusSet)
+enum QaStatus : BitVector(8) {
+    /// 未判定 / 空集
+    NONE    = 0b0000,
+    /// 合格
+    PASSED  = 0b0001,
+    /// 让步接受
+    CONCESS = 0b0010,
+    /// 返工
+    REWORK  = 0b0100,
+    /// 报废
+    SCRAP   = 0b1000,
+}
+
+record ShipmentLine {
+    /// 本行品质判定：恰好一个
+    qaStatus QaStatus default PASSED,
+}
+
+record ShipmentType {
+    /// 允许发货的品质类型：可组合
+    qaStatuses QaStatusSet default PASSED,
+}
+```
+
+- **`@EnumSet(SetName)`** 声明**集合读法**与**集合类型名**；不写 = 只有单值读法（`XSet` 不存在，写了 = error）。
+- **单值** `X`：恰好一个成员（**写组合值 = error**）。**集合** `XSet`：成员可组合（`default` 单成员写成员名、组合写 `0b…`、空集 `0b0000`）。
+- **必须配 `: BitVector(n)` 承载**；**有负成员值的枚举不许 `@EnumSet`**（转不进位组合）。
+- 三端生成：**Java** `QaStatusSet`（内部 `EnumSet<QaStatus>`）/ **C#** `QaStatus`（`[Flags]`）/ **TS** 辅助函数 —— 差异登记在 Profile。
 
 ## 5. 挂到记录与状态机上
 
@@ -91,7 +125,7 @@ enum BomStatus : int {
 record Bom {
     /// 状态
     @State BomApproval                    // 指向状态机
-    status BomStatus default 0 indexed readonly,
+    status BomStatus default NEW indexed readonly,
 }
 
 // data/stms/mes/BomApproval.m

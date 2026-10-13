@@ -42,6 +42,7 @@
 | **字段 / 属性** | **camelCase（小写开头）** | `materialCode` · `createdAt` · `isDeleted` | **含 C# 属性**（代价见 §3.2） |
 | **枚举成员** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `OrderStatus.DRAFT` · `OrderStatus.RELEASED` · `YesNo.YES` | 成员名进载荷 → 属**契约名**，**三端一致**（✔ 2026-09-24 作者补充） |
 | **常量** | **`UPPER_SNAKE`（全大写，单词间 `_`）** | `MAX_RETRY_COUNT` · `DEFAULT_PAGE_SIZE` | **三端一致**（不随各端习惯，✔ 2026-09-24 作者补充） |
+| **派生集合类型**（`@EnumSet`） | **枚举名 + `Set`**（PascalCase） | `QaStatus` → **`QaStatusSet`** | **进契约类型名**（判据①）——`@EnumSet(SetName)` 可另起名，同样**三端逐字一致**（✔ 2026-10-13，见 [`lang/records.md`](lang/records.md) §6） |
 | **生成的 Handler 接口** | **`I` + 事件名 + `Handler`** | `event GoodsArrived` → 接口 `IGoodsArrivedHandler`，KEEP 区实现 `GoodsArrivedHandler` | [`events.md`](lang/events.md) §3 的接口名由此统一（原记「由 Profile 模板决定」→ 模板可定缀合，**不得违反本文 §1**） |
 | **数据库标识符** | **与模型同名，不转写**：表 / 视图 = **类名 PascalCase** · 列 = **属性名 camelCase** | `Record Material` → 表 `Material`、列 `materialCode`；`View MaterialStock` → 视图 `MaterialStock` | ✔ 2026-09-24 作者裁（原话「**sql 字段命名同属性，表名同类名，视图也是和表一样，便于 orm 的一致性**」）；**引号与前置条件见 §3.3** |
 

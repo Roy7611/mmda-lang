@@ -21,8 +21,9 @@
 | [`mes/DailyReportEvent.mm`](mes/DailyReportEvent.mm) | `data/models/mes/DailyReportEvent.mm` | 日报事件（含复合主键 `@Id PK_...(reportId, itemId)`） |
 | [`mes/Routing.mm`](mes/Routing.mm) | `data/models/mes/Routing.mm` | **工艺路线 = 你说的 `Process`**（55 行；`@Many operations Operation[+]` 挂工序、`@Many operationFlows`、`@Many lines`） |
 | [`mes/Operation.mm`](mes/Operation.mm) | `data/models/mes/Operation.mm` | 工序（`Routing` 的子项；含 `@ForeignKey … references Routing(routingId)`） |
-| [`enums/MaterialType.me`](enums/MaterialType.me) / `CirculationSpeed.me` / `MaterialTracingMode.me` | `data/enums/base/*.me` | 枚举（`flags` 位枚举与普通枚举两种） |
+| [`enums/MaterialType.me`](enums/MaterialType.me) / `CirculationSpeed.me` / `MaterialTracingMode.me` | `data/enums/base/*.me` | 枚举（**位标志枚举**（`@EnumSet` + `: BitVector(n)`）与普通枚举两种） |
 | [`enums/BomStatus.me`](enums/BomStatus.me) / `BomUsage.me` / `DailyReportStatus.me` / `RoutingType.me` | `data/enums/mes/*.me` | 枚举（状态枚举值域与 STM 对齐） |
+| [`enums/QaStatus.me`](enums/QaStatus.me) | —（**规范样例**，2026-10-13 新增） | **位标志枚举**：`@EnumSet(QaStatusSet)` + `: BitVector(8)`，演示**单值 / 集合两读法** |
 | [`stms/MaterialLifecycle.ms`](stms/MaterialLifecycle.ms) / [`BomApproval.ms`](stms/BomApproval.ms) / [`DailyReportLifecycle.ms`](stms/DailyReportLifecycle.ms) / [`RoutingLifecycle.ms`](stms/RoutingLifecycle.ms) | `data/stms/{base,mes}/*.ms` | 状态机（`stm X on Record.status` + `action` + `transition`） |
 
 ## 2. 这批示例里能看到的语法（逐条给出处）
@@ -43,7 +44,7 @@
 | **索引**：`@Index IDX_xxx(cols),`（组合索引必须具名声明） | `@Index IDX_bom_group(bomGroup,refBomId),` | `mes/Bom.mm:109` |
 | **外键**：`@ForeignKey FK_xxx(col) references X(col),` | `@ForeignKey FK_operation_routing(routingId) references Routing(routingId),` | `mes/Operation.mm:67` |
 | **文档注释规范**：`/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签 + 描述**），**写在被注释元素上方独占一行**、**不许写行尾** | `/// 新` + `NEW = 0,` | `enums/BomStatus.me:3-4`、[`../records.md`](../lang/records.md) §1.1 / §6 |
-| 枚举：`enum X : int flags { … }`（`flags` = 位枚举）+ 成员注释在**上一行** | `enum MaterialType : int flags {` / `/// 劳动技能` + `LABOR_SKILL = 0,` | `enums/MaterialType.me:2-4` |
+| 枚举：普通 `enum X : int { … }`；**位标志枚举** = `@EnumSet(XSet)` + `enum X : BitVector(n) { … }`（旧 `: int flags` 作迁移输入）+ 成员注释在**上一行** | `@EnumSet(MaterialTypeSet)` + `enum MaterialType : BitVector(8) {` / `/// 劳动技能` + `LABOR_SKILL = 0,` | `enums/MaterialType.me:2-4` |
 | 状态机：`stm X on Record.status { action a { transition A,B->C, } }`（`*` = 任意状态） | `stm BomApproval on Bom.status {` | `stms/BomApproval.ms:2` |
 
 ## 3. 等价简写：字段级 `partitioned`（2026-09-25 新裁）

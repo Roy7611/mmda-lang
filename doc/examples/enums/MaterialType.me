@@ -1,5 +1,6 @@
 /// 物料性质
-enum MaterialType : int flags {
+@EnumSet(MaterialTypeSet)
+enum MaterialType : BitVector(8) {
     /// 劳动技能
     LABOR_SKILL = 0,
     /// 原材料

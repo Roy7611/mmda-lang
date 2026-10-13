@@ -1,0 +1,14 @@
+/// 质检状态
+@EnumSet(QaStatusSet)
+enum QaStatus : BitVector(8) {
+    /// 未判定 / 空集
+    NONE    = 0b0000,
+    /// 合格
+    PASSED  = 0b0001,
+    /// 让步接受
+    CONCESS = 0b0010,
+    /// 返工
+    REWORK  = 0b0100,
+    /// 报废
+    SCRAP   = 0b1000,
+}

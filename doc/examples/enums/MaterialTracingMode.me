@@ -1,5 +1,6 @@
 /// 物料追踪方式
-enum MaterialTracingMode : int flags {
+@EnumSet(MaterialTracingModeSet)
+enum MaterialTracingMode : BitVector(8) {
     /// -
     NONE = 0,
     /// 批次

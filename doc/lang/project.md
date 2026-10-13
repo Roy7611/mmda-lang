@@ -119,17 +119,17 @@ erp/
 
 ### 1.3 跨目录引用规则
 
-**不绑路径**——引用一律走**符号名**，由解析器按项目索引（`.mmda` 登记 + 目录扫描）解析。**这是「目录自由」的技术前提**（也是原口径「partType 由内容判定」的必然推论）：移动 / 重命名 / 重组目录**不改变语义**。
+**不绑路径**——引用一律走**符号名**，由解析器按项目索引（`.mmda` 登记 + 目录扫描）解析。**这是「目录自由」的技术前提**（也是原口径「partType 由内容判定」的必然推论）：移动 / 重命名 / 重组目录**不改变语义**。**逐级解析顺序（内建 → 本文件 → 派生集合名 `XSet` → 同模块 → 全局）见 [`records.md`](records.md) §1.1**（✔ 2026-10-13）。
 
 | 引用形态 | 目标 |
 | --- | --- |
 | 模块树里的 `model:` / `ui:` / `flow:` | 按**符号名**找同名 part（`Order` / `BomEditor` / `mes-operate`），**不写路径** |
 | Feature 行为 | 按 `@State OrderFlow` 找同名 `stm` part |
-| 枚举 | `Order.status : OrderStatus` → 找同名 `enum` part |
+| 枚举 | `Order.status : OrderStatus` → 找同名 `enum` part；**集合读法** `Order.statuses : OrderStatusSet` → 找 `@EnumSet` 声明的集合类型（✔ 2026-10-13，见 [`records.md`](records.md) §6） |
 | 建模声明点的 `satisfies INT-…` / `satisfies UC-…` | 回指到意图 / 用例（**S2 → S1 的锚，单向**）。⚠️ 旧写法 `requirement` 的 `@Feature M.01.001` **已作废**——intent 先于模块树存在，不能反向指模块（[`intent.md`](intent.md) §0） |
 | `test` 的 `module` / `feature` / `unit`（v2 锚，取代 `covers:` / `req:`） | 指向**模块树节点编号 / 实现侧符号名**（不是文件路径） |
 
-> 待裁：同名 part 的冲突规则（同名声明在同一项目内出 error，还是允许按模块命名空间区分）——见 §11。
+> ✔ **已裁（2026-10-13）**：**同名声明 = error**（不放行「靠模块命名空间区分」；需要消歧时写限定名 `module.Name`）—— 该条待裁随之关闭（§11 第 ⑤ 条讲的是**脚本 vs 对象靠后缀区分**，不是同一件事，仍待裁）。**派生集合类型名 `XSet` 参与同名检查**（见 [`records.md`](records.md) §6）。
 
 ### 1.4 part 角色（pack 时）
 

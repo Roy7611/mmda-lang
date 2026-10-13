@@ -116,8 +116,9 @@ Field ──(呈现层)── UiField
 | `@Unique` | 列级 `uniqueKey` | 分区内业务唯一 |
 | `@Name` / `@Thumbnail` | `nameCol` / `thumbnailCol` | 显示名 / 缩略图 |
 | `@Uom("kg")` | 字段属性 `uom` | **计量单位标注**（✔ 2026-09-26 作者：「**元数据会有 suffix，没有抽象到 measurement 的层面，同意 `@Uom("kg")`**」）—— **不进存储**、不做 measurement 抽象；UI 显示后缀走已有的 `suffix`（`MetaUiField.java:122` / `MetaUiFieldI18n.java:63`） |
+| `@EnumSet SetName` | `MetaEnum.setName` / 列侧 `MetaCol.enumSet = "ENUMS X"` | **枚举的集合读法**：本枚举有具名集合类型 `SetName`（↔ 类型名 `XSet`；✔ 2026-10-13，见 [`records.md`](records.md) §6） |
 
-解析规则：`ENUM`/`ENUMS` → 引用 Enum（`ENUMS` = BitVector）；`REF`/`HAS_ONE`/`@Ref`/`@One` → Relation（`joinOn: remoteKey=@localKey`）。
+解析规则：`ENUM`/`ENUMS` → 引用 Enum（`ENUMS` = BitVector）；`REF`/`HAS_ONE`/`@Ref`/`@One` → Relation（`joinOn: remoteKey=@localKey`）。**`ENUM X` / `ENUMS X` 两种旧拼法归一为类型名**（`X` / `XSet`，✔ 2026-10-13）。
 
 ### 4.3 `@One` 与 `@Ref`
 
@@ -160,6 +161,7 @@ Field ──(呈现层)── UiField
 | `description?` | **描述**（`/// <label> : <description>` 的冒号后半段；只写标签时为空）——**`MetaEnum` 与 `MetaEnumMember` 都有**（✔ 2026-09-25 落地 §五-61 / §五-77） |
 | `baseType` | 基类型：`int` \| `BitVector`（✔ 2026-09-25 作者认可的是**当时的 `BitSet`**；**⤴ 2026-09-26 规范名定为 `BitVector`，`BitSet` / `BitArray` 为别名**，见 [`datatypes.md`](datatypes.md) §7） |
 | `bitwise` | 是否位标志 |
+| `setName?` | **派生集合类型名**（`@EnumSet(SetName)`；缺省 = 无集合读法）。旧 `enumSet = "ENUMS X"` 归一到此（✔ 2026-10-13，见 [`records.md`](records.md) §6） |
 | `colorized` | 是否**开颜色**（`@Colorized`，✔ 2026-09-25） |
 | `color?` | **默认色** `<role>-<shade>`（`@Colorized(role, shade)`，枚举级默认；**一个字段、一个形态**，见 §6.1） |
 | `iconized` | 是否**开图标**（`@Iconized`，✔ 2026-09-25） |

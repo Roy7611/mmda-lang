@@ -1,4 +1,4 @@
-﻿# 架构师怎么干活？
+# 架构师怎么干活？
 
 > UI 六步导航与壳层映射见 [doc/ide/workflow.md](ide/workflow.md)。第 4 步 **流程架构** 内顺序：**角色权限 → 数据流/STM → 工作流（BPMN）**；第 5 步 **交互设计** 在三类架构之上定制视图。
 
@@ -117,7 +117,7 @@ record Order : IAuthorizable {
     
     /// 订单状态
     @State OrderStatusChanged       //定义状态转换机
-    status OrderStatus default 0 indexed,  //枚举
+    status OrderStatus default NEW indexed,  //枚举
 
     /// 订单行: 默认 lazy；列表需预加载子表时可 @Many eager
     @Many
@@ -216,7 +216,7 @@ Record 体末尾可声明**对象级**主键、索引与检查约束（会生成
 | `@One` | 一对一（has one），引用整个实体并生成导航属性 | `@One Partner as customer`（简写）或 `@One Partner(partnerId,partnerCode,partnerName) as customer`（显式显示列） |
 | `@Many` | 一对多（has many） | `@Many` + `items OrderItem[+]` 或 `items OrderItem[]` |
 | `@Ref` | 引用外键，仅用于显示关联对象的部分字段，**不**生成导航实体 | `@Ref User(userId,userName)` → 只存 `creatorId`，UI 可显示用户名 |
-| `@State` | 状态字段，后接状态机名；字段须为枚举，**default** 为初始状态 | `@State OrderStatusChanged` + `status OrderStatus default 0` |
+| `@State` | 状态字段，后接状态机名；字段须为枚举，**default** 为初始状态 | `@State OrderStatusChanged` + `status OrderStatus default NEW` |
 | `@Computed` | 计算字段，后接公式 | `@Computed sum(amount of each items)` |
 
 **关联字段列表**（`@One` / `@Ref` 共用）：`Entity(col1,col2,…)` 中 **第一个字段为对方主键**（与本 record 外键列 join），**后续字段为 UI 显示列**。

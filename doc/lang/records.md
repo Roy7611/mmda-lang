@@ -35,7 +35,7 @@
 
 - **注解行**（可选）：字段名上方一行或多行 `@Xxx`，见 [§3](#3-字段注解)。
 - **名称**：字段名（camelCase；**命名总口径见 [`naming.md`](../naming.md) §1**）。
-- **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`；**显式 `default null` 也认** —— ✔ 2026-09-26）。**空值只有一个 = `null`**（TS 的 `undefined` 不进语言，见 [`datatypes.md`](datatypes.md) §1）；**`NONE = 0` 不是空值**（§12）。**非空字段不写 `default` = 用户必须输入**（✔ 2026-09-26 作者：「**非空字段为什么一定要写？没写说明用户必须输入阿**」）—— 只有可空字段（`T?`）才默认 `null`；**字段类型没有「嵌套 record」**（不做值对象 / 组合 —— 组合一律子表或引用，见 [`datatypes.md`](datatypes.md) §10）。
+- **数据类型**：见 [datatypes.md](datatypes.md)；后缀 `?` 表示可空（未写 `default` 时默认 `null`；**显式 `default null` 也认** —— ✔ 2026-09-26）。**空值只有一个 = `null`**（TS 的 `undefined` 不进语言，见 [`datatypes.md`](datatypes.md) §1）；**`NONE = 0` 不是空值**（§12）。**非空字段不写 `default` = 用户必须输入**（✔ 2026-09-26 作者：「**非空字段为什么一定要写？没写说明用户必须输入阿**」）—— 只有可空字段（`T?`）才默认 `null`；**字段类型没有「嵌套 record」**（不做值对象 / 组合 —— 组合一律子表或引用，见 [`datatypes.md`](datatypes.md) §10）。**类型槽位的解析顺序（✔ 2026-10-13 裁）**：① 内建类型名（含 `varchar(n)` / `BitVector(n)` 等带参形态）→ ② 本文件声明的元对象（`enum` / `record` / `view`）→ ③ **派生的集合类型名 `XSet`**（§6）→ ④ 同模块 → ⑤ 项目全局（`.mmda` 索引 + 目录扫描）；全不命中 = **解析期 error `M0602`**。**裸名优先**，跨模块消歧才写限定名（`base.Material`）；重名规则见 [`project.md`](project.md) §1.3。
 - **限制关键字**：零个或多个，空格分隔；行末逗号 `,`。
 - **文档注释**（`///`，可选）：写在被注释元素**上方、独占一行**（若该元素还有注解行，`///` 在注解行之上），格式 **`/// <label>`** 或 **`/// <label> : <description>`** —— 对应元数据的 **显示标签（`label`）** 与 **描述（`description`）**：`label` 进 JSON 并**另走词条**；**描述 = 文档注释，不进 JSON，另存 comments 层**（⤴ 2026-09-26 作者：「**我想用 comments 类似 SQL 数据库中的注释，另外存储的**」，见 [`meta-model.md`](meta-model.md) §6.3）；三端 UI 标签、API 文档、生成的 Markdown 文档都从这里取。**注释一律写在被注释元素上方，不许写行尾。**
 
@@ -112,6 +112,7 @@ items OrderItem[+] readonly,
 | `@Ref Entity(cols…)` | 外键 + 显示列，**不**生成导航实体 | Relation；兼容 `REF …(cols…)` |
 | `@Many` | 一对多；（可 `@Many eager`） | MetaRelation（默认 lazy） |
 | `@State StmName` | 状态字段，下一行须为枚举；`default` 为初始状态 | 状态列 + STM 名 |
+| `@EnumSet SetName` | **枚举的集合读法**：声明具名集合类型 `SetName`（必须配 `: BitVector(n)` 承载，见 §6） | `MetaEnum.setName`（旧 `MetaCol.enumSet = ENUMS X`） |
 | `@Computed expr` | 计算字段；下一行为存储/展示类型 | `computed` + `formula` |
 | `@Partitioned range` | 分区主键 realId 范围（多租户） | `partitionKey` + `minID`/`maxID` |
 | `@Unique` | 分区内业务唯一编码（**非** DB unique index） | 列级 `uniqueKey` |
@@ -250,7 +251,7 @@ record Order : IAuthorizable {
 
     /// 订单状态
     @State OrderStatusChanged
-    status OrderStatus default 0 indexed,
+    status OrderStatus default NEW indexed,
 
     /// 订单行
     @Many
@@ -326,7 +327,9 @@ enum OrderStatus : int {
 
 ```sql
 /// 伙伴角色
-enum PartnerRole : BitVector {
+/// 集合读法：伙伴角色的位组合
+@EnumSet(PartnerRoleSet)
+enum PartnerRole : BitVector(8) {
     /// 未知
     UNKNOWN  = 0b0000,
     /// 客户
@@ -345,6 +348,13 @@ enum PartnerRole : BitVector {
 - **成员文档注释（✔ 2026-09-25 作者裁定）**：同 §1.1 —— 格式 `/// <label>` 或 `/// <label> : <description>`（= 元数据的**显示标签**与**描述**，映射到 `MetaEnumMember`，见 [meta-model.md](meta-model.md) §6），**写在成员上方、独占一行**；**不许写行尾**（`NEW = 0,  /// 新` 不合规范；语料 `.me` 里的行尾写法待迁移）。
 
 > ✔ **已裁（2026-09-26）**：**位向量规范名 = `BitVector(n)`**（`BitSet` / `BitArray` = 别名；`BitVector8`…`BitVector64` 保留）；**`n` = 位数**（8 的倍数、默认 8、上限 128 位）；**加成员不改宽度**（`n` 由声明显式给定，不按成员数推断）；**多位位串字面量统一 `0b…`**（早期文档的 `b0000` 已作废）。详见 [`datatypes.md`](datatypes.md) §7。
+
+- **两种读法（✔ 2026-10-13 裁）**：`@EnumSet(SetName)` 声明**集合读法**与**集合类型名**（如 `@EnumSet(QaStatusSet)`）—— 之后类型槽位里 **`QaStatus` = 单值**（恰好一个成员）、**`QaStatusSet` = 集合**（成员可组合）。**不写 `@EnumSet` = 只有单值读法**（`XSet` 不存在，写了 = error `M0603`）；**`@EnumSet` 必须配 `: BitVector(n)` 承载**（配 `: int` = error `M0603`）。
+- **集合类型是派生类型、不是新元素**：`XSet` 进符号表与跨端契约（[`naming.md`](../naming.md) §1），**不新增承载、不进 [`datatypes.md`](datatypes.md) §11.4 的 8 轴**；三端投影差异（Java 具名 `EnumSet` 类 / C# `[Flags]` / TS 辅助函数）登记在 Profile（[`datatypes.md`](datatypes.md) §11.4 说明 8）。
+- **负成员值 ⇒ 只能 `: int` 承载**：位组合表达不出负数 ⇒ `ABANDONED = -1` 这类枚举**不许** `@EnumSet` / `: BitVector`。
+- **值域与 `default`（✔ 2026-10-13 裁）**：**单值字段写组合值 = error**；`default` 归一 —— 单成员写成员名（`default PASSED`）、组合写位字面量（`default 0b0011`）、空集 `default 0b0000`；**值域外 = error `M0604`**。
+- **迁移（旧 `enumSet` → 类型名）**：`ENUM X` ⇒ 类型写 `X`；`ENUMS X` ⇒ 声明补 `@EnumSet(XSet)`、类型写 `XSet`；语料 `enum X : int flags { … }` ⇒ 归一为 `@EnumSet(XSet) enum X : BitVector(n) { … }`（`n` 按最大成员值取最小的 8 的倍数、迁移时写死）。
+- **字段注释不重复值域（✔ 2026-10-13 裁）**：`/// 状态: 0;NEW;新|1;DRAFTED;…` 这类**照抄值域编码**不是规范写法（枚举声明是唯一真源，见 §1.1 的 `///` 口径）—— 旧语料如 `doc/examples/mes/Bom.mm:64` 属迁移项；`///` 只写业务含义。
 
 ### 6.1 呈现注解：颜色与图标（✔ 2026-09-25 作者）
 
@@ -498,6 +508,7 @@ union all Contactor as c
 | `@One` / `@Ref` / 旧 `HAS_ONE` / `REF` | Relation | `MetaRelation` / `MetaCol.enumSet` |
 | `@Many` | Relation | `MetaRelation`（`relationType=2`） |
 | `enum` | Enum（`name`、`baseType`、`bitwise`、`members`） | `MetaEnum` / `MetaEnumMember` |
+| `@EnumSet` / 旧 `ENUM` / `ENUMS` | Enum 的集合读法（集合类型名） | `MetaEnum.setName` / `MetaCol.enumSet` |
 | `view` | View | `MetaView`（`whereCondition`、`orderBy`、`relatives`） |
 | 对象级 `@Id/@Index/@ForeignKey/@Check` | 约束 | `MetaIndex`/`MetaForeignKey`/`MetaCheck` |
 

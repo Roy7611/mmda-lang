@@ -25,7 +25,7 @@ record Order : IAuthorizable {
 
     /// 订单状态
     @State OrderStatusChanged
-    status OrderStatus default 0 indexed,
+    status OrderStatus default NEW indexed,
 
     /// 订单行
     @Many
@@ -205,7 +205,7 @@ record Pallet {
 ```sql
 /// 订单状态
 @State OrderStatusChanged
-status OrderStatus default 0 indexed,
+status OrderStatus default NEW indexed,
 ```
 
 - `@State <状态机名>` 写在**枚举字段上一行**，**下一行必须是枚举类型**；`default` = **初始状态**。状态机本体（`stm`）住**独立文件**（`models/stms/*.m`），**不内联进 record**。
